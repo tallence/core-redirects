@@ -13,6 +13,8 @@ import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 
 public class RedirectFilterTest extends AbstractRedirectsTest {
@@ -38,7 +40,9 @@ public class RedirectFilterTest extends AbstractRedirectsTest {
     testling.doFilter(request, response, filterChain);
 
     assertEquals(HttpServletResponse.SC_MOVED_PERMANENTLY, response.getStatus());
-    assertEquals("/channela", response.getHeader(HttpHeaders.LOCATION));
+    // This assertion is a bit strange, because it depends of the context of the extension: If the testcases in this
+    // extension are running stand-alone, the blueprint link rewriter that removes the /context/servlet part is missing.
+    assertThat(response.getHeader(HttpHeaders.LOCATION), anyOf(is("/channela"), is("/context/servlet/channela")));
     assertEquals("Thu, 01 Jan 1970 00:00:00 GMT", response.getHeader(HttpHeaders.EXPIRES));
   }
 

@@ -82,12 +82,15 @@ public class RedirectFolderCacheKey extends CacheKey<SiteRedirects> {
       LOG.debug("Reading redirects from folder {}", redirectsFolder.getPath());
     }
     // Fetch the redirect content from
-    List<Redirect> redirectEntries = fetchRedirectEntries(redirectsFolder);
+    Collection<Content> redirectContents = fetchRedirectDocumentsFromFolder(redirectsFolder);
     // Re-enable dependencies
     Cache.enableDependencies();
 
-    // Add dependency on the children of the config folder, so that this cache key gets invalidated if rules are added
-    // or removed. The key will also have automatic dependencies on all rules already present in the folder.
+    // In order to create dependencies on the redirects found, the conversion needs to happen after re-enabling the tracking.
+    List<Redirect> redirectEntries = mapToRedirects(redirectContents);
+
+    // Also add dependency on the children of the config folder, so that this cache key gets invalidated if rules are
+    // added or removed.
     Cache.dependencyOn("children:" + IdHelper.parseContentId(redirectsFolder.getId()));
 
     // Collect and sort redirects by type
@@ -109,17 +112,17 @@ public class RedirectFolderCacheKey extends CacheKey<SiteRedirects> {
   // HELPER METHODS
 
   /**
-   * Fetch the redirect beans from the given folder.
-   */
-  private @NonNull List<Redirect> fetchRedirectEntries(@NonNull Content folder) {
-    return fetchRedirectDocumentsFromFolder(folder).stream().map(Redirect::new).collect(Collectors.toList());
-  }
-
-  /**
    * Fetch all redirects in the given folder using the {@link com.coremedia.cap.content.query.QueryService}.
    */
   private @NonNull Collection<Content> fetchRedirectDocumentsFromFolder(@NonNull Content folder) {
     return Optional.ofNullable(queryService.poseContentQuery(FETCH_REDIRECTS_QUERY, folder)).orElse(Collections.emptyList());
+  }
+
+  /**
+   * Map the given list of redirect contents to the custom redirect data type.
+   */
+  private @NonNull List<Redirect> mapToRedirects(@NonNull Collection<Content> redirectContents) {
+    return redirectContents.stream().map(Redirect::new).collect(Collectors.toList());
   }
 
 
