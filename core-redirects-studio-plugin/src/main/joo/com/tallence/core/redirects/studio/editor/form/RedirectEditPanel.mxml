@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<local:RedirectEditPanelBase
+    xmlns:fx="http://ns.adobe.com/mxml/2009"
+    xmlns:exml="http://www.jangaroo.net/exml/0.8"
+    xmlns="exml:ext.config"
+    xmlns:editor="exml:com.coremedia.cms.editor.sdk.config"
+    xmlns:ui="exml:com.coremedia.ui.config"
+    xmlns:local="com.tallence.core.redirects.studio.editor.form.*">
+  <fx:Metadata>
+    [ResourceBundle('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin')]
+    [ResourceBundle('com.coremedia.icons.CoreIcons')]
+  </fx:Metadata>
+  <fx:Script><![CDATA[
+    import com.coremedia.ui.data.Bean;
+    import com.coremedia.ui.data.ValueExpression;
+    import com.tallence.core.redirects.studio.data.RedirectImpl;
+
+    public static const xtype:String = "com.tallence.core.redirects.studio.editor.form.redirectEditPanel";
+
+    private var config:RedirectEditPanel;
+
+    public native function RedirectEditPanel(config:RedirectEditPanel = null);
+
+    [Bindable]
+    public var localModel:Bean;
+
+    [Bindable]
+    public var isValidVE:ValueExpression;
+
+    [Bindable]
+    public var errorMessagesVE:ValueExpression;
+    ]]>
+  </fx:Script>
+  <local:items>
+    <editor:CollapsibleFormPanel collapsible="false">
+      <editor:items>
+
+        <Checkbox
+            fieldLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_active')}">
+          <plugins>
+            <ui:BindPropertyPlugin bidirectional="true" bindTo="{getBindTo(config.localModel, RedirectImpl.ACTIVE)}"/>
+          </plugins>
+        </Checkbox>
+
+        <editor:FormSpacerElement height="10px"/>
+
+        <ui:StatefulDateField
+            disabled="true"
+            editable="false"
+            fieldLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_creationDate')}"
+            startDay="1">
+          <ui:plugins>
+            <ui:BindPropertyPlugin bidirectional="true"
+                                   bindTo="{getBindTo(config.localModel, RedirectImpl.CREATION_DATE)}"/>
+          </ui:plugins>
+        </ui:StatefulDateField>
+
+        <editor:FormSpacerElement height="10px"/>
+
+        <Combo itemId="redirectTypeField"
+               fieldLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_type')}"
+               forceSelection="true"
+               triggerAction="all"
+               editable="false"
+               store="{[ [RedirectImpl.REDIRECT_TYPE_ALWAYS, resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_type_value_0')], [RedirectImpl.REDIRECT_TYPE_404, resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_type_value_1')]]}">
+          <plugins>
+            <ui:BindPropertyPlugin bidirectional="true"
+                                   bindTo="{getBindTo(config.localModel, RedirectImpl.REDIRECT_TYPE)}"/>
+          </plugins>
+        </Combo>
+
+        <editor:FormSpacerElement height="10px"/>
+
+        <FieldContainer
+            fieldLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_source')}">
+          <items>
+            <TextField width="500"
+                       checkChangeBuffer="400">
+              <plugins>
+                <ui:BEMPlugin block="redirect-source-field" modifier="{getSourceFieldModifiers(config.localModel, config.isValidVE)}"/>
+                <ui:BindPropertyPlugin bidirectional="true"
+                                       bindTo="{getBindTo(config.localModel, RedirectImpl.SOURCE)}"/>
+              </plugins>
+            </TextField>
+            <ui:IconButton iconCls="{resourceManager.getString('com.coremedia.icons.CoreIcons', 'help')}"
+                           tooltip="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_new_tooltip')}"
+                           handler="{showInfoDialog}"/>
+          </items>
+          <layout>
+            <layout_HBox/>
+          </layout>
+        </FieldContainer>
+
+        <FieldContainer>
+          <plugins>
+            <ui:BindComponentsPlugin valueExpression="{config.errorMessagesVE}"
+                                     configBeanParameterName="value">
+              <ui:template>
+                <DisplayField/>
+              </ui:template>
+            </ui:BindComponentsPlugin>
+          </plugins>
+        </FieldContainer>
+
+        <ui:BoundRadioGroup width="auto"
+                            columns="1"
+                            bindTo="{getBindTo(config.localModel, RedirectImpl.SOURCE_TYPE)}"
+                            defaultValue="{RedirectImpl.SOURCE_TYPE_ABSOLUTE}">
+          <ui:items>
+            <Radio inputValue="{RedirectImpl.SOURCE_TYPE_ABSOLUTE}"
+                   boxLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_sourceType_absolute')}"/>
+            <Radio inputValue="{RedirectImpl.SOURCE_TYPE_REGEX}"
+                   boxLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_sourceType_regex')}"/>
+          </ui:items>
+        </ui:BoundRadioGroup>
+
+        <editor:FormSpacerElement height="10px"/>
+
+        <editor:SingleLinkEditor linkContentType="CMLinkable"
+                                 labelAlign="left"
+                                 width="580"
+                                 cls="redirect-linked-content"
+                                 bindTo="{getBindTo(config.localModel, RedirectImpl.TARGET_LINK)}"
+                                 linkListLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_targetLink')}"/>
+
+        <editor:FormSpacerElement height="10px"/>
+
+        <TextArea
+            fieldLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_description')}">
+          <plugins>
+            <ui:BindPropertyPlugin bidirectional="true"
+                                   bindTo="{getBindTo(config.localModel, RedirectImpl.DESCRIPTION)}"/>
+          </plugins>
+        </TextArea>
+
+      </editor:items>
+      <!--  hide header -->
+      <editor:header/>
+    </editor:CollapsibleFormPanel>
+
+  </local:items>
+
+</local:RedirectEditPanelBase>

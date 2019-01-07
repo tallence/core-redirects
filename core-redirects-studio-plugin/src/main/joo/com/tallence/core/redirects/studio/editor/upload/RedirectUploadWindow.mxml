@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<local:RedirectUploadWindowBase
+    xmlns:fx="http://ns.adobe.com/mxml/2009"
+    xmlns:exml="http://www.jangaroo.net/exml/0.8"
+    xmlns="exml:ext.config"
+    xmlns:ui="exml:com.coremedia.ui.config"
+    xmlns:local="com.tallence.core.redirects.studio.editor.upload.*"
+    xmlns:upload="com.coremedia.cms.editor.sdk.upload.*"
+    xmlns:html5="com.coremedia.cms.editor.sdk.components.html5.*"
+    xmlns:dialog="com.coremedia.cms.editor.sdk.upload.dialog.*"
+    title="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_csvupload_dropin_title')}"
+    width="430"
+    minWidth="430"
+    height="453"
+    minHeight="453"
+    resizable="false"
+    modal="true"
+    constrainHeader="true"
+    xmlns:u="exml:untyped"
+    ui="{WindowSkin.GRID_200.getSkin()}">
+  <fx:Metadata>
+    [ResourceBundle('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin')]
+    [ResourceBundle('com.coremedia.cms.editor.Editor')]
+  </fx:Metadata>
+  <fx:Script><![CDATA[
+    import com.coremedia.ui.bem.SpacingBEMEntities;
+    import com.coremedia.ui.data.ValueExpression;
+    import com.coremedia.ui.skins.ButtonSkin;
+    import com.coremedia.ui.skins.ContainerSkin;
+    import com.coremedia.ui.skins.DisplayFieldSkin;
+    import com.coremedia.ui.skins.WindowSkin;
+
+    public static const xtype:String = "com.tallence.core.redirects.studio.editor.upload.redirectUploadWindow";
+
+    private var config:RedirectUploadWindow;
+
+    [Bindable]
+    public var selectedSiteIdVE:ValueExpression;
+
+    public native function RedirectUploadWindow(config:RedirectUploadWindow = null);
+    ]]>
+  </fx:Script>
+  <local:plugins>
+    <ui:VerticalSpacingPlugin modifier="{SpacingBEMEntities.VERTICAL_SPACING_MODIFIER_200}"/>
+  </local:plugins>
+  <local:items>
+    <Container flex="1"
+               minHeight="80"
+               ui="{ContainerSkin.FRAME_GRID_200.getSkin()}">
+      <items>
+        <Button
+            text="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_csvupload_text')}"
+            handler="{uploadButtonHandler}"
+            scale="small"
+            ui="{ButtonSkin.INLINE.getSkin()}">
+          <plugins>
+            <html5:BrowsePlugin enableFileDrop="true"
+                                multiple="false"
+                                dropEl="{this.el}"/>
+          </plugins>
+        </Button>
+        <DisplayField
+            value="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_csvupload_dropin_label')}"
+            ui="{DisplayFieldSkin.ITALIC.getSkin()}"/>
+      </items>
+      <layout>
+        <layout_VBox align="center"
+                     pack="center"/>
+      </layout>
+      <plugins>
+        <upload:FileDropPlugin dropHandler="{handleDrop}"/>
+      </plugins>
+    </Container>
+    <Container>
+      <items>
+      </items>
+      <plugins>
+        <ui:BindComponentsPlugin valueExpression="{getFileListVE()}"
+                                 configBeanParameterName="file">
+          <ui:template>
+            <dialog:FileContainer removeFileHandler="{removeFiles}"/>
+          </ui:template>
+        </ui:BindComponentsPlugin>
+        <ui:VerticalSpacingPlugin modifier="{SpacingBEMEntities.VERTICAL_SPACING_MODIFIER_200}"/>
+      </plugins>
+    </Container>
+  </local:items>
+  <local:layout>
+    <layout_VBox align="stretch"/>
+  </local:layout>
+  <local:fbar>
+    <Toolbar u:enableFocusableContainer="false">
+      <items>
+        <TbFill/>
+        <Button
+            text="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_csvupload_text')}"
+            scale="small"
+            handler="{okPressed}"
+            ui="{ButtonSkin.FOOTER_PRIMARY.getSkin()}">
+          <plugins>
+            <ui:BindPropertyPlugin componentProperty="disabled"
+                                   bindTo="{getUploadButtonDisabledExpression()}"/>
+          </plugins>
+        </Button>
+        <Button
+            text="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_csvupload_cancel_button_text')}"
+            scale="small"
+            handler="{close}"
+            ui="{ButtonSkin.FOOTER_SECONDARY.getSkin()}"/>
+      </items>
+    </Toolbar>
+  </local:fbar>
+
+</local:RedirectUploadWindowBase>

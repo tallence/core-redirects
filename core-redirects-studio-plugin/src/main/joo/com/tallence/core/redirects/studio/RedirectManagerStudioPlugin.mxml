@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<studio:RedirectManagerStudioPluginBase
+        xmlns:fx="http://ns.adobe.com/mxml/2009"
+        xmlns:editor="exml:com.coremedia.cms.editor.sdk.config"
+        xmlns:exml="http://www.jangaroo.net/exml/0.8"
+        xmlns="exml:ext.config"
+        xmlns:rm="com.tallence.core.redirects.studio.plugins.*"
+        xmlns:redirect="com.tallence.core.redirects.studio.studioform.*"
+        xmlns:studio="com.tallence.core.redirects.studio.*">
+    <fx:Metadata>
+  </fx:Metadata>
+    <fx:Script><![CDATA[
+        import mx.resources.ResourceManager;
+
+        private var config:RedirectManagerStudioPlugin;
+
+        public native function RedirectManagerStudioPlugin(config:RedirectManagerStudioPlugin = null);
+        ]]>
+  </fx:Script>
+
+    <studio:rules>
+
+        <editor:TabbedDocumentFormDispatcher>
+            <editor:plugins>
+                <editor:AddTabbedDocumentFormsPlugin>
+                    <editor:documentTabPanels>
+                        <redirect:RedirectForm itemId="RedirectEntry"/>
+                    </editor:documentTabPanels>
+                </editor:AddTabbedDocumentFormsPlugin>
+            </editor:plugins>
+        </editor:TabbedDocumentFormDispatcher>
+
+        <editor:ExtensionsMenu>
+            <editor:plugins>
+                <rm:AddRedirectManagerPlugin requiredGroups="administratoren"/>
+            </editor:plugins>
+        </editor:ExtensionsMenu>
+
+    </studio:rules>
+
+    <studio:configuration>
+
+        <editor:CopyResourceBundleProperties
+                destination="{ResourceManager.getInstance().getResourceBundle(null, 'com.coremedia.cms.editor.ContentTypes')}"
+                source="{ResourceManager.getInstance().getResourceBundle(null, 'com.tallence.core.redirects.studio.bundles.RedirectContentTypes')}"/>
+
+    </studio:configuration>
+
+</studio:RedirectManagerStudioPluginBase>

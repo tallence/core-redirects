@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<local:RedirectManagerEditorBase
+    xmlns:fx="http://ns.adobe.com/mxml/2009"
+    xmlns:exml="http://www.jangaroo.net/exml/0.8"
+    xmlns="exml:ext.config"
+    xmlns:local="com.tallence.core.redirects.studio.editor.*"
+    xmlns:ui="exml:com.coremedia.ui.config"
+    xmlns:grid="com.tallence.core.redirects.studio.editor.grid.*"
+    xmlns:editor="exml:com.coremedia.cms.editor.sdk.config"
+    id_="{ID}"
+    title="{ResourceManager.getInstance().getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_button_text')}"
+    closable="true"
+    iconCls="tallence-icons tallence-icons--redirects"
+    itemId="{ID}"
+    layout="fit">
+  <fx:Metadata>
+    [ResourceBundle('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin')]
+    [ResourceBundle('com.coremedia.icons.CoreIcons')]
+  </fx:Metadata>
+  <fx:Script><![CDATA[
+    import com.coremedia.ui.skins.ButtonSkin;
+    import com.coremedia.ui.skins.ToolbarSkin;
+
+    import mx.resources.ResourceManager;
+
+    public static const xtype:String = "com.tallence.core.redirects.studio.editor.redirectManagerEditorBase";
+
+    private var config:RedirectManagerEditor;
+
+    public native function RedirectManagerEditor(config:RedirectManagerEditor = null);
+    ]]>
+  </fx:Script>
+  <local:items>
+    <Panel>
+      <layout>
+        <layout_VBox align="stretch"/>
+      </layout>
+      <items>
+        <Container cls="redirectmanager-center-panel">
+          <items>
+            <editor:CollapsibleFormPanel
+                title="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_list_text')}"
+                collapsible="false">
+              <editor:items>
+                <grid:RedirectsGrid height="100%"
+                                    selectedSiteIdVE="{getSelectedSiteVE()}"/>
+              </editor:items>
+            </editor:CollapsibleFormPanel>
+          </items>
+        </Container>
+      </items>
+      <tbar>
+        <Toolbar ui="{ToolbarSkin.WORKAREA.getSkin()}">
+          <items>
+            <ui:IconButton itemId="add"
+                           tooltip="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_new_tooltip')}"
+                           iconCls="{resourceManager.getString('com.coremedia.icons.CoreIcons', 'create_content')}"
+                           handler="{function():void { createRedirect(); }}"/>
+            <TbSeparator/>
+            <ui:IconButton itemId="upload"
+                           tooltip="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_csvupload_tooltip')}"
+                           iconCls="{resourceManager.getString('com.coremedia.icons.CoreIcons', 'upload')}"
+                           handler="{function():void { csvUploadButtonHandler(); }}"/>
+          </items>
+          <defaults>
+            <ui:IconButton scale="medium"
+                           ui="{ButtonSkin.WORKAREA.getSkin()}"/>
+          </defaults>
+        </Toolbar>
+      </tbar>
+    </Panel>
+
+  </local:items>
+
+</local:RedirectManagerEditorBase>
