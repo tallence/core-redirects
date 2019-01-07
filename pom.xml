@@ -22,6 +22,7 @@
     <module>core-redirects-server</module>
     <module>core-redirects-cae</module>
     <module>core-redirects-contentfeeder</module>
+    <module>core-redirects-studio-lib</module>
   </modules>
 
 </project>

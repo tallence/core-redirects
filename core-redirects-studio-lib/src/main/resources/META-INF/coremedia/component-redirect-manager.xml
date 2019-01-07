@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+  <import resource="classpath:com/coremedia/cap/common/uapi-services.xml"/>
+  <import resource="classpath:com/coremedia/rest/cap/cap-rest-service.xml"/>
+
+  <bean id="redirects" class="com.tallence.core.redirects.studio.rest.RedirectsResource" scope="prototype"/>
+  <bean id="redirect" class="com.tallence.core.redirects.studio.rest.RedirectResource" scope="prototype"/>
+  <bean id="redirectRepository" class="com.tallence.core.redirects.studio.repository.RedirectRepositoryImpl"/>
+  <bean id="redirectImporter" class="com.tallence.core.redirects.studio.service.RedirectImporter"/>
+
+</beans>

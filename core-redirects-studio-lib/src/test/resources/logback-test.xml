@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+
+  <!--
+  Available properties: (can be defined with -Dproperty=warn for example)
+
+  - test.log.level (default: debug)
+    Log level for classes in scope of this test.
+  - stdout.log.level (default: info)
+    Log level for stdout.
+  - root.log.level (default: warn)
+    Log level for all other classes.
+  -->
+
+  <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener"/>
+
+  <!-- read configuration which can be overridden by system properties -->
+  <variable scope="system"
+            resource="logback-test.properties"/>
+
+  <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss} %-7([%level]) %logger - %message%n%xEx{5}</pattern>
+    </encoder>
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>${config.stdout.log.level}</level>
+    </filter>
+  </appender>
+
+  <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${config.log.file}</file>
+    <encoder>
+      <pattern>${config.log.pattern}</pattern>
+    </encoder>
+    <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+      <maxIndex>10</maxIndex>
+      <FileNamePattern>${config.log.file}.%i</FileNamePattern>
+    </rollingPolicy>
+    <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+      <MaxFileSize>4MB</MaxFileSize>
+    </triggeringPolicy>
+  </appender>
+
+  <logger name="com.tallence.core.redirects.studio.studio.rest" additivity="false" level="${config.test.log.level}">
+    <appender-ref ref="stdout"/>
+    <appender-ref ref="file"/>
+  </logger>
+
+  <root level="${config.root.log.level}">
+    <appender-ref ref="file"/>
+  </root>
+
+</configuration>
