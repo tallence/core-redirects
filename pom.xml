@@ -21,6 +21,7 @@
     <module>core-redirects-common</module>
     <module>core-redirects-server</module>
     <module>core-redirects-cae</module>
+    <module>core-redirects-contentfeeder</module>
   </modules>
 
 </project>

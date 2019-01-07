@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:customize="http://www.coremedia.com/2007/coremedia-spring-beans-customization"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.coremedia.com/2007/coremedia-spring-beans-customization
+                           http://www.coremedia.com/2007/coremedia-spring-beans-customization.xsd">
+
+  <customize:append id="addRedirectPropertyFields" bean="contentConfiguration" property="propertyFields">
+    <list>
+      <bean class="com.coremedia.cms.feeder.content.PropertyField">
+        <property name="doctype" value="Redirect"/>
+        <property name="property" value="source"/>
+        <property name="name" value="source"/>
+        <property name="textBody" value="false"/>
+      </bean>
+      <bean class="com.coremedia.cms.feeder.content.PropertyField">
+        <property name="doctype" value="Redirect"/>
+        <property name="property" value="sourceUrlType"/>
+        <property name="name" value="sourceUrlType"/>
+        <property name="textBody" value="false"/>
+      </bean>
+    </list>
+  </customize:append>
+
+</beans>
