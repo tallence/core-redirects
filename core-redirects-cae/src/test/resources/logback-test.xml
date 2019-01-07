@@ -1,0 +1,24 @@
+<configuration>
+
+  <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener"/>
+
+  <contextName>unit-tests</contextName>
+
+  <variable scope="system"
+            resource="default-logback-test.properties"/>
+
+  <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>${config.log.pattern}</pattern>
+    </encoder>
+  </appender>
+
+  <logger name="com.tallence.core.redirects" additivity="false" level="DEBUG">
+    <appender-ref ref="console"/>
+  </logger>
+
+  <root level="WARN">
+    <appender-ref ref="console"/>
+  </root>
+
+</configuration>

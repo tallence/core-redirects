@@ -1,0 +1,169 @@
+<content>
+  <folder id="1" name="" placeApproved="true" published="true" modificationDate="2009-06-01T20:59:42.000+01:00">
+
+    <folder id="11" name="Sites">
+
+      <folder id="111" name="TestA">
+        <folder id="1111" name="Navigation">
+          <document id="100" name="SiteA" type="CMSite">
+            <version number="1">
+              <linkProperty name="root">
+                <link id="1002"/>
+              </linkProperty>
+              <stringProperty name="id" value="siteA"/>
+              <stringProperty name="locale" value="en"/>
+              <stringProperty name="name" value="A"/>
+              <linkProperty name="master"/>
+            </version>
+          </document>
+          <document id="1002" name="ChannelA" type="CMChannel">
+            <version number="1">
+              <stringProperty name="segment" value="ChannelA"/>
+              <linkProperty name="children">
+                <link id="10022"/>
+                <link id="10024"/>
+              </linkProperty>
+            </version>
+          </document>
+          <document id="10022" name="ChannelA1" type="CMChannel">
+            <version number="1">
+              <stringProperty name="segment" value="ChannelA1"/>
+              <linkProperty name="children">
+                <link id="100222"/>
+              </linkProperty>
+            </version>
+          </document>
+          <document id="10024" name="ChannelA2" type="CMChannel">
+            <version number="1">
+              <stringProperty name="segment" value="ChannelA2"/>
+            </version>
+          </document>
+          <document id="100222" name="ChannelA11" type="CMChannel">
+            <version number="1">
+              <stringProperty name="segment" value="ChannelA11"/>
+            </version>
+          </document>
+        </folder>
+        <folder id="1113" name="Editorial">
+          <folder id="11131" name="Content">
+            <document id="1113110" name="docInContextA1" type="CMArticle">
+              <version number="1">
+                <linkProperty name="contexts">
+                  <link id="10022"/>
+                </linkProperty>
+              </version>
+            </document>
+            <document id="1131110" name="docInContextA11" type="CMArticle">
+              <version number="1">
+                <linkProperty name="contexts">
+                  <link id="100222"/>
+                  <link id="10124"/>
+                  <!--<link id="1022"/>-->
+                </linkProperty>
+              </version>
+            </document>
+          </folder>
+        </folder>
+        <folder id="1115" name="Options">
+          <folder id="11151" name="Settings">
+            <folder id="111511" name="Redirects">
+              <document id="1115110" name="TestRedirect1" type="Redirect">
+                <version number="1">
+                  <stringProperty name="sourceUrlType" value="ABSOLUTE"/>
+                  <stringProperty name="source" value="/channela/redirect-test"/>
+                  <linkProperty name="targetLink" Max="1" LinkType="CMLinkable">
+                    <link id="1002"/>
+                  </linkProperty>
+                  <stringProperty name="redirectType" value="ALWAYS"/>
+                  <stringProperty name="description" value="Description"/>
+                  <intProperty name="imported" value="0"/>
+                </version>
+              </document>
+            </folder>
+          </folder>
+        </folder>
+      </folder>
+
+      <folder id="113" name="TestB">
+        <folder id="1131" name="Navigation">
+          <document id="1010" name="SiteB" type="CMSite">
+            <version number="1">
+              <linkProperty name="root">
+                <link id="1012"/>
+              </linkProperty>
+              <stringProperty name="id" value="siteB"/>
+              <stringProperty name="locale" value="en"/>
+              <stringProperty name="name" value="B"/>
+              <linkProperty name="master"/>
+            </version>
+          </document>
+          <document id="1012" name="ChannelB" type="CMChannel">
+            <version number="1">
+              <stringProperty name="segment" value="ChannelB"/>
+              <linkProperty name="children">
+                <link id="10122"/>
+                <link id="10124"/>
+              </linkProperty>
+            </version>
+          </document>
+          <document id="10122" name="ChannelB1" type="CMChannel">
+            <version number="1">
+              <stringProperty name="segment" value="ChannelB1"/>
+              <linkProperty name="children">
+                <link id="101222"/>
+              </linkProperty>
+            </version>
+          </document>
+          <document id="10124" name="ChannelB2" type="CMChannel">
+            <version number="1">
+              <stringProperty name="segment" value="ChannelB2"/>
+            </version>
+          </document>
+          <document id="101222" name="ChannelB11" type="CMChannel">
+            <version number="1">
+              <stringProperty name="segment" value="ChannelB11"/>
+            </version>
+          </document>
+        </folder>
+        <folder id="1133" name="Editorial">
+          <folder id="11331" name="Content">
+            <folder id="11315" name="forChannelB">
+              <document id="113150" name="_folderProperties" type="CMFolderProperties">
+                <version number="1">
+                  <linkProperty name="contexts">
+                    <link id="1012"/>
+                  </linkProperty>
+                </version>
+              </document>
+              <document id="113152" name="docInContextB" type="CMArticle">
+                <version number="1"/>
+              </document>
+              <folder id="113151" name="bla">
+                <document id="1131510" name="_folderProperties" type="CMFolderProperties">
+                  <version number="1">
+                    <linkProperty name="contexts">
+                      <link id="1002"/>
+                      <link id="101222"/>
+                    </linkProperty>
+                  </version>
+                </document>
+                <folder id="1131511" name="bla">
+                  <folder id="11315111" name="bla">
+                    <document id="113151110" name="docInContextAandContextB11" type="CMArticle">
+                      <version number="1"/>
+                    </document>
+                  </folder>
+                </folder>
+              </folder>
+            </folder>
+          </folder>
+        </folder>
+        <folder id="1135" name="Options">
+
+        </folder>
+      </folder>
+
+    </folder>
+
+  </folder>
+</content>

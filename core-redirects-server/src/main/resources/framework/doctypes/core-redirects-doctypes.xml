@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<DocumentTypeModel xmlns="http://www.coremedia.com/2008/documenttypes"
+                   Name="core-redirects-doctypes">
+
+  <ImportDocType Name="CMObject"/>
+  <ImportDocType Name="CMLinkable"/>
+
+  <DocType Name="Redirect" Parent="CMObject">
+    <StringProperty Name="sourceUrlType" Length="128"/>
+    <StringProperty Name="source" Length="1024"/>
+    <LinkListProperty Name="targetLink" Max="1" LinkType="CMLinkable"/>
+    <StringProperty Name="redirectType" Length="128"/>
+    <StringProperty Name="description" Length="1024"/>
+    <IntProperty Name="imported"/>
+  </DocType>
+
+</DocumentTypeModel>
