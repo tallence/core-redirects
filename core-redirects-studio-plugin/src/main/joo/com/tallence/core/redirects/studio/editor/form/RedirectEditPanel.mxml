@@ -105,7 +105,7 @@
         <ui:BoundRadioGroup width="auto"
                             columns="1"
                             bindTo="{getBindTo(config.localModel, RedirectImpl.SOURCE_TYPE)}"
-                            defaultValue="{RedirectImpl.SOURCE_TYPE_ABSOLUTE}">
+                            >
           <ui:items>
             <Radio inputValue="{RedirectImpl.SOURCE_TYPE_ABSOLUTE}"
                    boxLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_sourceType_absolute')}"/>
