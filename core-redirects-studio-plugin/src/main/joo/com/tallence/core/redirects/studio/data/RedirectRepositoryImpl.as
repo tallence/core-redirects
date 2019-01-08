@@ -62,7 +62,7 @@ public class RedirectRepositoryImpl extends RemoteBeanImpl implements RedirectRe
     rsm.request({
           active: active,
           targetLink: targetLink,
-          desciption: description,
+          description: description,
           source: source,
           sourceUrlType: sourceType,
           redirectType: redirectType

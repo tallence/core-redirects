@@ -35,6 +35,7 @@ public class RedirectRepresentation {
   private Content targetLink;
   private RedirectType redirectType;
   private String siteId;
+  private String description;
 
   RedirectRepresentation(Redirect redirect) {
     this.active = redirect.isActive();
@@ -44,6 +45,7 @@ public class RedirectRepresentation {
     this.targetLink = redirect.getTargetLink();
     this.redirectType = redirect.getRedirectType();
     this.siteId = redirect.getSiteId();
+    this.description = redirect.getDescription();
   }
 
   public boolean isActive() {
@@ -72,5 +74,9 @@ public class RedirectRepresentation {
 
   public String getSiteId() {
     return siteId;
+  }
+
+  public String getDescription() {
+    return description;
   }
 }
