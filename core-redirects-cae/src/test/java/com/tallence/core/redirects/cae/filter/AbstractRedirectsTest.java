@@ -51,7 +51,7 @@ public abstract class AbstractRedirectsTest {
 
 
   @Configuration
-  @PropertySource("classpath:/component-core-redirects-cae.properties")
+  @PropertySource("classpath:/META-INF/coremedia/component-core-redirects-cae.properties")
   @ImportResource(
           value = {
                   CACHE,
@@ -59,7 +59,7 @@ public abstract class AbstractRedirectsTest {
                   DATA_VIEW_FACTORY,
                   ID_PROVIDER,
                   LINK_FORMATTER,
-                  "classpath*:/component-core-redirects-cae.xml"
+              "classpath*:/META-INF/coremedia/component-core-redirects-cae.xml"
           },
           reader = ResourceAwareXmlBeanDefinitionReader.class
   )
