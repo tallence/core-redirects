@@ -24,13 +24,7 @@ import com.coremedia.cap.test.xmlrepo.XmlUapiConfig;
 import com.coremedia.springframework.xml.ResourceAwareXmlBeanDefinitionReader;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.ImportResource;
-import org.springframework.context.annotation.Profile;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.*;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -59,7 +53,8 @@ public abstract class AbstractRedirectsTest {
                   DATA_VIEW_FACTORY,
                   ID_PROVIDER,
                   LINK_FORMATTER,
-              "classpath*:/META-INF/coremedia/component-core-redirects-cae.xml"
+              "classpath*:/META-INF/coremedia/component-core-redirects-cae.xml",
+              "classpath*:/com/coremedia/blueprint/base/multisite/bpbase-multisite-cae-services.xml"
           },
           reader = ResourceAwareXmlBeanDefinitionReader.class
   )
