@@ -104,7 +104,9 @@
               trackOver="true"
               loadMask="true"
               deferEmptyText="false"
-              emptyText="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_list_loading')}"/>
+              minHeight="60"
+              loadingText="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_list_loading')}"
+              emptyText="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_list_nothing_found')}"/>
   </local:view>
 
 </local:RedirectsGridBase>
