@@ -107,8 +107,8 @@
                             bindTo="{getBindTo(config.localModel, RedirectImpl.SOURCE_TYPE)}"
                             >
           <ui:items>
-            <Radio inputValue="{RedirectImpl.SOURCE_TYPE_ABSOLUTE}"
-                   boxLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_sourceType_absolute')}"/>
+            <Radio inputValue="{RedirectImpl.SOURCE_TYPE_PLAIN}"
+                   boxLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_sourceType_plain')}"/>
             <Radio inputValue="{RedirectImpl.SOURCE_TYPE_REGEX}"
                    boxLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_sourceType_regex')}"/>
           </ui:items>

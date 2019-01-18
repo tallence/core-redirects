@@ -33,7 +33,7 @@ public class RedirectImpl extends RemoteBeanImpl implements Redirect {
   public static const REDIRECT_TYPE_404:String = "AFTER_NOT_FOUND";
   public static const SOURCE:String = "source";
   public static const SOURCE_TYPE:String = "sourceUrlType";
-  public static const SOURCE_TYPE_ABSOLUTE:String = "ABSOLUTE";
+  public static const SOURCE_TYPE_PLAIN:String = "PLAIN";
   public static const SOURCE_TYPE_REGEX:String = "REGEX";
   public static const TARGET_LINK:String = "targetLink";
   public static const DESCRIPTION:String = "description";
@@ -49,7 +49,7 @@ public class RedirectImpl extends RemoteBeanImpl implements Redirect {
     REDIRECT_TYPE,
     SOURCE,
     SOURCE_TYPE,
-    SOURCE_TYPE_ABSOLUTE,
+    SOURCE_TYPE_PLAIN,
     SOURCE_TYPE_REGEX,
     TARGET_LINK,
     DESCRIPTION,

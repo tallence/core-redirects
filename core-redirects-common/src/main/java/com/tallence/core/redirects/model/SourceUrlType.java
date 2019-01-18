@@ -21,10 +21,10 @@ import java.util.Map;
 
 /**
  * This enum represents the type of the source url.
- * An url can either be absolute or a regular expression.
+ * An url can either be plain or a regular expression.
  */
 public enum SourceUrlType {
-  REGEX, ABSOLUTE;
+  REGEX, PLAIN;
 
   private static final Map<String, SourceUrlType> LOOKUP = new HashMap<>(2);
 
