@@ -29,6 +29,9 @@
     [Bindable]
     public var selectedSiteIdVE:ValueExpression;
 
+    [Bindable]
+    public var siteIsNotSelectedVE:ValueExpression;
+
     public native function RedirectsGrid(config:RedirectsGrid = null);
     ]]>
   </fx:Script>
@@ -42,6 +45,8 @@
                    emptyText="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_grid_search_empty_text')}">
           <plugins>
             <ui:BindPropertyPlugin bindTo="{getSearchFieldVE()}" bidirectional="true"/>
+            <ui:BindPropertyPlugin componentProperty="disabled"
+                                   bindTo="{config.siteIsNotSelectedVE}"/>
           </plugins>
         </TextField>
         <ui:LocalComboBox

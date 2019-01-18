@@ -25,8 +25,6 @@
 
     public static const xtype:String = "com.tallence.core.redirects.studio.editor.redirectManagerEditorBase";
 
-    private var config:RedirectManagerEditor;
-
     public native function RedirectManagerEditor(config:RedirectManagerEditor = null);
     ]]>
   </fx:Script>
@@ -43,7 +41,8 @@
                 collapsible="false">
               <editor:items>
                 <grid:RedirectsGrid height="100%"
-                                    selectedSiteIdVE="{getSelectedSiteVE()}"/>
+                                    selectedSiteIdVE="{getSelectedSiteVE()}"
+                                    siteIsNotSelectedVE="{getSiteIsNotSelectedVE()}"/>
               </editor:items>
             </editor:CollapsibleFormPanel>
           </items>
@@ -55,12 +54,22 @@
             <ui:IconButton itemId="add"
                            tooltip="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_new_tooltip')}"
                            iconCls="{resourceManager.getString('com.coremedia.icons.CoreIcons', 'create_content')}"
-                           handler="{function():void { createRedirect(); }}"/>
+                           handler="{createRedirect}">
+              <ui:plugins exml:mode="append">
+                <ui:BindPropertyPlugin componentProperty="disabled"
+                                       bindTo="{getSiteIsNotSelectedVE()}"/>
+              </ui:plugins>
+            </ui:IconButton>
             <TbSeparator/>
             <ui:IconButton itemId="upload"
                            tooltip="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_csvupload_tooltip')}"
                            iconCls="{resourceManager.getString('com.coremedia.icons.CoreIcons', 'upload')}"
-                           handler="{function():void { csvUploadButtonHandler(); }}"/>
+                           handler="{csvUploadButtonHandler}">
+              <ui:plugins exml:mode="append">
+                <ui:BindPropertyPlugin componentProperty="disabled"
+                                       bindTo="{getSiteIsNotSelectedVE()}"/>
+              </ui:plugins>
+            </ui:IconButton>
           </items>
           <defaults>
             <ui:IconButton scale="medium"
