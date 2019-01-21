@@ -169,6 +169,9 @@ public class RedirectImporter {
       return null;
     } else if (IdHelper.isContentId(targetLink)) {
       return contentRepository.getContent(targetLink);
+    } else if (targetLink.matches("\\d+")) {
+      String contentId = IdHelper.formatContentId(Integer.valueOf(targetLink));
+      return contentRepository.getContent(contentId);
     }
     return contentRepository.getRoot().getChild(targetLink);
   }
