@@ -70,7 +70,7 @@
               <document id="1115110" name="TestRedirect1" type="Redirect">
                 <version number="1">
                   <stringProperty name="sourceUrlType" value="PLAIN"/>
-                  <stringProperty name="source" value="/channela/redirect-test"/>
+                  <stringProperty name="source" value="/redirect-test"/>
                   <linkProperty name="targetLink" Max="1" LinkType="CMLinkable">
                     <link id="1002"/>
                   </linkProperty>

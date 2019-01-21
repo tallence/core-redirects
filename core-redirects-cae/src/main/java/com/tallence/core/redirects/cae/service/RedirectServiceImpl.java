@@ -22,6 +22,8 @@ import com.tallence.core.redirects.cae.service.cache.RedirectFolderCacheKey;
 import com.tallence.core.redirects.cae.service.cache.RedirectFolderCacheKeyFactory;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +34,8 @@ import javax.annotation.PostConstruct;
  */
 @Service
 public class RedirectServiceImpl implements RedirectService {
+
+  private static final Logger LOG = LoggerFactory.getLogger(RedirectServiceImpl.class);
 
 
   private final RedirectFolderCacheKeyFactory redirectFolderCacheKeyFactory;
@@ -65,6 +69,11 @@ public class RedirectServiceImpl implements RedirectService {
       return new SiteRedirects();
     }
     RedirectFolderCacheKey redirectsCacheKey = redirectFolderCacheKeyFactory.getCacheKeyFor(site);
-    return cache.get(redirectsCacheKey);
+    try {
+      return cache.get(redirectsCacheKey);
+    } catch (Exception e) {
+      LOG.error("Error during fetching redirects for site [{}]", site.getId(), e);
+      return new SiteRedirects();
+    }
   }
 }

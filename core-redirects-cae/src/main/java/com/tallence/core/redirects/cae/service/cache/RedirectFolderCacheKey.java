@@ -28,11 +28,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -102,7 +98,7 @@ public class RedirectFolderCacheKey extends CacheKey<SiteRedirects> {
     Cache.enableDependencies();
 
     // In order to create dependencies on the redirects found, the conversion needs to happen after re-enabling the tracking.
-    List<Redirect> redirectEntries = mapToRedirects(redirectContents);
+    List<Redirect> redirectEntries = mapToRedirects(redirectContents, site);
 
     // Also add dependency on the children of the config folder, so that this cache key gets invalidated if rules are
     // added or removed.
@@ -136,8 +132,17 @@ public class RedirectFolderCacheKey extends CacheKey<SiteRedirects> {
   /**
    * Map the given list of redirect contents to the custom redirect data type.
    */
-  private @NonNull List<Redirect> mapToRedirects(@NonNull Collection<Content> redirectContents) {
-    return redirectContents.stream().map(Redirect::new).collect(Collectors.toList());
+  private @NonNull List<Redirect> mapToRedirects(@NonNull Collection<Content> redirectContents, Site site) {
+
+    //Append the site's root segment to each redirect-url which makes life easier for the RedirectFilter
+    Optional<String> rootSegment = Optional.ofNullable(site.getSiteRootDocument())
+            .map(r -> "/" + r.getString("segment"))
+            .map(String::toLowerCase);
+    if (rootSegment.isPresent()) {
+      return redirectContents.stream().map(c -> new Redirect(c, rootSegment.get())).collect(Collectors.toList());
+    }
+    LOG.error("No root segment found for site [{}]", site.getId());
+    return Collections.emptyList();
   }
 
 
