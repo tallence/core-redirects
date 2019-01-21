@@ -70,5 +70,12 @@ public class RedirectManagerEditorBase extends Panel {
     return selectedSiteVE;
   }
 
+  protected function getSiteIsNotSelectedVE():ValueExpression {
+    return ValueExpressionFactory.createFromFunction(function ():Boolean {
+      var siteId:String = getSelectedSiteVE().getValue();
+      return !siteId || siteId == "";
+    })
+  }
+
 }
 }

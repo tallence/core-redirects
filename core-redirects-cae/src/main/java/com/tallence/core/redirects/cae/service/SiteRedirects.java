@@ -56,7 +56,7 @@ public class SiteRedirects {
    * Add a simple (static)
    */
   public void addStaticRedirect(Redirect redirect) {
-    if (redirect.getSourceUrlType() != SourceUrlType.ABSOLUTE) {
+    if (redirect.getSourceUrlType() != SourceUrlType.PLAIN) {
       LOG.error("Illegal source type on rule {}, ignoring redirect", redirect);
     }
     staticRedirects.put(redirect.getSource(), redirect);

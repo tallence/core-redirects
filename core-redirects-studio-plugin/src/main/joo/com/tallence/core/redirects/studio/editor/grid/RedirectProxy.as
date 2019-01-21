@@ -82,6 +82,9 @@ public class RedirectProxy extends DataProxy {
   protected function loadRedirects(operation:ReadOperation):ValueExpression {
     return ValueExpressionFactory.createFromFunction(function ():RedirectsResponse {
       var siteId:String = selectedSiteVE.getValue();
+      if (!siteId || 0 === siteId.length) {
+        return new RedirectsResponse([], 0);
+      }
       var searchText:String = searchFieldVE.getValue();
       var redirectsResponse:RedirectsResponse = RedirectRepositoryImpl.getInstance().getRedirects(siteId, searchText, operation);
 

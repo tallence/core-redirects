@@ -69,7 +69,7 @@
             <folder id="111511" name="Redirects">
               <document id="1115110" name="TestRedirect1" type="Redirect">
                 <version number="1">
-                  <stringProperty name="sourceUrlType" value="ABSOLUTE"/>
+                  <stringProperty name="sourceUrlType" value="PLAIN"/>
                   <stringProperty name="source" value="/channela/redirect-test"/>
                   <linkProperty name="targetLink" Max="1" LinkType="CMLinkable">
                     <link id="1002"/>

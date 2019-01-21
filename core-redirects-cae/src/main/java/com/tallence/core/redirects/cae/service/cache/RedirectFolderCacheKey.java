@@ -113,7 +113,7 @@ public class RedirectFolderCacheKey extends CacheKey<SiteRedirects> {
     redirectEntries.forEach(redirect -> {
       if (redirect.getSourceUrlType() == SourceUrlType.REGEX) {
         result.addPatternRedirect(redirect);
-      } else if (redirect.getSourceUrlType() == SourceUrlType.ABSOLUTE) {
+      } else if (redirect.getSourceUrlType() == SourceUrlType.PLAIN) {
         result.addStaticRedirect(redirect);
       } else {
         LOG.error("Unknown SourceUrlType in redirect {}, ignoring redirect", redirect);
