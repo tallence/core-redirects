@@ -172,6 +172,11 @@ public class RedirectFilter implements Filter {
    * Determines, if a redirect should be executed now, after handling or never.
    */
   private Result determinePreAction(SiteRedirects redirects, String pathInfo) {
+
+    if (pathInfo == null) {
+      return Result.none();
+    }
+
     Redirect redirect = getMatchingRedirect(redirects, pathInfo);
     if (redirect != null) {
       return redirect.getRedirectType() == RedirectType.ALWAYS ? Result.send(redirect) : Result.wrap(redirect);
