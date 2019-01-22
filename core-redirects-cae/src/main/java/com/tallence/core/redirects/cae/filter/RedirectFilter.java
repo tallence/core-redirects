@@ -172,18 +172,34 @@ public class RedirectFilter implements Filter {
    * Determines, if a redirect should be executed now, after handling or never.
    */
   private Result determinePreAction(SiteRedirects redirects, String pathInfo) {
-    if (redirects.getStaticRedirects().containsKey(pathInfo)) {
-      Redirect redirect = redirects.getStaticRedirects().get(pathInfo);
+    Redirect redirect = getMatchingRedirect(redirects, pathInfo);
+    if (redirect != null) {
       return redirect.getRedirectType() == RedirectType.ALWAYS ? Result.send(redirect) : Result.wrap(redirect);
     } else {
       for (Map.Entry<Pattern, Redirect> patternRedirect : redirects.getPatternRedirects().entrySet()) {
         if (patternRedirect.getKey().matcher(pathInfo).matches()) {
-          Redirect redirect = patternRedirect.getValue();
+          redirect = patternRedirect.getValue();
           return redirect.getRedirectType() == RedirectType.ALWAYS ? Result.send(redirect) : Result.wrap(redirect);
         }
       }
     }
     return Result.none();
+  }
+
+  /**
+   * Look into the static map with or without the trailing "/".
+   */
+  private Redirect getMatchingRedirect(SiteRedirects redirects, String pathInfo) {
+    Redirect redirect = redirects.getStaticRedirects().get(pathInfo);
+    if (redirect == null) {
+      if (pathInfo.endsWith("/")) {
+        pathInfo = pathInfo.substring(0, pathInfo.length() - 1);
+      } else {
+        pathInfo += "/";
+      }
+      redirect = redirects.getStaticRedirects().get(pathInfo);
+    }
+    return redirect;
   }
 
   /**

@@ -39,9 +39,9 @@ public class Redirect {
   private final RedirectType redirectType;
   private final Content target;
 
-  public Redirect(Content redirect) {
+  public Redirect(Content redirect, String rootSegment) {
     sourceUrlType = SourceUrlType.asSourceUrlType(redirect.getString(SOURCE_URL_TYPE));
-    source = redirect.getString(SOURCE_URL);
+    source = rootSegment + redirect.getString(SOURCE_URL);
     redirectType = RedirectType.asRedirectType(redirect.getString(REDIRECT_TYPE));
     target = redirect.getLink(TARGET_LINK);
   }
