@@ -17,14 +17,14 @@
 package com.tallence.core.redirects.studio.editor.grid {
 import com.coremedia.cms.editor.sdk.editorContext;
 import com.coremedia.ui.data.ValueExpression;
-import com.coremedia.ui.data.ValueExpressionFactory;
 import com.coremedia.ui.store.BeanRecord;
 import com.tallence.core.redirects.studio.data.Redirect;
 import com.tallence.core.redirects.studio.data.RedirectImpl;
 import com.tallence.core.redirects.studio.data.RedirectRepositoryImpl;
 import com.tallence.core.redirects.studio.data.RedirectsResponse;
-import com.tallence.core.redirects.studio.util.RedirectsUtil;
 
+import ext.IPromise;
+import ext.Promise;
 import ext.data.ResultSet;
 import ext.data.operation.Operation;
 import ext.data.operation.ReadOperation;
@@ -57,48 +57,32 @@ public class RedirectProxy extends DataProxy {
    * @param operation the read operation
    */
   override public function read(operation:Operation):void {
-    loadRedirects(operation as ReadOperation).loadValue(function (redirectsResponse:RedirectsResponse):void {
-      var recordType:Class = BeanRecord.create(RedirectImpl.REDIRECT_PROPERTIES, false);
-
-      var beanRecords:Array = [];
-      redirectsResponse.getRedirects().forEach(function (redirect:Redirect):void {
-        beanRecords.push(new recordType({bean: redirect}));
-      });
-
-      var resultSet:ResultSet = new ResultSet();
-      resultSet.setRecords(beanRecords);
-      resultSet.setTotal(redirectsResponse.getTotal());
-
-      operation.setResultSet(resultSet);
-      operation.setSuccessful(true);
-    })
+    loadRedirects(operation as ReadOperation)
+        .then(createResultSet)
+        .then(function (resultSet:ResultSet):void {
+          operation.setResultSet(resultSet);
+          operation.setSuccessful(true);
+        });
   }
 
-  /**
-   * Loads all redirects for the given ReadOperation.
-   * @param operation the read operation.
-   * @return a value expression with an array of redirects.
-   */
-  protected function loadRedirects(operation:ReadOperation):ValueExpression {
-    return ValueExpressionFactory.createFromFunction(function ():RedirectsResponse {
-      var siteId:String = selectedSiteVE.getValue();
-      if (!siteId || 0 === siteId.length) {
-        return new RedirectsResponse([], 0);
-      }
-      var searchText:String = searchFieldVE.getValue();
-      var redirectsResponse:RedirectsResponse = RedirectRepositoryImpl.getInstance().getRedirects(siteId, searchText, operation);
+  private function createResultSet(redirectsResponse:RedirectsResponse):IPromise {
+    var recordType:Class = BeanRecord.create(RedirectImpl.REDIRECT_PROPERTIES, false);
 
-      // make sure redirects and their linked content (separate remote bean) is loaded before adding the redirect to
-      // the grid.
-      if (redirectsResponse) {
-        var redirects:Array = redirectsResponse.getRedirects();
-        if (redirects && redirects.every(RedirectsUtil.redirectIsAccessible)) {
-          return redirectsResponse;
-        }
-      }
+    var beanRecords:Array = [];
+    redirectsResponse.getRedirects().forEach(function (redirect:Redirect):void {
+      beanRecords.push(new recordType({bean: redirect}));
+    });
 
-      return undefined;
-    })
+    var resultSet:ResultSet = new ResultSet();
+    resultSet.setRecords(beanRecords);
+    resultSet.setTotal(redirectsResponse.getTotal());
+    return Promise.resolve(resultSet);
+  }
+
+  protected function loadRedirects(operation:ReadOperation):IPromise {
+    var siteId:String = selectedSiteVE.getValue();
+    var searchText:String = searchFieldVE.getValue();
+    return RedirectRepositoryImpl.getInstance().getRedirects(siteId, searchText, operation);
   }
 
 }

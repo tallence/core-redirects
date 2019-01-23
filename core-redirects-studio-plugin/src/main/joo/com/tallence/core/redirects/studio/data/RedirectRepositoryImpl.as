@@ -19,7 +19,6 @@ import com.coremedia.cap.content.Content;
 import com.coremedia.cms.editor.sdk.components.html5.Uploader;
 import com.coremedia.cms.editor.sdk.upload.FileWrapper;
 import com.coremedia.ui.data.RemoteBean;
-import com.coremedia.ui.data.RemoteBeanUtil;
 import com.coremedia.ui.data.beanFactory;
 import com.coremedia.ui.data.error.RemoteError;
 import com.coremedia.ui.data.impl.BeanFactoryImpl;
@@ -28,8 +27,11 @@ import com.coremedia.ui.data.impl.RemoteService;
 import com.coremedia.ui.data.impl.RemoteServiceMethod;
 import com.coremedia.ui.data.impl.RemoteServiceMethodResponse;
 import com.tallence.core.redirects.studio.util.NotificationUtil;
+import com.tallence.core.redirects.studio.util.PromiseUtil;
 
+import ext.IPromise;
 import ext.JSON;
+import ext.Promise;
 import ext.data.operation.ReadOperation;
 import ext.util.Sorter;
 
@@ -44,7 +46,6 @@ public class RedirectRepositoryImpl extends RemoteBeanImpl implements RedirectRe
   private static const CREATE_URI_SEGMENT:String = "create";
   private static const VALIDATE_URI_SEGMENT:String = "validate";
   private static var instance:RedirectRepository;
-  private var redirectsBean:RemoteBean;
 
   public function RedirectRepositoryImpl(path:String) {
     super(path);
@@ -76,20 +77,38 @@ public class RedirectRepositoryImpl extends RemoteBeanImpl implements RedirectRe
     );
   }
 
-  public function getRedirects(siteId:String, searchText:String, operation:ReadOperation):RedirectsResponse {
-    redirectsBean = beanFactory.getRemoteBean(this.getUriPath() + "/" + siteId + getQueryParams(searchText, operation));
-    if (RemoteBeanUtil.isAccessible(redirectsBean)) {
-      return new RedirectsResponse(redirectsBean.get("items"), redirectsBean.get("total"));
-    } else {
-      redirectsBean.load();
-      return undefined;
+  public function getRedirects(siteId:String, searchText:String, operation:ReadOperation):IPromise {
+    if (!siteId || 0 === siteId.length) {
+      return Promise.resolve(new RedirectsResponse([], 0));
     }
+
+    var bean:RemoteBean = beanFactory.getRemoteBean(this.getUriPath() + "/" + siteId + getQueryParams(searchText, operation));
+    return PromiseUtil
+        .invalidateRemoteBean(bean)
+        .then(PromiseUtil.loadRemoteBean)
+        .then(createRedirectsResponse)
+        .then(loadRedirects);
   }
 
-  public function invalidateRedirects():void {
-    if (redirectsBean) {
-      redirectsBean.invalidate();
-    }
+  private function loadRedirects(response:RedirectsResponse):IPromise {
+    var redirects:Array = response.getRedirects();
+    return PromiseUtil.loadRemoteBeans(redirects)
+        .then(loadRedirectTargets)
+        .then(function (loaded:Array):IPromise {
+          return Promise.resolve(response);
+        });
+  }
+
+  private function loadRedirectTargets(redirects:Array):IPromise {
+    var targets:Array = redirects.map(function (redirect:Redirect):Content {
+      return redirect.getTargetLink();
+    });
+    return PromiseUtil.loadRemoteBeans(targets);
+  }
+
+  private static function createRedirectsResponse(remoteBean:RemoteBean):IPromise {
+    var response:RedirectsResponse = new RedirectsResponse(remoteBean.get("items"), remoteBean.get("total"));
+    return Promise.resolve(response);
   }
 
   public function uploadRedirects(siteId:String,
@@ -132,24 +151,13 @@ public class RedirectRepositoryImpl extends RemoteBeanImpl implements RedirectRe
 
   public function validateSource(siteId:String,
                                  redirectId:String,
-                                 source:String,
-                                 callback:Function):void {
+                                 source:String):IPromise {
     var url:String = "/" + siteId + "/" + VALIDATE_URI_SEGMENT + "?siteId=" + siteId + "&source=" + source;
     if (redirectId) {
       url = url + "&redirectId=" + redirectId;
     }
-    var rsm:RemoteServiceMethod = new RemoteServiceMethod(this.getUriPath() + url, "GET", true);
-    rsm.request({},
-        function success(rsmr:RemoteServiceMethodResponse):void {
-          var validationResult:Object = JSON.decode(rsmr.response.responseText);
-          var valid:Boolean = validationResult.valid;
-          var errorCodes:Array = validationResult.errorCodes;
-          callback.call(this, valid, errorCodes);
-        },
-        function failure(rsmr:RemoteServiceMethodResponse):void {
-          NotificationUtil.showError(ResourceManager.getInstance().getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_validation_error') + rsmr.getError());
-        }
-    );
+
+    return PromiseUtil.getRequest(this.getUriPath() + url, {}, ValidationResponse);
   }
 
   private static function getQueryParams(searchText:String, operation:ReadOperation):String {
