@@ -119,7 +119,16 @@ public class RedirectRepositoryImpl implements RedirectRepository {
     if (redirect.isCheckedIn()) {
       redirect.checkOut();
     }
-    updateRedirect(redirect, wasPublished, updateProperties);
+    try {
+      if (redirect.isCheckedIn()) {
+        redirect.checkOut();
+      }
+      updateRedirect(redirect, wasPublished, updateProperties);
+    } finally {
+      if (redirect.isCheckedOut()) {
+        redirect.checkIn();
+      }
+    }
   }
 
   @Override

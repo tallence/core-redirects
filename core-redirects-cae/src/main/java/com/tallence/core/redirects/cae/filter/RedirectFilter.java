@@ -155,8 +155,8 @@ public class RedirectFilter implements Filter {
       // This code is shamelessly copied from SiteFilter.java in cae-base-lib
       String pathInfo = request.getPathInfo();
       try {
-        if (!StringUtils.hasLength(pathInfo)) {
-          LOG.info("Could not determine a site without a path info in request {}", request);
+        if (!StringUtils.hasLength(pathInfo) || "/".equals(pathInfo)) {
+          LOG.debug("Could not determine a site without a path info in request {}", request);
         } else {
           site = siteResolver.findSiteByPath(pathInfo);
         }
