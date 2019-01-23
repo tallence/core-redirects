@@ -116,9 +116,6 @@ public class RedirectRepositoryImpl implements RedirectRepository {
       LOG.error("Content {} is checked out by other user, could not update redirect", redirect.getId());
       throw new IllegalArgumentException("Redirect is checked out by other user.");
     }
-    if (redirect.isCheckedIn()) {
-      redirect.checkOut();
-    }
     try {
       if (redirect.isCheckedIn()) {
         redirect.checkOut();
