@@ -151,7 +151,10 @@ public class RedirectRepositoryImpl implements RedirectRepository {
     List<Redirect> redirects = new ArrayList<>();
     for (int i = (page - 1) * pageSize; i < page * pageSize; i++) {
       if (i < hits.size()) {
-        redirects.add(convertToRedirect(hits.get(i)));
+        Content content = hits.get(i);
+        if (!content.isDeleted()) {
+          redirects.add(convertToRedirectRef(content));
+        }
       }
     }
 
@@ -250,6 +253,10 @@ public class RedirectRepositoryImpl implements RedirectRepository {
         redirectEntry.getString(DESCRIPTION),
         redirectEntry.getBoolean(IMPORTED)
     );
+  }
+
+  private Redirect convertToRedirectRef(Content redirectEntry) {
+    return new RedirectImpl(String.valueOf(IdHelper.parseContentId(redirectEntry.getId())));
   }
 
   /**
