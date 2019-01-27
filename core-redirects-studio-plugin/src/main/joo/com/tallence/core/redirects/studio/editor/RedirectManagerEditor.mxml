@@ -42,6 +42,8 @@
               <editor:items>
                 <grid:RedirectsGrid height="100%"
                                     selectedSiteIdVE="{getSelectedSiteVE()}"
+                                    mayWriteVE="{getMayWriteVE()}"
+                                    mayRegexVE="{getMayRegexVE()}"
                                     siteIsNotSelectedVE="{getSiteIsNotSelectedVE()}"/>
               </editor:items>
             </editor:CollapsibleFormPanel>
@@ -57,7 +59,8 @@
                            handler="{createRedirect}">
               <ui:plugins exml:mode="append">
                 <ui:BindPropertyPlugin componentProperty="disabled"
-                                       bindTo="{getSiteIsNotSelectedVE()}"/>
+                                       transformer="{function(value: Boolean): Boolean {return !value;}}"
+                                       bindTo="{getMayWriteVE()}"/>
               </ui:plugins>
             </ui:IconButton>
             <TbSeparator/>
@@ -67,7 +70,8 @@
                            handler="{csvUploadButtonHandler}">
               <ui:plugins exml:mode="append">
                 <ui:BindPropertyPlugin componentProperty="disabled"
-                                       bindTo="{getSiteIsNotSelectedVE()}"/>
+                                       transformer="{function(value: Boolean): Boolean {return !value;}}"
+                                       bindTo="{getMayWriteVE()}"/>
               </ui:plugins>
             </ui:IconButton>
           </items>

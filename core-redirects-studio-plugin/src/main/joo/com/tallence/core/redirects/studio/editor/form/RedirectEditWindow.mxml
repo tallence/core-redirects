@@ -26,11 +26,15 @@
 
     [Bindable]
     public var selectedSiteIdVE:ValueExpression;
+
+    [Bindable]
+    public var mayRegexVE:ValueExpression;
     ]]>
   </fx:Script>
   <local:items>
     <local:RedirectEditPanel localModel="{getLocalModel()}"
                              isValidVE="{getIsValidSourceVE()}"
+                             mayRegexVE="{config.mayRegexVE}"
                              errorMessagesVE="{getErrorMessagesVE()}"/>
   </local:items>
   <local:fbar>

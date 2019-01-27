@@ -29,6 +29,9 @@
 
     [Bindable]
     public var errorMessagesVE:ValueExpression;
+
+    [Bindable]
+    public var mayRegexVE:ValueExpression;
     ]]>
   </fx:Script>
   <local:items>
@@ -112,6 +115,11 @@
             <Radio inputValue="{RedirectImpl.SOURCE_TYPE_REGEX}"
                    boxLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_sourceType_regex')}"/>
           </ui:items>
+          <ui:plugins>
+            <ui:BindPropertyPlugin componentProperty="disabled"
+                                   transformer="{function(value: Boolean): Boolean {return !value;}}"
+                                   bindTo="{config.mayRegexVE}"/>
+          </ui:plugins>
         </ui:BoundRadioGroup>
 
         <editor:FormSpacerElement height="10px"/>

@@ -86,5 +86,10 @@ public interface RedirectRepository extends RemoteBean {
    * for the same search parameters.
    */
   function invalidateRedirects():void;
+
+  /**
+   * Resolve the rights for the redirects in the selected site.
+   */
+  function resolveRights(siteId: String, callback: Function): void;
 }
 }

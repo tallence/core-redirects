@@ -20,10 +20,13 @@ import com.coremedia.cap.common.IdHelper;
 import com.coremedia.cap.content.Content;
 import com.coremedia.cap.content.ContentRepository;
 import com.coremedia.cap.content.ContentType;
+import com.coremedia.cap.content.authorization.AccessControl;
+import com.coremedia.cap.content.authorization.Right;
 import com.coremedia.cap.content.publication.PublicationHelper;
 import com.coremedia.cap.content.publication.PublicationService;
 import com.coremedia.cap.multisite.Site;
 import com.coremedia.cap.multisite.SitesService;
+import com.coremedia.cap.user.User;
 import com.coremedia.rest.cap.content.search.SearchServiceResult;
 import com.coremedia.rest.cap.content.search.solr.SolrSearchService;
 import com.tallence.core.redirects.model.RedirectType;
@@ -143,6 +146,13 @@ public class RedirectRepositoryImpl implements RedirectRepository {
 
   @Override
   public Pageable getRedirects(String siteId, String search, String sorter, String sortDirection, int pageSize, int page) {
+
+    boolean mayRead = contentRepository.getAccessControl()
+        .mayPerform(getRedirectsFolder(siteId), this.redirectContentType, Right.READ);
+    if (!mayRead) {
+      return new Pageable(Collections.emptyList(), 0);
+    }
+
     String query = StringUtils.isEmpty(StringUtils.trim(search)) ? "source:*" : "source:*" + ClientUtils.escapeQueryChars(StringUtils.trim(search)) + "*";
 
     List<String> sortCriteria;
@@ -162,6 +172,18 @@ public class RedirectRepositoryImpl implements RedirectRepository {
     }
 
     return new Pageable(redirects, Math.toIntExact(result.getTotal()));
+  }
+
+  public RedirectRights resolveRights(String siteId, User user) {
+
+    Content redirectsFolder = getRedirectsFolder(siteId);
+
+    AccessControl accessControl = contentRepository.getAccessControl();
+
+    boolean mayWrite = accessControl.mayPerform(redirectsFolder, this.redirectContentType, Right.WRITE);
+    boolean administrative = user.isAdministrative();
+
+    return new RedirectRights(mayWrite, administrative);
   }
 
   private boolean redirectAlreadyExists(String siteId, String redirectId, String source) {

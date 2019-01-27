@@ -30,6 +30,12 @@
     public var selectedSiteIdVE:ValueExpression;
 
     [Bindable]
+    public var mayWriteVE:ValueExpression;
+
+    [Bindable]
+    public var mayRegexVE:ValueExpression;
+
+    [Bindable]
     public var siteIsNotSelectedVE:ValueExpression;
 
     public native function RedirectsGrid(config:RedirectsGrid = null);
@@ -82,11 +88,23 @@
           <items>
             <MenuItem iconCls="{resourceManager.getString('com.coremedia.icons.CoreIcons', 'pencil')}"
                       text="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_grid_redirect_edit_label')}"
-                      handler="{openEditWindow}"/>
+                      handler="{openEditWindow}">
+              <plugins exml:mode="append">
+                <ui:BindPropertyPlugin componentProperty="disabled"
+                                       transformer="{function(value: Boolean): Boolean {return !value;}}"
+                                       bindTo="{config.mayWriteVE}"/>
+              </plugins>
+            </MenuItem>
             <MenuSeparator/>
             <MenuItem iconCls="{resourceManager.getString('com.coremedia.icons.CoreIcons', 'trash_bin')}"
                       text="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_grid_redirect_delete_label')}"
-                      handler="{deleteRedirect}"/>
+                      handler="{deleteRedirect}">
+              <plugins exml:mode="append">
+                <ui:BindPropertyPlugin componentProperty="disabled"
+                                       transformer="{function(value: Boolean): Boolean {return !value;}}"
+                                       bindTo="{config.mayWriteVE}"/>
+              </plugins>
+            </MenuItem>
           </items>
         </Menu>
       </ui:contextMenu>
