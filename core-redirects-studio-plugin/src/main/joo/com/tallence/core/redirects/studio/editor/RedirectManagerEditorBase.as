@@ -47,6 +47,10 @@ public class RedirectManagerEditorBase extends Panel {
   private function resolveRights(): void {
     var siteId:* = getSelectedSiteVE().getValue();
 
+    //In case the request takes long or fails, the user has no rights
+    getMayWriteVE().setValue(false);
+    getMayRegexVE().setValue(false);
+
     RedirectRepositoryImpl.getInstance().resolveRights(siteId, function(write: Boolean, regex: Boolean): void {
       getMayWriteVE().setValue(write);
       getMayRegexVE().setValue(regex);

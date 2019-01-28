@@ -16,9 +16,6 @@
 
 package com.tallence.core.redirects.studio.rest;
 
-import com.coremedia.cap.springframework.security.impl.CapUserDetails;
-import com.coremedia.cap.user.User;
-import com.coremedia.cap.user.UserRepository;
 import com.coremedia.rest.linking.AbstractLinkingResource;
 import com.coremedia.rest.linking.LinkResolver;
 import com.sun.jersey.multipart.FormDataParam;
@@ -28,7 +25,6 @@ import com.tallence.core.redirects.studio.model.RedirectUpdateProperties;
 import com.tallence.core.redirects.studio.repository.RedirectRepository;
 import com.tallence.core.redirects.studio.service.RedirectImporter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -53,13 +49,11 @@ public class RedirectsResource extends AbstractLinkingResource {
   private String siteId;
   private final RedirectRepository redirectRepository;
   private final RedirectImporter redirectImporter;
-  private final UserRepository userRepository;
 
   @Autowired
-  public RedirectsResource(RedirectRepository redirectRepository, LinkResolver linkResolver, RedirectImporter redirectImporter, UserRepository userRepository) {
+  public RedirectsResource(RedirectRepository redirectRepository, LinkResolver linkResolver, RedirectImporter redirectImporter) {
     this.redirectRepository = redirectRepository;
     this.redirectImporter = redirectImporter;
-    this.userRepository = userRepository;
     setLinkResolver(linkResolver);
   }
 
@@ -81,12 +75,7 @@ public class RedirectsResource extends AbstractLinkingResource {
   @Path("rights")
   public RedirectRepository.RedirectRights resolveRights() {
 
-    User user = userRepository.getUser(getUserId());
-    if (user == null) {
-      throw new IllegalStateException("No user could be found");
-    }
-
-    return this.redirectRepository.resolveRights(getSiteId(), user);
+    return this.redirectRepository.resolveRights(getSiteId());
 
   }
 
@@ -132,15 +121,6 @@ public class RedirectsResource extends AbstractLinkingResource {
   @PathParam("siteId")
   public void setSiteId(String siteId) {
     this.siteId = siteId;
-  }
-
-  private String getUserId() {
-    Object user = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    if (user instanceof CapUserDetails) {
-      return ((CapUserDetails) user).getUserId();
-    } else {
-      throw new IllegalStateException("Could not get userId from authenticated user.");
-    }
   }
 
 }

@@ -22,7 +22,6 @@ import com.tallence.core.redirects.model.SourceUrlType;
 import com.tallence.core.redirects.studio.repository.RedirectRepository;
 
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * This class is used by the {@link RedirectRepository}
@@ -45,55 +44,40 @@ public class RedirectUpdateProperties {
     this.properties = properties;
   }
 
-  public Optional<Boolean> getActive() {
+  public Boolean getActive() {
     return getProperty(ACTIVE, Boolean.class);
   }
 
-  public Optional<SourceUrlType> getSourceUrlType() {
-    Optional<String> type = getProperty(SOURCE_URL_TYPE, String.class);
-    if (!type.isPresent()) {
-      return Optional.empty();
-    }
-    SourceUrlType sourceUrlType = SourceUrlType.asSourceUrlType(type.get());
-    if (sourceUrlType != null) {
-      return Optional.of(sourceUrlType);
-    }
-    return Optional.empty();
+  public SourceUrlType getSourceUrlType() {
+    return SourceUrlType.asSourceUrlType(getProperty(SOURCE_URL_TYPE, String.class));
   }
 
-  public Optional<String> getSource() {
+  public String getSource() {
     return getProperty(SOURCE, String.class);
   }
 
-  public Optional<Content> getTargetLink() {
+  public Content getTargetLink() {
     return getProperty(TARGET_LINK, Content.class);
   }
 
-  public Optional<RedirectType> getRedirectType() {
-    Optional<String> type = getProperty(REDIRECT_TYPE, String.class);
-    if (!type.isPresent()) {
-      return Optional.empty();
-    }
-    RedirectType redirectType = RedirectType.asRedirectType(type.get());
-    if (redirectType != null) {
-      return Optional.of(redirectType);
-    }
-    return Optional.empty();
+  public RedirectType getRedirectType() {
+    return RedirectType.asRedirectType(getProperty(REDIRECT_TYPE, String.class));
   }
 
-  public Optional<String> getDescription() {
+  public String getDescription() {
     return getProperty(DESCRIPTION, String.class);
   }
 
-  public Optional<Boolean> getImported() {
+  public Boolean getImported() {
     return getProperty(IMPORTED, Boolean.class);
   }
 
-  private <T> Optional<T> getProperty(String propertyName, Class<T> clazz) {
+  @SuppressWarnings("unchecked")
+  private <T> T getProperty(String propertyName, Class<T> clazz) {
     if (properties.containsKey(propertyName) && clazz.isInstance(properties.get(propertyName))) {
-      return Optional.of((T) properties.get(propertyName));
+      return (T) properties.get(propertyName);
     }
-    return Optional.empty();
+    return null;
   }
 
 }

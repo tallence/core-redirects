@@ -16,7 +16,6 @@
 
 package com.tallence.core.redirects.studio.repository;
 
-import com.coremedia.cap.user.User;
 import com.tallence.core.redirects.studio.model.Pageable;
 import com.tallence.core.redirects.studio.model.Redirect;
 import com.tallence.core.redirects.studio.model.RedirectUpdateProperties;
@@ -98,7 +97,7 @@ public interface RedirectRepository {
    */
   Pageable getRedirects(String siteId, String search, String sorter, String sortDirection, int pageSize, int page);
 
-  RedirectRights resolveRights(String siteId, User user);
+  RedirectRights resolveRights(String siteId);
 
   class RedirectRights {
     final boolean mayWrite;
