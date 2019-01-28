@@ -27,16 +27,16 @@ import com.tallence.core.redirects.model.SourceUrlType;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import static com.tallence.core.redirects.cae.model.Redirect.SOURCE_URL;
+import static com.tallence.core.redirects.cae.model.Redirect.TARGET_LINK;
 
 /**
  * CacheKey for RedirectEntries in a folder.
@@ -143,10 +143,36 @@ public class RedirectFolderCacheKey extends CacheKey<SiteRedirects> {
             .map(r -> "/" + r.getString("segment"))
             .map(String::toLowerCase);
     if (rootSegment.isPresent()) {
-      return redirectContents.stream().map(c -> new Redirect(c, rootSegment.get())).collect(Collectors.toList());
+      return redirectContents.stream()
+          .filter(this::validate)
+          .map(c -> new Redirect(c, rootSegment.get())).collect(Collectors.toList());
     }
     LOG.error("No root segment found for site [{}]", site.getId());
     return Collections.emptyList();
+  }
+
+  private boolean validate(Content redirect) {
+
+    String sourceUrl = redirect.getString(SOURCE_URL);
+    if (!StringUtils.hasText(sourceUrl)) {
+      LOG.warn("redirect [{}] has no valid sourceUrl [{}]", redirect.getId(), sourceUrl);
+      return false;
+    }
+
+    Content targetLink = redirect.getLink(TARGET_LINK);
+
+    if (targetLink == null) {
+      LOG.warn("redirect [{}] has no targetLink", redirect.getId());
+      return false;
+    }
+
+    Calendar now = Calendar.getInstance();
+
+    Calendar validFrom = targetLink.getDate("validFrom");
+    Calendar validTo = targetLink.getDate("validTo");
+
+    return (validFrom == null || validFrom.compareTo(now) <= 0)
+            && (validTo == null || validTo.compareTo(now) > 0);
   }
 
 

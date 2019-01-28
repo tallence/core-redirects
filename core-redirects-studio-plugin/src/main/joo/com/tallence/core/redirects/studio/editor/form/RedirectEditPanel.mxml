@@ -65,7 +65,9 @@
                forceSelection="true"
                triggerAction="all"
                editable="false"
-               store="{[ [RedirectImpl.REDIRECT_TYPE_ALWAYS, resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_type_value_0')], [RedirectImpl.REDIRECT_TYPE_404, resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_type_value_1')]]}">
+               store="{[ 
+               [RedirectImpl.REDIRECT_TYPE_404, resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_type_value_1')],
+               [RedirectImpl.REDIRECT_TYPE_ALWAYS, resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_type_value_0')]]}">
           <plugins>
             <ui:BindPropertyPlugin bidirectional="true"
                                    bindTo="{getBindTo(config.localModel, RedirectImpl.REDIRECT_TYPE)}"/>
