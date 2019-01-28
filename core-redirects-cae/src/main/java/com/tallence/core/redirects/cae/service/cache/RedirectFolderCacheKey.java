@@ -166,13 +166,7 @@ public class RedirectFolderCacheKey extends CacheKey<SiteRedirects> {
       return false;
     }
 
-    Calendar now = Calendar.getInstance();
-
-    Calendar validFrom = targetLink.getDate("validFrom");
-    Calendar validTo = targetLink.getDate("validTo");
-
-    return (validFrom == null || validFrom.compareTo(now) <= 0)
-            && (validTo == null || validTo.compareTo(now) > 0);
+    return true;
   }
 
 
