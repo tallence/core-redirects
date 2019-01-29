@@ -101,19 +101,19 @@ public interface RedirectRepository {
 
   class RedirectRights {
     final boolean mayWrite;
-    final boolean mayRegex;
+    final boolean mayUseRegex;
 
-    public RedirectRights(boolean mayWrite, boolean mayRegex) {
+    RedirectRights(boolean mayWrite, boolean mayUseRegex) {
       this.mayWrite = mayWrite;
-      this.mayRegex = mayRegex;
+      this.mayUseRegex = mayUseRegex;
     }
 
-    public boolean isMayWrite() {
+    boolean isMayWrite() {
       return mayWrite;
     }
 
-    public boolean isMayRegex() {
-      return mayRegex;
+    boolean isMayUseRegex() {
+      return mayUseRegex;
     }
   }
 }

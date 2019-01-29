@@ -74,7 +74,8 @@ public class RedirectRepositoryImpl implements RedirectRepository {
   private ContentType redirectContentType;
 
   @Autowired
-  public RedirectRepositoryImpl(SolrSearchService solrSearchService, ContentRepository contentRepository, SitesService sitesService, UserRepository userRepository) {
+  public RedirectRepositoryImpl(SolrSearchService solrSearchService, ContentRepository contentRepository,
+                                SitesService sitesService, UserRepository userRepository) {
     this.solrSearchService = solrSearchService;
     this.contentRepository = contentRepository;
     this.sitesService = sitesService;
@@ -88,7 +89,7 @@ public class RedirectRepositoryImpl implements RedirectRepository {
   public Redirect createRedirect(String siteId, RedirectUpdateProperties updateProperties) {
 
     RedirectRights redirectRights = resolveRights(siteId);
-    if (!redirectRights.isMayWrite() || isNotAllowedForRegex(redirectRights.isMayRegex(), updateProperties.getSourceUrlType())) {
+    if (!redirectRights.isMayWrite() || isNotAllowedForRegex(redirectRights.isMayUseRegex(), updateProperties.getSourceUrlType())) {
       throw new IllegalStateException("User has no rights to create a redirect in site " + siteId);
     }
 
@@ -244,8 +245,8 @@ public class RedirectRepositoryImpl implements RedirectRepository {
     }
   }
 
-  private boolean isNotAllowedForRegex(boolean mayRegex, SourceUrlType sourceType) {
-    return !mayRegex && SourceUrlType.REGEX.equals(sourceType);
+  private boolean isNotAllowedForRegex(boolean mayUseRegex, SourceUrlType sourceType) {
+    return !mayUseRegex && SourceUrlType.REGEX.equals(sourceType);
   }
 
   private boolean redirectAlreadyExists(String siteId, String redirectId, String source) {

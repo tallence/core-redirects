@@ -219,8 +219,7 @@ public class RedirectFilter implements Filter {
    * TODO Currently, this code always does a 301 with instant expiry. This should be made configurable.
    */
   private void sendPermanentRedirect(HttpServletRequest request, HttpServletResponse response, Redirect target) {
-    Content targetLink = target.getTarget();
-    if (targetLink == null) {
+    if (target.getTarget() == null) {
       LOG.error("Unable to redirect to empty string for redirect {}", target);
       return;
     }
@@ -234,7 +233,7 @@ public class RedirectFilter implements Filter {
     response.setHeader(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate");
     response.setHeader(HttpHeaders.PRAGMA, "no-cache");
     response.setDateHeader(HttpHeaders.EXPIRES, 0);
-    ContentBean targetBean = contentBeanFactory.createBeanFor(targetLink);
+    ContentBean targetBean = contentBeanFactory.createBeanFor(target.getTarget());
     response.setHeader(HttpHeaders.LOCATION, linkFormatter.formatLink(targetBean, null, request, response, true));
   }
 

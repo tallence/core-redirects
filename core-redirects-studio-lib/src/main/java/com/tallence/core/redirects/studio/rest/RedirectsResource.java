@@ -72,7 +72,7 @@ public class RedirectsResource extends AbstractLinkingResource {
   }
 
   @GET
-  @Path("rights")
+  @Path("permissions")
   public RedirectRepository.RedirectRights resolveRights() {
 
     return this.redirectRepository.resolveRights(getSiteId());

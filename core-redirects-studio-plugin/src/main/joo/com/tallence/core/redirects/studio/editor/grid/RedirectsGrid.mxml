@@ -33,7 +33,7 @@
     public var mayWriteVE:ValueExpression;
 
     [Bindable]
-    public var mayRegexVE:ValueExpression;
+    public var mayUseRegexVE:ValueExpression;
 
     [Bindable]
     public var siteIsNotSelectedVE:ValueExpression;

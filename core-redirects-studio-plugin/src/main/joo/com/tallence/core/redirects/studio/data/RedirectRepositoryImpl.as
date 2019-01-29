@@ -152,12 +152,12 @@ public class RedirectRepositoryImpl extends RemoteBeanImpl implements RedirectRe
     );
   }
 
-  public function resolveRights(siteId: String, callback: Function): void {
-    var rsm:RemoteServiceMethod = new RemoteServiceMethod(this.getUriPath() + "/" + siteId + "/rights", "GET", true);
+  public function resolvePermissions(siteId: String, callback: Function): void {
+    var rsm:RemoteServiceMethod = new RemoteServiceMethod(this.getUriPath() + "/" + siteId + "/permissions", "GET", true);
     rsm.request({},
         function success(rsmr:RemoteServiceMethodResponse):void {
-          var rightsResult:Object = JSON.decode(rsmr.response.responseText);
-          callback.call(this, rightsResult.mayWrite, rightsResult.mayRegex);
+          var permissionsResult:Object = JSON.decode(rsmr.response.responseText);
+          callback.call(this, permissionsResult.mayWrite, permissionsResult.mayUseRegex);
         }
     )
   }
