@@ -53,8 +53,10 @@ public class RedirectProxy extends DataProxy {
   }
 
   /**
-   * Loads all redirects for the given operation.
-   * @param operation the read operation
+   * The method is called by the redirects grid as soon as the search input changes, the selected page changes or the
+   * refresh button of the table is clicked.
+   *
+   * @param operation the read operation of the grid.
    */
   override public function read(operation:Operation):void {
     loadRedirects(operation as ReadOperation)
@@ -65,6 +67,13 @@ public class RedirectProxy extends DataProxy {
         });
   }
 
+  /**
+   * Converts the loaded {@link RedirectsResponse} into a {@link ResultSet}. The {@link ResultSet} is then used by the
+   * grid to update the grid store and the pageable /searchable toolbar.
+   *
+   * @param redirectsResponse the loaded response.
+   * @return The promise. Resolve method signature: <code>function(response:ResultSet):void</code>
+   */
   private function createResultSet(redirectsResponse:RedirectsResponse):IPromise {
     var recordType:Class = BeanRecord.create(RedirectImpl.REDIRECT_PROPERTIES, false);
 
@@ -79,6 +88,12 @@ public class RedirectProxy extends DataProxy {
     return Promise.resolve(resultSet);
   }
 
+  /**
+   * Loads all redirects for the given read operation.
+   * @param operation the read operation.
+   *
+   * @return The promise. Resolve method signature: <code>function(response:RedirectsResponse):void</code>
+   */
   protected function loadRedirects(operation:ReadOperation):IPromise {
     var siteId:String = selectedSiteVE.getValue();
     var searchText:String = searchFieldVE.getValue();

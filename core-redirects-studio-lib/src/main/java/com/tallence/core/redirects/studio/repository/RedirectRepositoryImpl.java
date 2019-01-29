@@ -152,8 +152,8 @@ public class RedirectRepositoryImpl implements RedirectRepository {
     for (int i = (page - 1) * pageSize; i < page * pageSize; i++) {
       if (i < hits.size()) {
         Content content = hits.get(i);
-        if (!content.isDeleted()) {
-          redirects.add(convertToRedirectRef(content));
+        if (!content.isInProduction()) {
+          redirects.add(convertToRedirect(content));
         }
       }
     }
@@ -242,7 +242,7 @@ public class RedirectRepositoryImpl implements RedirectRepository {
   private Redirect convertToRedirect(Content redirectEntry) {
     Site site = sitesService.getContentSiteAspect(redirectEntry).getSite();
     return new RedirectImpl(
-        String.valueOf(IdHelper.parseContentId(redirectEntry.getId())),
+        Integer.toString(IdHelper.parseContentId(redirectEntry.getId())),
         site != null ? site.getId() : null,
         publicationService.isPublished(redirectEntry),
         SourceUrlType.asSourceUrlType(redirectEntry.getString(SOURCE_URL_TYPE)),
@@ -253,10 +253,6 @@ public class RedirectRepositoryImpl implements RedirectRepository {
         redirectEntry.getString(DESCRIPTION),
         redirectEntry.getBoolean(IMPORTED)
     );
-  }
-
-  private Redirect convertToRedirectRef(Content redirectEntry) {
-    return new RedirectImpl(String.valueOf(IdHelper.parseContentId(redirectEntry.getId())));
   }
 
   /**

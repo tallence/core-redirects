@@ -36,6 +36,7 @@ public class RedirectImpl extends RemoteBeanImpl implements Redirect {
   public static const SOURCE_TYPE_PLAIN:String = "PLAIN";
   public static const SOURCE_TYPE_REGEX:String = "REGEX";
   public static const TARGET_LINK:String = "targetLink";
+  public static const TARGET_LINK_NAME:String = "targetLinkName";
   public static const DESCRIPTION:String = "description";
   public static const IMPORTED:String = "imported";
   public static const SITE_ID:String = "siteId";
@@ -52,6 +53,7 @@ public class RedirectImpl extends RemoteBeanImpl implements Redirect {
     SOURCE_TYPE_PLAIN,
     SOURCE_TYPE_REGEX,
     TARGET_LINK,
+    TARGET_LINK_NAME,
     DESCRIPTION,
     IMPORTED,
     SITE_ID
@@ -88,6 +90,14 @@ public class RedirectImpl extends RemoteBeanImpl implements Redirect {
 
   public function setTargetLink(content:Content):void {
     set(TARGET_LINK, content);
+  }
+
+  public function getTargetLinkName():String {
+    return get(TARGET_LINK_NAME);
+  }
+
+  public function setTargetLinkName(name:String):void {
+    set(TARGET_LINK_NAME, name);
   }
 
   public function getCreationDate():Date {

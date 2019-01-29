@@ -86,26 +86,15 @@ public class RedirectRepositoryImpl extends RemoteBeanImpl implements RedirectRe
     return PromiseUtil
         .invalidateRemoteBean(bean)
         .then(PromiseUtil.loadRemoteBean)
-        .then(createRedirectsResponse)
-        .then(loadRedirects);
+        .then(createRedirectsResponse);
   }
 
-  private function loadRedirects(response:RedirectsResponse):IPromise {
-    var redirects:Array = response.getRedirects();
-    return PromiseUtil.loadRemoteBeans(redirects)
-        .then(loadRedirectTargets)
-        .then(function (loaded:Array):IPromise {
-          return Promise.resolve(response);
-        });
-  }
-
-  private function loadRedirectTargets(redirects:Array):IPromise {
-    var targets:Array = redirects.map(function (redirect:Redirect):Content {
-      return redirect.getTargetLink();
-    });
-    return PromiseUtil.loadRemoteBeans(targets);
-  }
-
+  /**
+   * Converts the response of the remote bean request into a {@link RedirectsResponse}.
+   *
+   * @param remoteBean the loaded remote bean.
+   * @return The promise. Resolve method signature: <code>function(response:RedirectsResponse):void</code>
+   */
   private static function createRedirectsResponse(remoteBean:RemoteBean):IPromise {
     var response:RedirectsResponse = new RedirectsResponse(remoteBean.get("items"), remoteBean.get("total"));
     return Promise.resolve(response);

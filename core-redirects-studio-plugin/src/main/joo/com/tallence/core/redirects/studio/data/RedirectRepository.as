@@ -48,8 +48,9 @@ public interface RedirectRepository extends RemoteBean {
                           redirectType:String):void;
 
   /**
-   * Creates a promise that loads the redirects for the given site. As soon as all redirects and target links are
-   * loaded, the result is returned by the promise.
+   * Creates a promise that loads the redirects for the given site. As soon as all redirects are loaded, the result is
+   * returned by the promise. All redirect beans are already loaded. The beans of the redirect targets are not loaded
+   * and have to be loaded asynchronously if necessary.
    *
    * @param siteId the site id.
    * @param searchText the search text.
