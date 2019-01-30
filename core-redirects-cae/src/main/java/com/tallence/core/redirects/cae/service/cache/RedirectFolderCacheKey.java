@@ -136,6 +136,9 @@ public class RedirectFolderCacheKey extends CacheKey<SiteRedirects> {
       }
     });
 
+    LOG.debug("Finished loading [{}] static and [{}] dynamic redirects for folder [{}]",
+            result.getStaticRedirects().size(), result.getPatternRedirects().size(), redirectsFolder.getPath());
+
     return result;
   }
 
