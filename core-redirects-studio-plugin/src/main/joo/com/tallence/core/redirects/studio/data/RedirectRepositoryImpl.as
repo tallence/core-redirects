@@ -83,6 +83,11 @@ public class RedirectRepositoryImpl extends RemoteBeanImpl implements RedirectRe
     }
 
     var bean:RemoteBean = beanFactory.getRemoteBean(this.getUriPath() + "/" + siteId + getQueryParams(searchText, operation));
+
+    // A RemoteBean is used to load the redirects. Once a RemoteBean has been loaded, property data is cached. However,
+    // a new request should be sent to the server when the reload button of the grid is activated or after a redirect is
+    // created. To force reloading, the <code>invalidate()</code> method is used. The invalidation is also processed
+    // asynchronously, so that afterwards the remote bean can be reloaded.
     return PromiseUtil
         .invalidateRemoteBean(bean)
         .then(PromiseUtil.loadRemoteBean)
