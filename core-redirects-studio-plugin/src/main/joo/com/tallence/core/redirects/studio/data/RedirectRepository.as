@@ -19,6 +19,8 @@ import com.coremedia.cap.content.Content;
 import com.coremedia.cms.editor.sdk.upload.FileWrapper;
 import com.coremedia.ui.data.RemoteBean;
 
+import ext.IPromise;
+
 import ext.data.operation.ReadOperation;
 
 /**
@@ -46,14 +48,16 @@ public interface RedirectRepository extends RemoteBean {
                           redirectType:String):void;
 
   /**
-   * Returns the redirects for for the given site.
+   * Creates a promise that loads the redirects for the given site. As soon as all redirects are loaded, the result is
+   * returned by the promise. All redirect beans are already loaded. The beans of the redirect targets are not loaded
+   * and have to be loaded asynchronously if necessary.
    *
-   * @param siteId
-   * @param searchText
-   * @param operation
-   * @return an array of redirects.
+   * @param siteId the site id.
+   * @param searchText the search text.
+   * @param operation the read operation.
+   * @return The promise. Resolve method signature: <code>function(response:RedirectsResponse):void</code>
    */
-  function getRedirects(siteId:String, searchText:String, operation:ReadOperation):RedirectsResponse;
+  function getRedirects(siteId:String, searchText:String, operation:ReadOperation):IPromise;
 
   /**
    * Uploads a csv and imports all redirects.
@@ -69,23 +73,16 @@ public interface RedirectRepository extends RemoteBean {
                            error:Function):void;
 
   /**
-   * Validates the source property.
+   * Creates a promise that validates the returns a validation result.
    *
    * @param siteId the site id.
    * @param redirectId the redirect id.
    * @param source the source.
-   * @param callback callback funtion.
+   * @return The promise. Resolve method signature: <code>function(response:ValidationResponse):void</code>
    */
   function validateSource(siteId:String,
                           redirectId:String,
-                          source:String,
-                          callback:Function):void;
-
-  /**
-   * Invalidates the redirects {@link RemoteBean}. After the validation a new request is sent to the backend
-   * for the same search parameters.
-   */
-  function invalidateRedirects():void;
+                          source:String):IPromise;
 
   /**
    * Resolve the permissions for the redirects in the selected site.

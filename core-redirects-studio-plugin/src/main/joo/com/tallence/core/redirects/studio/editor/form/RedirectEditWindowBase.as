@@ -20,9 +20,12 @@ import com.coremedia.ui.data.Bean;
 import com.coremedia.ui.data.ValueExpression;
 import com.coremedia.ui.data.ValueExpressionFactory;
 import com.coremedia.ui.data.beanFactory;
+import com.coremedia.ui.data.error.RemoteError;
 import com.tallence.core.redirects.studio.data.Redirect;
 import com.tallence.core.redirects.studio.data.RedirectImpl;
 import com.tallence.core.redirects.studio.data.RedirectRepositoryImpl;
+import com.tallence.core.redirects.studio.data.ValidationResponse;
+import com.tallence.core.redirects.studio.util.NotificationUtil;
 
 import ext.window.Window;
 
@@ -52,12 +55,19 @@ public class RedirectEditWindowBase extends Window {
   private function sourcePropertyChanged():void {
     var siteId:String = redirect ? redirect.getSiteId() : selectedSiteIdVE.getValue();
     var redirectId:String = redirect ? redirect.getUriPath().replace("redirect/", "").replace(siteId + "/", "") : null;
-    RedirectRepositoryImpl.getInstance().validateSource(siteId, redirectId, getLocalModel().get(RedirectImpl.SOURCE), function (valid:Boolean, errorMessages:Array):void {
-      getIsValidSourceVE().setValue(valid);
-      getErrorMessagesVE().setValue(errorMessages.map(function (errorCode:String):String {
-        return ResourceManager.getInstance().getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_csvupload_import_error_' + errorCode);
-      }));
-    });
+    RedirectRepositoryImpl.getInstance().validateSource(siteId, redirectId, getLocalModel().get(RedirectImpl.SOURCE))
+        .then(handleValidationResponse, validationErrorHandler);
+  }
+
+  private function handleValidationResponse(response:ValidationResponse):void {
+    getIsValidSourceVE().setValue(response.isValid());
+    getErrorMessagesVE().setValue(response.getErrorCodes().map(function (errorCode:String):String {
+      return ResourceManager.getInstance().getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_csvupload_import_error_' + errorCode);
+    }));
+  }
+
+  private static function validationErrorHandler(error:RemoteError):void {
+    NotificationUtil.showError(ResourceManager.getInstance().getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_validation_error') + error);
   }
 
   /**

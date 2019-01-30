@@ -35,6 +35,10 @@ public interface Redirect extends RemoteBean {
 
   function setTargetLink(content:Content):void;
 
+  function getTargetLinkName():String;
+
+  function setTargetLinkName(name:String):void;
+
   function getCreationDate():Date;
 
   function setCreationDate(creationDate:Date):void;
