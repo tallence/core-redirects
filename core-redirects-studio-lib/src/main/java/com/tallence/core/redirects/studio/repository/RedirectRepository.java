@@ -99,20 +99,23 @@ public interface RedirectRepository {
 
   RedirectRights resolveRights(String siteId);
 
+  /**
+   * constructor and getters needs to be public for the json serializer.
+   */
   class RedirectRights {
     final boolean mayWrite;
     final boolean mayUseRegex;
 
-    RedirectRights(boolean mayWrite, boolean mayUseRegex) {
+    public RedirectRights(boolean mayWrite, boolean mayUseRegex) {
       this.mayWrite = mayWrite;
       this.mayUseRegex = mayUseRegex;
     }
 
-    boolean isMayWrite() {
+    public boolean isMayWrite() {
       return mayWrite;
     }
 
-    boolean isMayUseRegex() {
+    public boolean isMayUseRegex() {
       return mayUseRegex;
     }
   }

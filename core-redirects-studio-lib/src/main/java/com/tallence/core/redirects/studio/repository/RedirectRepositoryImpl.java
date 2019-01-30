@@ -99,7 +99,13 @@ public class RedirectRepositoryImpl implements RedirectRepository {
     }
     String uuid = UUID.randomUUID().toString();
     Content redirect = contentRepository.createChild(getFolderForRedirect(siteId, uuid), uuid, redirectContentType, new HashMap<>());
-    updateRedirect(redirect, false, updateProperties);
+    try {
+      updateRedirect(redirect, false, updateProperties);
+    } finally {
+      if (redirect.isCheckedOut()) {
+        redirect.checkIn();
+      }
+    }
     return convertToRedirect(redirect);
   }
 
@@ -202,7 +208,7 @@ public class RedirectRepositoryImpl implements RedirectRepository {
     for (int i = (page - 1) * pageSize; i < page * pageSize; i++) {
       if (i < hits.size()) {
         Content content = hits.get(i);
-        if (!content.isInProduction()) {
+        if (content.isInProduction()) {
           redirects.add(convertToRedirect(content));
         }
       }

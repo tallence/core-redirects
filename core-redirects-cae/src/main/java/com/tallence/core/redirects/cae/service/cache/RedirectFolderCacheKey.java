@@ -59,23 +59,27 @@ public class RedirectFolderCacheKey extends CacheKey<SiteRedirects> {
 
   // This query fetches all redirects below a specific folder
   private static final String FETCH_REDIRECTS_QUERY = "TYPE " + Redirect.NAME + ": isInProduction AND BELOW ?0";
+  private static final String FETCH_REDIRECTS_QUERY_DEVELOP = FETCH_REDIRECTS_QUERY + " LIMIT 50";
 
   private final QueryService queryService;
   private final ExecutorService redirectCacheKeyRecomputeThreadPool;
   private final String redirectsPath;
   private final Site site;
   private final boolean testmode;
+  private final boolean developerMode;
 
   RedirectFolderCacheKey(QueryService queryService,
                          ExecutorService redirectCacheKeyRecomputeThreadPool,
                          String redirectsPath,
                          Site site,
-                         boolean testmode) {
+                         boolean testmode,
+                         boolean developerMode) {
     this.queryService = queryService;
     this.redirectCacheKeyRecomputeThreadPool = redirectCacheKeyRecomputeThreadPool;
     this.redirectsPath = redirectsPath;
     this.site = site;
     this.testmode = testmode;
+    this.developerMode = developerMode;
   }
 
   @Override
@@ -115,9 +119,10 @@ public class RedirectFolderCacheKey extends CacheKey<SiteRedirects> {
     // In order to create dependencies on the redirects found, the conversion needs to happen after re-enabling the tracking.
     List<Redirect> redirectEntries = mapToRedirects(redirectContents, site);
 
-    // Also add dependency on the children of the config folder, so that this cache key gets invalidated if rules are
+    // Also add dependency on the children of the config folder (and subFolders), so that this cache key gets invalidated if rules are
     // added or removed.
-    Cache.dependencyOn("children:" + IdHelper.parseContentId(redirectsFolder.getId()));
+    dependencyOnFolder(redirectsFolder);
+    redirectsFolder.getSubfolders().forEach(this::dependencyOnFolder);
 
     // Collect and sort redirects by type
     final SiteRedirects result = new SiteRedirects(site.getId());
@@ -137,11 +142,18 @@ public class RedirectFolderCacheKey extends CacheKey<SiteRedirects> {
 
   // HELPER METHODS
 
+  private void dependencyOnFolder(Content redirectsFolder) {
+    Cache.dependencyOn("children:" + IdHelper.parseContentId(redirectsFolder.getId()));
+  }
+
   /**
    * Fetch all redirects in the given folder using the {@link com.coremedia.cap.content.query.QueryService}.
    */
   private @NonNull Collection<Content> fetchRedirectDocumentsFromFolder(@NonNull Content folder) {
-    return Optional.ofNullable(queryService.poseContentQuery(FETCH_REDIRECTS_QUERY, folder)).orElse(Collections.emptyList());
+
+    String query = developerMode ? FETCH_REDIRECTS_QUERY_DEVELOP : FETCH_REDIRECTS_QUERY;
+
+    return Optional.ofNullable(queryService.poseContentQuery(query, folder)).orElse(Collections.emptyList());
   }
 
   /**

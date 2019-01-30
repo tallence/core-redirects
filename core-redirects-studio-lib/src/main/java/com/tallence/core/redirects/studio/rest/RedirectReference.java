@@ -54,8 +54,8 @@ public class RedirectReference {
         this.redirectType = redirect.getRedirectType();
         this.source = redirect.getSource();
         this.sourceUrlType = redirect.getSourceUrlType();
-        this.targetLinkName = redirect.getTargetLink().getName();
         if (redirect.getTargetLink() != null) {
+            this.targetLinkName = redirect.getTargetLink().getName();
             this.targetLink = new TargetLink(redirect.getTargetLink());
         }
         this.description = redirect.getDescription();
