@@ -51,12 +51,6 @@ public class RedirectsGridBase extends GridPanel {
   public function RedirectsGridBase(config:RedirectsGrid = null) {
     super(config);
     addListener('rowDblclick', openEditWindow);
-
-    // force reload of redirects
-    var toolbar:PagingToolbar = queryById(TOOLBAR_ID) as PagingToolbar;
-    toolbar.on("beforechange", function (event:PagingToolbar_pageEvent):void {
-      RedirectRepositoryImpl.getInstance().invalidateRedirects();
-    });
   }
 
   /**
@@ -155,7 +149,6 @@ public class RedirectsGridBase extends GridPanel {
   }
 
   private function resetPage():void {
-    RedirectRepositoryImpl.getInstance().invalidateRedirects();
     getStore().loadPage(1);
   }
 

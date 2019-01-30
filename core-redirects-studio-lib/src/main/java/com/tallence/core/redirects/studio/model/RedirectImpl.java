@@ -38,6 +38,10 @@ public class RedirectImpl implements Redirect {
   private String description;
   private boolean isImported;
 
+  public RedirectImpl(String id) {
+    this.id = id;
+  }
+
   public RedirectImpl(String id, String siteId, boolean active, SourceUrlType sourceUrlType, String source, Date creationDate, Content targetLink, RedirectType redirectType, String description, boolean isImported) {
     this.id = id;
     this.siteId = siteId;
