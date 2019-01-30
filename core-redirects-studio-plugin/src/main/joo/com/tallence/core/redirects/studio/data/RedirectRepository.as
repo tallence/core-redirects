@@ -87,6 +87,6 @@ public interface RedirectRepository extends RemoteBean {
   /**
    * Resolve the permissions for the redirects in the selected site.
    */
-  function resolvePermissions(siteId: String, callback: Function): void;
+  function resolvePermissions(siteId: String): IPromise;
 }
 }

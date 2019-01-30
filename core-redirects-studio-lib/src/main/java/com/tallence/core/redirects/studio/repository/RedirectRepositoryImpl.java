@@ -372,22 +372,30 @@ public class RedirectRepositoryImpl implements RedirectRepository {
 
   private void updateProperty(Supplier<Object> supplier, String property, Content redirect) {
     Object value = supplier.get();
-    redirect.set(property, value);
+    if (value != null) {
+      redirect.set(property, value);
+    }
   }
 
   private void updateEnumProperty(Supplier<Object> supplier, String propertyName, Content redirect) {
     Object value = supplier.get();
-    redirect.set(propertyName, value != null ? value.toString() : null);
+    if (value != null) {
+      redirect.set(propertyName, value.toString());
+    }
   }
 
   private void updateLinkProperty(Supplier<Content> supplier, String propertyName, Content redirect) {
     Content value = supplier.get();
-    redirect.set(propertyName, value != null ? Collections.singletonList(value) : Collections.emptyList());
+    if (value != null) {
+      redirect.set(propertyName, Collections.singletonList(value));
+    }
   }
 
   private void updateBooleanProperty(Supplier<Boolean> supplier, String propertyName, Content redirect) {
     Boolean value = supplier.get();
-    redirect.set(propertyName, Boolean.TRUE.equals(value) ? 1 : 0);
+    if (value != null) {
+      redirect.set(propertyName, Boolean.TRUE.equals(value) ? 1 : 0);
+    }
   }
 
 }

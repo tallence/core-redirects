@@ -82,6 +82,17 @@ public class RedirectFolderCacheKey extends CacheKey<SiteRedirects> {
   public SiteRedirects evaluate(Cache cache) {
     LOG.debug("Evaluating redirect cache key for site {}", site);
 
+    try {
+      return computeInternal();
+    } catch (Exception e) {
+      LOG.error("Error during evaluating redirects for site [{}]. This should not happen, errors are supposed to be " +
+          "handled in \"computeInternal()\"", site.getId(), e);
+      return new SiteRedirects();
+    }
+  }
+
+  private SiteRedirects computeInternal() {
+
     // Disable dependency tracking for the folder resolution, as we add the necessary dependencies ourselve and we don't
     // want any folder deps.
     Cache.disableDependencies();
