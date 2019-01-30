@@ -132,7 +132,8 @@ public class RedirectFolderCacheKey extends CacheKey<SiteRedirects> {
       } else if (redirect.getSourceUrlType() == SourceUrlType.PLAIN) {
         result.addStaticRedirect(redirect);
       } else {
-        LOG.error("Unknown SourceUrlType in redirect {}, ignoring redirect", redirect);
+        LOG.error("Unknown SourceUrlType in redirect for source {} and target {}, ignoring redirect", redirect.getSource(),
+                Optional.ofNullable(redirect.getTarget()).map(Content::getId).orElse(""));
       }
     });
 
