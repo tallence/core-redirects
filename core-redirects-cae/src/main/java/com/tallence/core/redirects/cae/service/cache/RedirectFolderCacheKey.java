@@ -59,27 +59,23 @@ public class RedirectFolderCacheKey extends CacheKey<SiteRedirects> {
 
   // This query fetches all redirects below a specific folder
   private static final String FETCH_REDIRECTS_QUERY = "TYPE " + Redirect.NAME + ": isInProduction AND BELOW ?0";
-  private static final String FETCH_REDIRECTS_QUERY_DEVELOP = FETCH_REDIRECTS_QUERY + " LIMIT 50";
 
   private final ContentRepository contentRepository;
   private final ExecutorService redirectCacheKeyRecomputeThreadPool;
   private final String redirectsPath;
   private final Site site;
   private final boolean testmode;
-  private final boolean developerMode;
 
   RedirectFolderCacheKey(ContentRepository contentRepository,
                          ExecutorService redirectCacheKeyRecomputeThreadPool,
                          String redirectsPath,
                          Site site,
-                         boolean testmode,
-                         boolean developerMode) {
+                         boolean testmode) {
     this.contentRepository = contentRepository;
     this.redirectCacheKeyRecomputeThreadPool = redirectCacheKeyRecomputeThreadPool;
     this.redirectsPath = redirectsPath;
     this.site = site;
     this.testmode = testmode;
-    this.developerMode = developerMode;
   }
 
   @Override
@@ -158,9 +154,7 @@ public class RedirectFolderCacheKey extends CacheKey<SiteRedirects> {
    */
   private @NonNull Collection<Content> fetchRedirectDocumentsFromFolder(@NonNull Content folder) {
 
-    String query = developerMode ? FETCH_REDIRECTS_QUERY_DEVELOP : FETCH_REDIRECTS_QUERY;
-
-    return Optional.ofNullable(contentRepository.getQueryService().poseContentQuery(query, folder))
+    return Optional.ofNullable(contentRepository.getQueryService().poseContentQuery(FETCH_REDIRECTS_QUERY, folder))
             .orElse(Collections.emptyList());
   }
 

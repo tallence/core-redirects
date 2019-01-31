@@ -35,22 +35,19 @@ public class RedirectFolderCacheKeyFactory {
   private final ExecutorService redirectCacheKeyRecomputeThreadPool;
   private final String redirectsPath;
   private boolean testmode = false;
-  private boolean developerMode;
 
   @Autowired
   public RedirectFolderCacheKeyFactory(ContentRepository contentRepository,
                                        @Qualifier("getRedirectCacheKeyRecomputeThreadPool")
                                        ExecutorService redirectCacheKeyRecomputeThreadPool,
-                                       @Value("${core.redirects.path}") String redirectsPath,
-                                       @Value("${cae.developer.mode:false}") Boolean developerMode) {
+                                       @Value("${core.redirects.path}") String redirectsPath) {
     this.contentRepository = contentRepository;
     this.redirectCacheKeyRecomputeThreadPool = redirectCacheKeyRecomputeThreadPool;
     this.redirectsPath = redirectsPath;
-    this.developerMode = developerMode;
   }
 
   public RedirectFolderCacheKey getCacheKeyFor(@NonNull Site site) {
-    return new RedirectFolderCacheKey(contentRepository, redirectCacheKeyRecomputeThreadPool, redirectsPath, site, testmode, developerMode);
+    return new RedirectFolderCacheKey(contentRepository, redirectCacheKeyRecomputeThreadPool, redirectsPath, site, testmode);
   }
 
   // Enable testMode on cache keys
