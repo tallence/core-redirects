@@ -19,7 +19,7 @@ import com.coremedia.cache.Cache;
 import com.coremedia.cache.CacheKey;
 import com.coremedia.cap.common.IdHelper;
 import com.coremedia.cap.content.Content;
-import com.coremedia.cap.content.query.QueryService;
+import com.coremedia.cap.content.ContentRepository;
 import com.coremedia.cap.multisite.Site;
 import com.tallence.core.redirects.cae.model.Redirect;
 import com.tallence.core.redirects.cae.service.SiteRedirects;
@@ -61,20 +61,20 @@ public class RedirectFolderCacheKey extends CacheKey<SiteRedirects> {
   private static final String FETCH_REDIRECTS_QUERY = "TYPE " + Redirect.NAME + ": isInProduction AND BELOW ?0";
   private static final String FETCH_REDIRECTS_QUERY_DEVELOP = FETCH_REDIRECTS_QUERY + " LIMIT 50";
 
-  private final QueryService queryService;
+  private final ContentRepository contentRepository;
   private final ExecutorService redirectCacheKeyRecomputeThreadPool;
   private final String redirectsPath;
   private final Site site;
   private final boolean testmode;
   private final boolean developerMode;
 
-  RedirectFolderCacheKey(QueryService queryService,
+  RedirectFolderCacheKey(ContentRepository contentRepository,
                          ExecutorService redirectCacheKeyRecomputeThreadPool,
                          String redirectsPath,
                          Site site,
                          boolean testmode,
                          boolean developerMode) {
-    this.queryService = queryService;
+    this.contentRepository = contentRepository;
     this.redirectCacheKeyRecomputeThreadPool = redirectCacheKeyRecomputeThreadPool;
     this.redirectsPath = redirectsPath;
     this.site = site;
@@ -115,6 +115,9 @@ public class RedirectFolderCacheKey extends CacheKey<SiteRedirects> {
     Collection<Content> redirectContents = fetchRedirectDocumentsFromFolder(redirectsFolder);
     // Re-enable dependencies
     Cache.enableDependencies();
+
+    //Prefetch to get data with just one server call
+    contentRepository.prefetch(redirectContents);
 
     // In order to create dependencies on the redirects found, the conversion needs to happen after re-enabling the tracking.
     List<Redirect> redirectEntries = mapToRedirects(redirectContents, site);
@@ -157,7 +160,8 @@ public class RedirectFolderCacheKey extends CacheKey<SiteRedirects> {
 
     String query = developerMode ? FETCH_REDIRECTS_QUERY_DEVELOP : FETCH_REDIRECTS_QUERY;
 
-    return Optional.ofNullable(queryService.poseContentQuery(query, folder)).orElse(Collections.emptyList());
+    return Optional.ofNullable(contentRepository.getQueryService().poseContentQuery(query, folder))
+            .orElse(Collections.emptyList());
   }
 
   /**

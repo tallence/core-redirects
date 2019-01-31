@@ -16,7 +16,6 @@
 package com.tallence.core.redirects.cae.service.cache;
 
 import com.coremedia.cap.content.ContentRepository;
-import com.coremedia.cap.content.query.QueryService;
 import com.coremedia.cap.multisite.Site;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +31,7 @@ import java.util.concurrent.ExecutorService;
 @Service
 public class RedirectFolderCacheKeyFactory {
 
-  private final QueryService queryService;
+  private final ContentRepository contentRepository;
   private final ExecutorService redirectCacheKeyRecomputeThreadPool;
   private final String redirectsPath;
   private boolean testmode = false;
@@ -44,14 +43,14 @@ public class RedirectFolderCacheKeyFactory {
                                        ExecutorService redirectCacheKeyRecomputeThreadPool,
                                        @Value("${core.redirects.path}") String redirectsPath,
                                        @Value("${cae.developer.mode:false}") Boolean developerMode) {
-    this.queryService = contentRepository.getQueryService();
+    this.contentRepository = contentRepository;
     this.redirectCacheKeyRecomputeThreadPool = redirectCacheKeyRecomputeThreadPool;
     this.redirectsPath = redirectsPath;
     this.developerMode = developerMode;
   }
 
   public RedirectFolderCacheKey getCacheKeyFor(@NonNull Site site) {
-    return new RedirectFolderCacheKey(queryService, redirectCacheKeyRecomputeThreadPool, redirectsPath, site, testmode, developerMode);
+    return new RedirectFolderCacheKey(contentRepository, redirectCacheKeyRecomputeThreadPool, redirectsPath, site, testmode, developerMode);
   }
 
   // Enable testMode on cache keys
