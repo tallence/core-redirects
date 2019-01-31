@@ -20,10 +20,15 @@ import com.coremedia.cap.common.IdHelper;
 import com.coremedia.cap.content.Content;
 import com.coremedia.cap.content.ContentRepository;
 import com.coremedia.cap.content.ContentType;
+import com.coremedia.cap.content.authorization.AccessControl;
+import com.coremedia.cap.content.authorization.Right;
 import com.coremedia.cap.content.publication.PublicationHelper;
 import com.coremedia.cap.content.publication.PublicationService;
 import com.coremedia.cap.multisite.Site;
 import com.coremedia.cap.multisite.SitesService;
+import com.coremedia.cap.springframework.security.impl.CapUserDetails;
+import com.coremedia.cap.user.User;
+import com.coremedia.cap.user.UserRepository;
 import com.coremedia.rest.cap.content.search.SearchServiceResult;
 import com.coremedia.rest.cap.content.search.solr.SolrSearchService;
 import com.tallence.core.redirects.model.RedirectType;
@@ -37,6 +42,7 @@ import org.apache.solr.client.solrj.util.ClientUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -63,28 +69,43 @@ public class RedirectRepositoryImpl implements RedirectRepository {
   private final ContentRepository contentRepository;
   private final PublicationHelper publicationHelper;
   private final PublicationService publicationService;
+  private final UserRepository userRepository;
 
   private ContentType redirectContentType;
 
   @Autowired
-  public RedirectRepositoryImpl(SolrSearchService solrSearchService, ContentRepository contentRepository, SitesService sitesService) {
+  public RedirectRepositoryImpl(SolrSearchService solrSearchService, ContentRepository contentRepository,
+                                SitesService sitesService, UserRepository userRepository) {
     this.solrSearchService = solrSearchService;
     this.contentRepository = contentRepository;
     this.sitesService = sitesService;
     redirectContentType = contentRepository.getContentType("Redirect");
     this.publicationService = contentRepository.getPublicationService();
     this.publicationHelper = new PublicationHelper(contentRepository);
+    this.userRepository = userRepository;
   }
 
   @Override
   public Redirect createRedirect(String siteId, RedirectUpdateProperties updateProperties) {
-    Optional<String> source = updateProperties.getSource();
-    if (source.isPresent() && redirectAlreadyExists(siteId, source.get())) {
+
+    RedirectRights redirectRights = resolveRights(siteId);
+    if (!redirectRights.isMayWrite() || isNotAllowedForRegex(redirectRights.isMayUseRegex(), updateProperties.getSourceUrlType())) {
+      throw new IllegalStateException("User has no rights to create a redirect in site " + siteId);
+    }
+
+    String source = updateProperties.getSource();
+    if (redirectAlreadyExists(siteId, source)) {
       throw new IllegalArgumentException("duplicated source url");
     }
     String uuid = UUID.randomUUID().toString();
     Content redirect = contentRepository.createChild(getFolderForRedirect(siteId, uuid), uuid, redirectContentType, new HashMap<>());
-    updateRedirect(redirect, false, updateProperties);
+    try {
+      updateRedirect(redirect, false, updateProperties);
+    } finally {
+      if (redirect.isCheckedOut()) {
+        redirect.checkIn();
+      }
+    }
     return convertToRedirect(redirect);
   }
 
@@ -116,6 +137,16 @@ public class RedirectRepositoryImpl implements RedirectRepository {
       LOG.error("Content {} is checked out by other user, could not update redirect", redirect.getId());
       throw new IllegalArgumentException("Redirect is checked out by other user.");
     }
+
+    //Only admins may edit regex redirects
+    boolean administrator = isAdministrator();
+    if (!mayWrite(redirect) ||
+        isNotAllowedForRegex(administrator, updateProperties.getSourceUrlType()) ||
+        isNotAllowedForRegex(administrator, SourceUrlType.asSourceUrlType(redirect.getString(SOURCE_URL_TYPE)))) {
+      throw new IllegalStateException("User has no rights to modify the redirect " + redirect.getId());
+    }
+
+
     try {
       if (redirect.isCheckedIn()) {
         redirect.checkOut();
@@ -138,11 +169,30 @@ public class RedirectRepositoryImpl implements RedirectRepository {
     if (redirect.isCheckedOut()) {
       redirect.checkIn();
     }
+
+    //Only admins may edit regex redirects
+    boolean administrator = isAdministrator();
+    if (!mayDelete(redirect) ||
+        isNotAllowedForRegex(administrator, SourceUrlType.asSourceUrlType(redirect.getString(SOURCE_URL_TYPE)))) {
+      throw new IllegalStateException("User has no rights to delete the redirect " + redirect.getId());
+    }
+
+    if (publicationService.isPublished(redirect)) {
+      publicationHelper.withdraw(redirect);
+    }
+
     redirect.delete();
   }
 
   @Override
   public Pageable getRedirects(String siteId, String search, String sorter, String sortDirection, int pageSize, int page) {
+
+    boolean mayRead = contentRepository.getAccessControl()
+        .mayPerform(getRedirectsFolder(siteId), this.redirectContentType, Right.READ);
+    if (!mayRead) {
+      return new Pageable(Collections.emptyList(), 0);
+    }
+
     String query = StringUtils.isEmpty(StringUtils.trim(search)) ? "source:*" : "source:*" + ClientUtils.escapeQueryChars(StringUtils.trim(search)) + "*";
 
     List<String> sortCriteria;
@@ -158,13 +208,54 @@ public class RedirectRepositoryImpl implements RedirectRepository {
     for (int i = (page - 1) * pageSize; i < page * pageSize; i++) {
       if (i < hits.size()) {
         Content content = hits.get(i);
-        if (!content.isInProduction()) {
+        if (content.isInProduction()) {
           redirects.add(convertToRedirect(content));
         }
       }
     }
 
     return new Pageable(redirects, Math.toIntExact(result.getTotal()));
+  }
+
+  public RedirectRights resolveRights(String siteId) {
+
+    Content redirectsFolder = getRedirectsFolder(siteId);
+
+    return new RedirectRights(mayWrite(redirectsFolder), isAdministrator());
+  }
+
+  private boolean isAdministrator() {
+    User user = userRepository.getUser(getUserId());
+    if (user == null) {
+      throw new IllegalStateException("No user could be found");
+    }
+
+    return user.isAdministrative();
+  }
+
+  private boolean mayDelete(Content redirect) {
+    AccessControl accessControl = contentRepository.getAccessControl();
+    return accessControl.mayPerform(redirect, this.redirectContentType, Right.DELETE) &&
+        accessControl.mayPerform(redirect, this.redirectContentType, Right.PUBLISH);
+  }
+
+  private boolean mayWrite(Content redirect) {
+    AccessControl accessControl = contentRepository.getAccessControl();
+    return accessControl.mayPerform(redirect, this.redirectContentType, Right.WRITE) &&
+        accessControl.mayPerform(redirect, this.redirectContentType, Right.PUBLISH);
+  }
+
+  private String getUserId() {
+    Object user = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    if (user instanceof CapUserDetails) {
+      return ((CapUserDetails) user).getUserId();
+    } else {
+      throw new IllegalStateException("Could not get userId from authenticated user.");
+    }
+  }
+
+  private boolean isNotAllowedForRegex(boolean mayUseRegex, SourceUrlType sourceType) {
+    return !mayUseRegex && SourceUrlType.REGEX.equals(sourceType);
   }
 
   private boolean redirectAlreadyExists(String siteId, String redirectId, String source) {
@@ -276,40 +367,40 @@ public class RedirectRepositoryImpl implements RedirectRepository {
     updateEnumProperty(updateProperties::getRedirectType, REDIRECT_TYPE, redirect);
     updateEnumProperty(updateProperties::getSourceUrlType, SOURCE_URL_TYPE, redirect);
 
-    Optional<Boolean> active = updateProperties.getActive();
-    if (active.isPresent()) {
+    Boolean active = updateProperties.getActive();
+    if (active != null) {
       // if active is set to false, the redirect must be withdrawn
-      publicationHelper.publish(redirect, active.get());
+      publicationHelper.publish(redirect, active);
     } else if (wasPublished) {
       publicationHelper.publish(redirect);
     }
   }
 
-  private void updateProperty(Supplier<Optional> supplier, String property, Content redirect) {
-    Optional value = supplier.get();
-    if (value.isPresent()) {
-      redirect.set(property, value.get());
+  private void updateProperty(Supplier<Object> supplier, String property, Content redirect) {
+    Object value = supplier.get();
+    if (value != null) {
+      redirect.set(property, value);
     }
   }
 
-  private void updateEnumProperty(Supplier<Optional> supplier, String propertyName, Content redirect) {
-    Optional value = supplier.get();
-    if (value.isPresent()) {
-      redirect.set(propertyName, value.get().toString());
+  private void updateEnumProperty(Supplier<Object> supplier, String propertyName, Content redirect) {
+    Object value = supplier.get();
+    if (value != null) {
+      redirect.set(propertyName, value.toString());
     }
   }
 
-  private void updateLinkProperty(Supplier<Optional> supplier, String propertyName, Content redirect) {
-    Optional value = supplier.get();
-    if (value.isPresent()) {
-      redirect.set(propertyName, Collections.singletonList(value.get()));
+  private void updateLinkProperty(Supplier<Content> supplier, String propertyName, Content redirect) {
+    Content value = supplier.get();
+    if (value != null) {
+      redirect.set(propertyName, Collections.singletonList(value));
     }
   }
 
-  private void updateBooleanProperty(Supplier<Optional> supplier, String propertyName, Content redirect) {
-    Optional value = supplier.get();
-    if (value.isPresent()) {
-      redirect.set(propertyName, value.get().equals(true) ? 1 : 0);
+  private void updateBooleanProperty(Supplier<Boolean> supplier, String propertyName, Content redirect) {
+    Boolean value = supplier.get();
+    if (value != null) {
+      redirect.set(propertyName, Boolean.TRUE.equals(value) ? 1 : 0);
     }
   }
 

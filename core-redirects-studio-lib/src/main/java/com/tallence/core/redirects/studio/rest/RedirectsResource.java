@@ -71,6 +71,14 @@ public class RedirectsResource extends AbstractLinkingResource {
     return response;
   }
 
+  @GET
+  @Path("permissions")
+  public RedirectRepository.RedirectRights resolveRights() {
+
+    return this.redirectRepository.resolveRights(getSiteId());
+
+  }
+
   @POST
   @Path("create")
   @Consumes({"application/json"})

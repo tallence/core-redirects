@@ -97,4 +97,26 @@ public interface RedirectRepository {
    */
   Pageable getRedirects(String siteId, String search, String sorter, String sortDirection, int pageSize, int page);
 
+  RedirectRights resolveRights(String siteId);
+
+  /**
+   * constructor and getters needs to be public for the json serializer.
+   */
+  class RedirectRights {
+    final boolean mayWrite;
+    final boolean mayUseRegex;
+
+    public RedirectRights(boolean mayWrite, boolean mayUseRegex) {
+      this.mayWrite = mayWrite;
+      this.mayUseRegex = mayUseRegex;
+    }
+
+    public boolean isMayWrite() {
+      return mayWrite;
+    }
+
+    public boolean isMayUseRegex() {
+      return mayUseRegex;
+    }
+  }
 }

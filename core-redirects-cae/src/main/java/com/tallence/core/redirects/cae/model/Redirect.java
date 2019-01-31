@@ -28,10 +28,10 @@ import java.util.Objects;
 public class Redirect {
 
   public static final String NAME = "Redirect";
+  public static final String TARGET_LINK = "targetLink";
+  public static final String SOURCE_URL = "source";
 
   private static final String SOURCE_URL_TYPE = "sourceUrlType";
-  private static final String SOURCE_URL = "source";
-  private static final String TARGET_LINK = "targetLink";
   private static final String REDIRECT_TYPE = "redirectType";
 
   private final SourceUrlType sourceUrlType;

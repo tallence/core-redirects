@@ -154,6 +154,10 @@ public class RedirectRepositoryImpl extends RemoteBeanImpl implements RedirectRe
     return PromiseUtil.getRequest(this.getUriPath() + url, {}, ValidationResponse);
   }
 
+  public function resolvePermissions(siteId: String): IPromise {
+    return PromiseUtil.getRequest(this.getUriPath() + "/" + siteId + "/permissions", {}, PermissionResponse);
+  }
+
   private static function getQueryParams(searchText:String, operation:ReadOperation):String {
     var limit:String = operation.getLimit().toString();
     var page:String = operation.getPage().toString();

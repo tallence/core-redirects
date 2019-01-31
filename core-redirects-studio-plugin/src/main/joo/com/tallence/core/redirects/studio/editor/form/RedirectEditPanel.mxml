@@ -29,6 +29,9 @@
 
     [Bindable]
     public var errorMessagesVE:ValueExpression;
+
+    [Bindable]
+    public var mayUseRegexVE:ValueExpression;
     ]]>
   </fx:Script>
   <local:items>
@@ -62,7 +65,9 @@
                forceSelection="true"
                triggerAction="all"
                editable="false"
-               store="{[ [RedirectImpl.REDIRECT_TYPE_ALWAYS, resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_type_value_0')], [RedirectImpl.REDIRECT_TYPE_404, resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_type_value_1')]]}">
+               store="{[ 
+               [RedirectImpl.REDIRECT_TYPE_404, resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_type_value_1')],
+               [RedirectImpl.REDIRECT_TYPE_ALWAYS, resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_type_value_0')]]}">
           <plugins>
             <ui:BindPropertyPlugin bidirectional="true"
                                    bindTo="{getBindTo(config.localModel, RedirectImpl.REDIRECT_TYPE)}"/>
@@ -112,6 +117,11 @@
             <Radio inputValue="{RedirectImpl.SOURCE_TYPE_REGEX}"
                    boxLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_sourceType_regex')}"/>
           </ui:items>
+          <ui:plugins>
+            <ui:BindPropertyPlugin componentProperty="disabled"
+                                   transformer="{function(value: Boolean): Boolean {return !value;}}"
+                                   bindTo="{config.mayUseRegexVE}"/>
+          </ui:plugins>
         </ui:BoundRadioGroup>
 
         <editor:FormSpacerElement height="10px"/>

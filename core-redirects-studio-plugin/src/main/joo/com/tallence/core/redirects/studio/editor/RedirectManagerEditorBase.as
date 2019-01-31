@@ -19,6 +19,8 @@ import com.coremedia.cms.editor.sdk.editorContext;
 import com.coremedia.cms.editor.sdk.sites.Site;
 import com.coremedia.ui.data.ValueExpression;
 import com.coremedia.ui.data.ValueExpressionFactory;
+import com.tallence.core.redirects.studio.data.PermissionResponse;
+import com.tallence.core.redirects.studio.data.RedirectRepositoryImpl;
 import com.tallence.core.redirects.studio.editor.form.RedirectEditWindow;
 import com.tallence.core.redirects.studio.editor.upload.RedirectUploadWindow;
 
@@ -32,9 +34,28 @@ public class RedirectManagerEditorBase extends Panel {
   protected static const ID:String = "redirectManagerEditor";
 
   private var selectedSiteVE:ValueExpression;
+  private var mayWriteVE:ValueExpression;
+  private var mayUseRegexVE:ValueExpression;
 
   public function RedirectManagerEditorBase(config:RedirectManagerEditor = null) {
     super(config);
+
+    getSelectedSiteVE().addChangeListener(resolveRights);
+    //Call it in case the site is already selected
+    resolveRights();
+  }
+
+  private function resolveRights(): void {
+    var siteId:* = getSelectedSiteVE().getValue();
+
+    //In case the request takes long or fails, the user has no rights
+    getMayWriteVE().setValue(false);
+    getMayUseRegexVE().setValue(false);
+
+    RedirectRepositoryImpl.getInstance().resolvePermissions(siteId).then(function(response: PermissionResponse): void {
+      getMayWriteVE().setValue(response.isMayWrite());
+      getMayUseRegexVE().setValue(response.isMayUseRegex());
+    });
   }
 
   public static function getInstance():RedirectManagerEditor {
@@ -44,7 +65,8 @@ public class RedirectManagerEditorBase extends Panel {
   protected function createRedirect():void {
     var window:RedirectEditWindow = new RedirectEditWindow(RedirectEditWindow({
       title: resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_new_text'),
-      selectedSiteIdVE: getSelectedSiteVE()
+      selectedSiteIdVE: getSelectedSiteVE(),
+      mayUseRegexVE: this.mayUseRegexVE
     }));
     window.show();
   }
@@ -68,6 +90,20 @@ public class RedirectManagerEditorBase extends Panel {
       selectedSiteVE = ValueExpressionFactory.createFromValue(preferredSite ? preferredSite.getId() : "");
     }
     return selectedSiteVE;
+  }
+
+  protected function getMayWriteVE():ValueExpression {
+    if (!mayWriteVE) {
+      mayWriteVE = ValueExpressionFactory.createFromValue(false);
+    }
+    return mayWriteVE;
+  }
+
+  protected function getMayUseRegexVE():ValueExpression {
+    if (!mayUseRegexVE) {
+      mayUseRegexVE = ValueExpressionFactory.createFromValue(false);
+    }
+    return mayUseRegexVE;
   }
 
   protected function getSiteIsNotSelectedVE():ValueExpression {

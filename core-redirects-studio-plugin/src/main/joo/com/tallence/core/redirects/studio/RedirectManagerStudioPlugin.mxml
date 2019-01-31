@@ -24,7 +24,7 @@
             <editor:plugins>
                 <editor:AddTabbedDocumentFormsPlugin>
                     <editor:documentTabPanels>
-                        <redirect:RedirectForm itemId="RedirectEntry"/>
+                        <redirect:RedirectForm itemId="Redirect"/>
                     </editor:documentTabPanels>
                 </editor:AddTabbedDocumentFormsPlugin>
             </editor:plugins>

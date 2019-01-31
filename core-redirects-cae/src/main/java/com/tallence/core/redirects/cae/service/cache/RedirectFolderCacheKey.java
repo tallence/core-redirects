@@ -27,16 +27,16 @@ import com.tallence.core.redirects.model.SourceUrlType;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import static com.tallence.core.redirects.cae.model.Redirect.SOURCE_URL;
+import static com.tallence.core.redirects.cae.model.Redirect.TARGET_LINK;
 
 /**
  * CacheKey for RedirectEntries in a folder.
@@ -59,28 +59,43 @@ public class RedirectFolderCacheKey extends CacheKey<SiteRedirects> {
 
   // This query fetches all redirects below a specific folder
   private static final String FETCH_REDIRECTS_QUERY = "TYPE " + Redirect.NAME + ": isInProduction AND BELOW ?0";
+  private static final String FETCH_REDIRECTS_QUERY_DEVELOP = FETCH_REDIRECTS_QUERY + " LIMIT 50";
 
   private final QueryService queryService;
   private final ExecutorService redirectCacheKeyRecomputeThreadPool;
   private final String redirectsPath;
   private final Site site;
   private final boolean testmode;
+  private final boolean developerMode;
 
   RedirectFolderCacheKey(QueryService queryService,
                          ExecutorService redirectCacheKeyRecomputeThreadPool,
                          String redirectsPath,
                          Site site,
-                         boolean testmode) {
+                         boolean testmode,
+                         boolean developerMode) {
     this.queryService = queryService;
     this.redirectCacheKeyRecomputeThreadPool = redirectCacheKeyRecomputeThreadPool;
     this.redirectsPath = redirectsPath;
     this.site = site;
     this.testmode = testmode;
+    this.developerMode = developerMode;
   }
 
   @Override
   public SiteRedirects evaluate(Cache cache) {
     LOG.debug("Evaluating redirect cache key for site {}", site);
+
+    try {
+      return computeInternal();
+    } catch (Exception e) {
+      LOG.error("Error during evaluating redirects for site [{}]. This should not happen, errors are supposed to be " +
+          "handled in \"computeInternal()\"", site.getId(), e);
+      return new SiteRedirects();
+    }
+  }
+
+  private SiteRedirects computeInternal() {
 
     // Disable dependency tracking for the folder resolution, as we add the necessary dependencies ourselve and we don't
     // want any folder deps.
@@ -104,9 +119,10 @@ public class RedirectFolderCacheKey extends CacheKey<SiteRedirects> {
     // In order to create dependencies on the redirects found, the conversion needs to happen after re-enabling the tracking.
     List<Redirect> redirectEntries = mapToRedirects(redirectContents, site);
 
-    // Also add dependency on the children of the config folder, so that this cache key gets invalidated if rules are
+    // Also add dependency on the children of the config folder (and subFolders), so that this cache key gets invalidated if rules are
     // added or removed.
-    Cache.dependencyOn("children:" + IdHelper.parseContentId(redirectsFolder.getId()));
+    dependencyOnFolder(redirectsFolder);
+    redirectsFolder.getSubfolders().forEach(this::dependencyOnFolder);
 
     // Collect and sort redirects by type
     final SiteRedirects result = new SiteRedirects(site.getId());
@@ -116,9 +132,13 @@ public class RedirectFolderCacheKey extends CacheKey<SiteRedirects> {
       } else if (redirect.getSourceUrlType() == SourceUrlType.PLAIN) {
         result.addStaticRedirect(redirect);
       } else {
-        LOG.error("Unknown SourceUrlType in redirect {}, ignoring redirect", redirect);
+        LOG.error("Unknown SourceUrlType in redirect for source {} and target {}, ignoring redirect", redirect.getSource(),
+                Optional.ofNullable(redirect.getTarget()).map(Content::getId).orElse(""));
       }
     });
+
+    LOG.debug("Finished loading [{}] static and [{}] dynamic redirects for folder [{}]",
+            result.getStaticRedirects().size(), result.getPatternRedirects().size(), redirectsFolder.getPath());
 
     return result;
   }
@@ -126,11 +146,18 @@ public class RedirectFolderCacheKey extends CacheKey<SiteRedirects> {
 
   // HELPER METHODS
 
+  private void dependencyOnFolder(Content redirectsFolder) {
+    Cache.dependencyOn("children:" + IdHelper.parseContentId(redirectsFolder.getId()));
+  }
+
   /**
    * Fetch all redirects in the given folder using the {@link com.coremedia.cap.content.query.QueryService}.
    */
   private @NonNull Collection<Content> fetchRedirectDocumentsFromFolder(@NonNull Content folder) {
-    return Optional.ofNullable(queryService.poseContentQuery(FETCH_REDIRECTS_QUERY, folder)).orElse(Collections.emptyList());
+
+    String query = developerMode ? FETCH_REDIRECTS_QUERY_DEVELOP : FETCH_REDIRECTS_QUERY;
+
+    return Optional.ofNullable(queryService.poseContentQuery(query, folder)).orElse(Collections.emptyList());
   }
 
   /**
@@ -143,10 +170,30 @@ public class RedirectFolderCacheKey extends CacheKey<SiteRedirects> {
             .map(r -> "/" + r.getString("segment"))
             .map(String::toLowerCase);
     if (rootSegment.isPresent()) {
-      return redirectContents.stream().map(c -> new Redirect(c, rootSegment.get())).collect(Collectors.toList());
+      return redirectContents.stream()
+          .filter(this::validate)
+          .map(c -> new Redirect(c, rootSegment.get())).collect(Collectors.toList());
     }
     LOG.error("No root segment found for site [{}]", site.getId());
     return Collections.emptyList();
+  }
+
+  private boolean validate(Content redirect) {
+
+    String sourceUrl = redirect.getString(SOURCE_URL);
+    if (!StringUtils.hasText(sourceUrl)) {
+      LOG.warn("redirect [{}] has no valid sourceUrl [{}]", redirect.getId(), sourceUrl);
+      return false;
+    }
+
+    Content targetLink = redirect.getLink(TARGET_LINK);
+
+    if (targetLink == null) {
+      LOG.warn("redirect [{}] has no targetLink", redirect.getId());
+      return false;
+    }
+
+    return true;
   }
 
 

@@ -17,6 +17,7 @@ package com.tallence.core.redirects.cae.filter;
 
 import com.coremedia.blueprint.base.multisite.SiteHelper;
 import com.coremedia.blueprint.base.multisite.cae.SiteResolver;
+import com.coremedia.cap.content.Content;
 import com.coremedia.cap.multisite.Site;
 import com.coremedia.objectserver.beans.ContentBean;
 import com.coremedia.objectserver.beans.ContentBeanFactory;
@@ -43,6 +44,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -204,6 +206,11 @@ public class RedirectFilter implements Filter {
       }
       redirect = redirects.getStaticRedirects().get(pathInfo);
     }
+
+    if (redirect != null && isTargetInvalid(redirect.getTarget())) {
+      return null;
+    }
+
     return redirect;
   }
 
@@ -214,7 +221,7 @@ public class RedirectFilter implements Filter {
   private void sendPermanentRedirect(HttpServletRequest request, HttpServletResponse response, Redirect target) {
     if (target.getTarget() == null) {
       LOG.error("Unable to redirect to empty string for redirect {}", target);
-      throw new RedirectConfigurationException("Unable to redirect to empty string");
+      return;
     }
 
     LOG.debug("Redirecting to {}", target);
@@ -228,6 +235,16 @@ public class RedirectFilter implements Filter {
     response.setDateHeader(HttpHeaders.EXPIRES, 0);
     ContentBean targetBean = contentBeanFactory.createBeanFor(target.getTarget());
     response.setHeader(HttpHeaders.LOCATION, linkFormatter.formatLink(targetBean, null, request, response, true));
+  }
+
+  private boolean isTargetInvalid(Content targetLink) {
+    Calendar now = Calendar.getInstance();
+    Calendar validFrom = targetLink.getDate("validFrom");
+    if (validFrom != null && validFrom.after(now)) {
+      return true;
+    }
+    Calendar validTo = targetLink.getDate("validTo");
+    return validTo != null && validTo.before(now);
   }
 
   /**
