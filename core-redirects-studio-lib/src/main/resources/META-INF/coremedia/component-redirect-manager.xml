@@ -11,5 +11,6 @@
   <bean id="redirect" class="com.tallence.core.redirects.studio.rest.RedirectResource" scope="prototype"/>
   <bean id="redirectRepository" class="com.tallence.core.redirects.studio.repository.RedirectRepositoryImpl"/>
   <bean id="redirectImporter" class="com.tallence.core.redirects.studio.service.RedirectImporter"/>
+  <bean id="redirectPermissionService" class="com.tallence.core.redirects.studio.service.RedirectPermissionServiceImpl"/>
 
 </beans>

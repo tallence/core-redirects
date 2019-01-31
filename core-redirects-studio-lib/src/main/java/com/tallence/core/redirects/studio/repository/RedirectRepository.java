@@ -16,6 +16,7 @@
 
 package com.tallence.core.redirects.studio.repository;
 
+import com.coremedia.cap.content.Content;
 import com.tallence.core.redirects.studio.model.Pageable;
 import com.tallence.core.redirects.studio.model.Redirect;
 import com.tallence.core.redirects.studio.model.RedirectUpdateProperties;
@@ -97,26 +98,11 @@ public interface RedirectRepository {
    */
   Pageable getRedirects(String siteId, String search, String sorter, String sortDirection, int pageSize, int page);
 
-  RedirectRights resolveRights(String siteId);
-
   /**
-   * constructor and getters needs to be public for the json serializer.
+   * Returns redirects root folder for the given site. If no site is found, the root folder is used as fallback folder.
+   *
+   * @param siteId the site id
+   * @return the folder containing all redirects for the given site
    */
-  class RedirectRights {
-    final boolean mayWrite;
-    final boolean mayUseRegex;
-
-    public RedirectRights(boolean mayWrite, boolean mayUseRegex) {
-      this.mayWrite = mayWrite;
-      this.mayUseRegex = mayUseRegex;
-    }
-
-    public boolean isMayWrite() {
-      return mayWrite;
-    }
-
-    public boolean isMayUseRegex() {
-      return mayUseRegex;
-    }
-  }
+  Content getRedirectsRootFolder(String siteId);
 }
