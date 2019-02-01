@@ -21,9 +21,9 @@ public class PermissionResponse {
   private var mayWrite:Boolean;
   private var mayUseRegex:Boolean;
 
-  public function PermissionResponse(jsonResponse:Object) {
-    this.mayWrite = jsonResponse.mayWrite;
-    this.mayUseRegex = jsonResponse.mayUseRegex;
+  public function PermissionResponse(jsonResponse:Object = null) {
+    this.mayWrite = jsonResponse ? jsonResponse.mayWrite : false;
+    this.mayUseRegex = jsonResponse ? jsonResponse.mayUseRegex : false;
   }
 
   public function isMayWrite():Boolean {

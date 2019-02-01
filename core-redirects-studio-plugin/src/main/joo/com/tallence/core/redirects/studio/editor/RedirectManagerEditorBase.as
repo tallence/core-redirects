@@ -52,12 +52,10 @@ public class RedirectManagerEditorBase extends Panel {
     getMayWriteVE().setValue(false);
     getMayUseRegexVE().setValue(false);
 
-    if (!getSiteIsNotSelectedVE().getValue()) {
-      RedirectRepositoryImpl.getInstance().resolvePermissions(siteId).then(function(response: PermissionResponse): void {
-        getMayWriteVE().setValue(response.isMayWrite());
-        getMayUseRegexVE().setValue(response.isMayUseRegex());
-      });
-    }
+    RedirectRepositoryImpl.getInstance().resolvePermissions(siteId).then(function(response: PermissionResponse): void {
+      getMayWriteVE().setValue(response.isMayWrite());
+      getMayUseRegexVE().setValue(response.isMayUseRegex());
+    });
   }
 
   public static function getInstance():RedirectManagerEditor {
