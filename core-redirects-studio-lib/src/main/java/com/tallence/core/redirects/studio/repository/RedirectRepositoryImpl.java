@@ -216,7 +216,7 @@ public class RedirectRepositoryImpl implements RedirectRepository {
     contentRepository.prefetch(relevantContent);
 
     List<Redirect> redirects = relevantContent.stream()
-        //check again the state (isInProduction) in case some results are deleted but the solr is not up to date.
+        //check the state (isInProduction) in case someone deleted the result but the solr was not notified yet.
         .filter(Content::isInProduction)
         .map(this::convertToRedirect).collect(Collectors.toList());
 
