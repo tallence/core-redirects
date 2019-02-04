@@ -155,6 +155,10 @@ public class RedirectRepositoryImpl extends RemoteBeanImpl implements RedirectRe
   }
 
   public function resolvePermissions(siteId: String): IPromise {
+    if (!siteId || siteId == "") {
+      // if no site is selected, nothing may be edited
+      return Promise.resolve(new PermissionResponse());
+    }
     return PromiseUtil.getRequest(this.getUriPath() + "/" + siteId + "/permissions", {}, PermissionResponse);
   }
 

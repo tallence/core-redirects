@@ -16,6 +16,7 @@
 
 package com.tallence.core.redirects.studio.rest;
 
+import com.coremedia.cap.content.Content;
 import com.coremedia.rest.linking.AbstractLinkingResource;
 import com.coremedia.rest.linking.LinkResolver;
 import com.sun.jersey.multipart.FormDataParam;
@@ -24,6 +25,7 @@ import com.tallence.core.redirects.studio.model.Redirect;
 import com.tallence.core.redirects.studio.model.RedirectUpdateProperties;
 import com.tallence.core.redirects.studio.repository.RedirectRepository;
 import com.tallence.core.redirects.studio.service.RedirectImporter;
+import com.tallence.core.redirects.studio.service.RedirectPermissionService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
@@ -49,11 +51,13 @@ public class RedirectsResource extends AbstractLinkingResource {
   private String siteId;
   private final RedirectRepository redirectRepository;
   private final RedirectImporter redirectImporter;
+  private final RedirectPermissionService redirectPermissionService;
 
   @Autowired
-  public RedirectsResource(RedirectRepository redirectRepository, LinkResolver linkResolver, RedirectImporter redirectImporter) {
+  public RedirectsResource(RedirectRepository redirectRepository, LinkResolver linkResolver, RedirectImporter redirectImporter, RedirectPermissionService redirectPermissionService) {
     this.redirectRepository = redirectRepository;
     this.redirectImporter = redirectImporter;
+    this.redirectPermissionService = redirectPermissionService;
     setLinkResolver(linkResolver);
   }
 
@@ -73,9 +77,9 @@ public class RedirectsResource extends AbstractLinkingResource {
 
   @GET
   @Path("permissions")
-  public RedirectRepository.RedirectRights resolveRights() {
-
-    return this.redirectRepository.resolveRights(getSiteId());
+  public RedirectPermissionService.RedirectRights resolveRights() {
+    Content rootFolder = redirectRepository.getRedirectsRootFolder(siteId);
+    return redirectPermissionService.resolveRights(rootFolder);
 
   }
 
