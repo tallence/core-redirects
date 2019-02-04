@@ -21,10 +21,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 
 /**
  * Holder class for the redirects of a specific site.
@@ -58,8 +60,23 @@ public class SiteRedirects {
   public void addStaticRedirect(Redirect redirect) {
     if (redirect.getSourceUrlType() != SourceUrlType.PLAIN) {
       LOG.error("Illegal source type on rule {}, ignoring redirect", redirect);
+      return;
     }
     staticRedirects.put(redirect.getSource(), redirect);
+  }
+
+  public void removeStaticRedirect(Redirect redirect) {
+    if (redirect.getSourceUrlType() != SourceUrlType.PLAIN) {
+      LOG.error("Illegal source type on rule {}, ignoring redirect", redirect);
+      return;
+    }
+
+    List<String> toBeDeleted = staticRedirects.entrySet().stream()
+        .filter(e -> e.getValue().getId().equalsIgnoreCase(redirect.getId()))
+        .map(Map.Entry::getKey)
+        .collect(Collectors.toList());
+
+    toBeDeleted.forEach(d -> staticRedirects.remove(d));
   }
 
   /**
@@ -75,6 +92,7 @@ public class SiteRedirects {
   public void addPatternRedirect(Redirect redirect) {
     if ((redirect.getSourceUrlType() != SourceUrlType.REGEX)) {
       LOG.error("Illegal source type on rule {}, ignoring redirect", redirect);
+      return;
     }
 
     try {
@@ -82,6 +100,21 @@ public class SiteRedirects {
     } catch (PatternSyntaxException e) {
       LOG.error("Unable to compile pattern on redirect {}, ignoring redirect", redirect);
     }
+  }
+
+  public void removePatternRedirect(Redirect redirect) {
+
+    if ((redirect.getSourceUrlType() != SourceUrlType.REGEX)) {
+      LOG.error("Illegal source type on rule {}, ignoring redirect", redirect);
+      return;
+    }
+
+    List<Pattern> toBeDeleted = patternRedirects.entrySet().stream()
+        .filter(e -> e.getValue().getId().equalsIgnoreCase(redirect.getId()))
+        .map(Map.Entry::getKey)
+        .collect(Collectors.toList());
+
+    toBeDeleted.forEach(p -> patternRedirects.remove(p));
   }
 
   @Override

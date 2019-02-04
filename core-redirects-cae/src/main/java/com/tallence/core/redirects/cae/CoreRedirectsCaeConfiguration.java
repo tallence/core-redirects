@@ -16,6 +16,7 @@
 package com.tallence.core.redirects.cae;
 
 import com.tallence.core.redirects.cae.filter.RedirectFilter;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -51,7 +52,8 @@ public class CoreRedirectsCaeConfiguration {
    * Executor for the recomputation of new redirects.
    */
   @Bean
-  public ExecutorService getRedirectCacheKeyRecomputeThreadPool(
+  @Qualifier("redirectRecomputeThreadPool")
+  public ExecutorService getRedirectRecomputeThreadPool(
           @Value("${core.redirects.cache.parallel.recompute.threads}") int threads) {
     return Executors.newFixedThreadPool(threads);
   }

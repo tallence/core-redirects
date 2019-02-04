@@ -38,12 +38,14 @@ public class Redirect {
   private final String source;
   private final RedirectType redirectType;
   private final Content target;
+  private final String id;
 
   public Redirect(Content redirect, String rootSegment) {
-    sourceUrlType = SourceUrlType.asSourceUrlType(redirect.getString(SOURCE_URL_TYPE));
-    source = rootSegment + redirect.getString(SOURCE_URL);
-    redirectType = RedirectType.asRedirectType(redirect.getString(REDIRECT_TYPE));
-    target = redirect.getLink(TARGET_LINK);
+    this.sourceUrlType = SourceUrlType.asSourceUrlType(redirect.getString(SOURCE_URL_TYPE));
+    this.id = redirect.getId();
+    this.source = rootSegment + redirect.getString(SOURCE_URL);
+    this.redirectType = RedirectType.asRedirectType(redirect.getString(REDIRECT_TYPE));
+    this.target = redirect.getLink(TARGET_LINK);
   }
 
   /**
@@ -72,6 +74,10 @@ public class Redirect {
    */
   public RedirectType getRedirectType() {
     return redirectType;
+  }
+
+  public String getId() {
+    return this.id;
   }
 
   @Override

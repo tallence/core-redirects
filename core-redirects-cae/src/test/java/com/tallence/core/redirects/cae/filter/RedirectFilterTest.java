@@ -15,8 +15,7 @@
  */
 package com.tallence.core.redirects.cae.filter;
 
-import com.tallence.core.redirects.cae.service.cache.RedirectFolderCacheKeyFactory;
-import org.junit.Before;
+import com.tallence.core.redirects.cae.service.RedirectDataServiceImpl;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -28,6 +27,8 @@ import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import java.util.concurrent.TimeUnit;
+
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
@@ -38,15 +39,16 @@ public class RedirectFilterTest extends AbstractRedirectsTest {
   private RedirectFilter testling;
 
   @Autowired
-  private RedirectFolderCacheKeyFactory folderCacheKeyFactory;
-
-  @Before
-  public void init() {
-    folderCacheKeyFactory.setTestmode(true);
-  }
+  private RedirectDataServiceImpl redirectDataService;
 
   @Test
   public void testRedirect() throws Exception {
+
+    //Wait for the initial jobs to finish. It should take a second only, however show some respect for slow
+    // machines or debugging developers.  
+    redirectDataService.getExecutorService().shutdown();
+    redirectDataService.getExecutorService().awaitTermination(1, TimeUnit.MINUTES);
+
     MockServletContext servletContext = new MockServletContext();
     HttpServletRequest request = requestTestHelper.createRequest("/channela/redirect-test").buildRequest(servletContext);
     HttpServletResponse response = new MockHttpServletResponse();

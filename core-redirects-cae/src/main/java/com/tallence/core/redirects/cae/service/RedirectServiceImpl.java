@@ -15,11 +15,8 @@
  */
 package com.tallence.core.redirects.cae.service;
 
-import com.coremedia.cache.Cache;
 import com.coremedia.cap.multisite.Site;
 import com.coremedia.cap.multisite.SitesService;
-import com.tallence.core.redirects.cae.service.cache.RedirectFolderCacheKey;
-import com.tallence.core.redirects.cae.service.cache.RedirectFolderCacheKeyFactory;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import org.slf4j.Logger;
@@ -38,16 +35,12 @@ public class RedirectServiceImpl implements RedirectService {
   private static final Logger LOG = LoggerFactory.getLogger(RedirectServiceImpl.class);
 
 
-  private final RedirectFolderCacheKeyFactory redirectFolderCacheKeyFactory;
-  private final Cache cache;
+  private final RedirectDataService redirectDataService;
   private final SitesService sitesService;
 
   @Autowired
-  public RedirectServiceImpl(RedirectFolderCacheKeyFactory redirectFolderCacheKeyFactory,
-                             Cache cache,
-                             SitesService sitesService) {
-    this.redirectFolderCacheKeyFactory = redirectFolderCacheKeyFactory;
-    this.cache = cache;
+  public RedirectServiceImpl(RedirectDataService redirectDataService, SitesService sitesService) {
+    this.redirectDataService = redirectDataService;
     this.sitesService = sitesService;
   }
 
@@ -68,9 +61,8 @@ public class RedirectServiceImpl implements RedirectService {
     if (site == null) {
       return new SiteRedirects();
     }
-    RedirectFolderCacheKey redirectsCacheKey = redirectFolderCacheKeyFactory.getCacheKeyFor(site);
     try {
-      return cache.get(redirectsCacheKey);
+      return redirectDataService.getForSite(site);
     } catch (Exception e) {
       LOG.error("Error during fetching redirects for site [{}]", site.getId(), e);
       return new SiteRedirects();
