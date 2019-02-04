@@ -41,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * Default implementation of a {@link RedirectRepository}.
@@ -187,17 +188,22 @@ public class RedirectRepositoryImpl implements RedirectRepository {
       sortCriteria = Collections.emptyList();
     }
 
-    SearchServiceResult result = search(siteId, Arrays.asList("isdeleted:false", query), sortCriteria);
+    SearchServiceResult result = search(siteId, Arrays.asList("isdeleted:false", query), sortCriteria, page * pageSize);
     List<Content> hits = result.getHits();
-    List<Redirect> redirects = new ArrayList<>();
-    for (int i = (page - 1) * pageSize; i < page * pageSize; i++) {
-      if (i < hits.size()) {
-        Content content = hits.get(i);
-        if (content.isInProduction()) {
-          redirects.add(convertToRedirect(content));
-        }
-      }
+    List<Content> relevantContent = new ArrayList<>();
+    //This complicated iteration is a workaround required by the lack of a "start" or "offset" parameter in
+    // com.coremedia.rest.cap.content.search.SearchService.search
+    for (int i = (page - 1) * pageSize; i < Math.min(page * pageSize, hits.size()); i++) {
+      relevantContent.add(hits.get(i));
     }
+
+    //Prefetch details for all contents with one call for performance reasons.
+    contentRepository.prefetch(relevantContent);
+
+    List<Redirect> redirects = relevantContent.stream()
+        //check the state (isInProduction) in case someone deleted the result but the solr was not notified yet.
+        .filter(Content::isInProduction)
+        .map(this::convertToRedirect).collect(Collectors.toList());
 
     return new Pageable(redirects, Math.toIntExact(result.getTotal()));
   }
@@ -219,7 +225,8 @@ public class RedirectRepositoryImpl implements RedirectRepository {
       return false;
     }
     List<String> filterQueries = Arrays.asList("isdeleted:false", "source:" + ClientUtils.escapeQueryChars(source), "-numericid:" + redirectId);
-    return !search(siteId, filterQueries, Collections.emptyList()).getHits().isEmpty();
+    //using limit 10 instead of 1 in case some of the results are deleted but the solr is not up to date.
+    return !search(siteId, filterQueries, Collections.emptyList(), 10).getHits().isEmpty();
   }
 
   private boolean redirectAlreadyExists(String siteId, String source) {
@@ -227,7 +234,8 @@ public class RedirectRepositoryImpl implements RedirectRepository {
       return false;
     }
     List<String> filterQueries = Arrays.asList("isdeleted:false", "source:" + ClientUtils.escapeQueryChars(source));
-    return !search(siteId, filterQueries, Collections.emptyList()).getHits().isEmpty();
+    //using limit 10 instead of 1 in case some of the results are deleted but the solr is not up to date.
+    return !search(siteId, filterQueries, Collections.emptyList(), 10).getHits().isEmpty();
   }
 
   /**
@@ -237,10 +245,10 @@ public class RedirectRepositoryImpl implements RedirectRepository {
    * @param filterQueries The filter queries.
    * @return the search result
    */
-  private SearchServiceResult search(String siteId, List<String> filterQueries, List<String> sortCriteria) {
+  private SearchServiceResult search(String siteId, List<String> filterQueries, List<String> sortCriteria, int limit) {
     return solrSearchService.search(
         "*",
-        1000,
+        limit,
         sortCriteria,
         getRedirectsRootFolder(siteId),
         true,
