@@ -84,7 +84,7 @@ public class RedirectDataServiceImpl implements RedirectDataService {
     if (redirectsFolder == null) {
       LOG.error("Configuration error! Missing redirects folder at {}/{}. Please create at least an empty folder.",
               site.getSiteRootFolder().getPath(), redirectsPath);
-      return new SiteRedirects();
+      return null;
     } else {
       LOG.debug("Reading redirects from folder {}", redirectsFolder.getPath());
     }

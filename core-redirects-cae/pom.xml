@@ -34,8 +34,8 @@
       <artifactId>coremedia-spring</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.coremedia.cms</groupId>
-      <artifactId>coremedia-cache</artifactId>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
     </dependency>
     <dependency>
       <groupId>com.coremedia.cms</groupId>

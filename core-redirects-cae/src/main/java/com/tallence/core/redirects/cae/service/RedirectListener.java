@@ -7,6 +7,8 @@ import com.coremedia.cap.content.events.ContentRepositoryEventConstants;
 import com.coremedia.cap.content.events.ContentRepositoryListenerBase;
 import com.coremedia.cap.multisite.Site;
 import com.coremedia.cap.multisite.SitesService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -17,6 +19,8 @@ import javax.annotation.PostConstruct;
  */
 @Service
 public class RedirectListener extends ContentRepositoryListenerBase {
+
+  private static final Logger LOG = LoggerFactory.getLogger(RedirectListener.class);
 
   private final ContentRepository contentRepository;
   private final RedirectDataService dataService;
@@ -37,7 +41,7 @@ public class RedirectListener extends ContentRepositoryListenerBase {
       return;
     }
 
-    RedirectDataService.JobType type = null;
+    RedirectDataService.JobType type;
 
     switch (event.getType()) {
       case ContentRepositoryEventConstants.CONTENT_CREATED:
@@ -49,11 +53,17 @@ public class RedirectListener extends ContentRepositoryListenerBase {
       case ContentRepositoryEventConstants.CONTENT_DELETED:
         type = RedirectDataService.JobType.Delete;
         break;
+      default:
+        LOG.debug("Received an event for content [{}] but the event is not relevant: [{}]", event.getContent().getId(), event.getType());
+        return;
     }
 
     Site site = sitesService.getContentSiteAspect(event.getContent()).getSite();
-    if (type != null && site != null) {
+    if (site != null) {
+      LOG.debug("Receiving event of type [{}] for content [{}], delegate it to the dataService", type, event.getContent().getId());
       dataService.addJob(site, type, event.getContent());
+    } else {
+      LOG.debug("Receiving event of type [{}] for content [{}] but no site found, cannot delegate it to the dataService", type, event.getContent().getId());
     }
   }
 
