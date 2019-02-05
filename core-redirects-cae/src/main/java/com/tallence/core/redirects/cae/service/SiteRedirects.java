@@ -20,9 +20,9 @@ import com.tallence.core.redirects.model.SourceUrlType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -35,8 +35,8 @@ public class SiteRedirects {
   private static final Logger LOG = LoggerFactory.getLogger(SiteRedirects.class);
 
   private String siteId;
-  private Map<String, Redirect> staticRedirects = new LinkedHashMap<>();
-  private Map<Pattern, Redirect> patternRedirects = new LinkedHashMap<>();
+  private ConcurrentHashMap<String, Redirect> staticRedirects = new ConcurrentHashMap<>();
+  private ConcurrentHashMap<Pattern, Redirect> patternRedirects = new ConcurrentHashMap<>();
 
   public SiteRedirects() {
   }
@@ -53,16 +53,6 @@ public class SiteRedirects {
   }
 
   /**
-   * Add a simple (static)
-   */
-  public void addStaticRedirect(Redirect redirect) {
-    if (redirect.getSourceUrlType() != SourceUrlType.PLAIN) {
-      LOG.error("Illegal source type on rule {}, ignoring redirect", redirect);
-    }
-    staticRedirects.put(redirect.getSource(), redirect);
-  }
-
-  /**
    * Returns the list of redirects with pattern source urls.
    */
   public Map<Pattern, Redirect> getPatternRedirects() {
@@ -70,17 +60,38 @@ public class SiteRedirects {
   }
 
   /**
-   * Adds pattern redirect to map, if it contains a valid pattern.
+   * Adds the given redirect to the cache, if it is valid.
    */
-  public void addPatternRedirect(Redirect redirect) {
-    if ((redirect.getSourceUrlType() != SourceUrlType.REGEX)) {
-      LOG.error("Illegal source type on rule {}, ignoring redirect", redirect);
-    }
+  public void addRedirect(Redirect redirect) {
+    if (redirect.getSourceUrlType() == SourceUrlType.PLAIN) {
+      staticRedirects.put(redirect.getSource(), redirect);
 
-    try {
-      patternRedirects.put(Pattern.compile(redirect.getSource()), redirect);
-    } catch (PatternSyntaxException e) {
-      LOG.error("Unable to compile pattern on redirect {}, ignoring redirect", redirect);
+    } else if (redirect.getSourceUrlType() == SourceUrlType.REGEX) {
+      try {
+        patternRedirects.put(Pattern.compile(redirect.getSource()), redirect);
+      } catch (PatternSyntaxException e) {
+        LOG.error("Unable to compile pattern on redirect {}, ignoring redirect", redirect);
+      }
+
+    } else {
+      LOG.error("Illegal source type {} on redirect {}, ignoring redirect", redirect.getSourceUrlType(), redirect);
+    }
+  }
+
+  /**
+   * Removes the given redirect from the correct list.
+   */
+  public void removeRedirect(Redirect redirect) {
+    if (redirect.getSourceUrlType() == SourceUrlType.PLAIN) {
+      staticRedirects.remove(redirect.getSource());
+    } else if (redirect.getSourceUrlType() == SourceUrlType.REGEX) {
+      Pattern key = null;
+      for (Map.Entry<Pattern, Redirect> entry : patternRedirects.entrySet()) {
+        if (entry.getValue().getContentId().equals(redirect.getContentId())) {
+          key = entry.getKey();
+        }
+      }
+      patternRedirects.remove(key);
     }
   }
 

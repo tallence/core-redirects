@@ -15,14 +15,18 @@
  */
 package com.tallence.core.redirects.cae;
 
+import com.coremedia.cap.multisite.Site;
+import com.coremedia.cap.multisite.SitesService;
 import com.tallence.core.redirects.cae.filter.RedirectFilter;
-import org.springframework.beans.factory.annotation.Value;
+import com.tallence.core.redirects.cae.service.SiteRedirects;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import javax.servlet.Filter;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Spring configuration for the redirects.
@@ -39,20 +43,21 @@ public class CoreRedirectsCaeConfiguration {
    * to override.
    */
   @Bean
-  public FilterRegistrationBean getRedirectFilterRegistration(RedirectFilter redirectFilter) {
-    FilterRegistrationBean registration = new FilterRegistrationBean(redirectFilter);
+  public FilterRegistrationBean redirectFilterRegistration(RedirectFilter redirectFilter) {
+    FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<>(redirectFilter);
     registration.setName(FILTER_NAME);
-    // We want to redirect filter to run early in the chain in order to make it faster.
+    // We want to redirect filter to run early in the chain in order to make it act faster.
     registration.setOrder(100);
     return registration;
   }
 
   /**
-   * Executor for the recomputation of new redirects.
+   * The central cache of redirects.
    */
   @Bean
-  public ExecutorService getRedirectCacheKeyRecomputeThreadPool(
-          @Value("${core.redirects.cache.parallel.recompute.threads}") int threads) {
-    return Executors.newFixedThreadPool(threads);
+  public ConcurrentMap<Site, SiteRedirects> redirectsCache(@Autowired SitesService sitesService) {
+    // Resizing ConcurrentHashMaps is rather expensive, so we start at least with the correct size.
+    return new ConcurrentHashMap<>(sitesService.getSites().size());
   }
+
 }

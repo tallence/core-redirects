@@ -15,8 +15,6 @@
  */
 package com.tallence.core.redirects.cae.filter;
 
-import com.tallence.core.redirects.cae.service.cache.RedirectFolderCacheKeyFactory;
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -36,14 +34,6 @@ public class RedirectFilterTest extends AbstractRedirectsTest {
 
   @Autowired
   private RedirectFilter testling;
-
-  @Autowired
-  private RedirectFolderCacheKeyFactory folderCacheKeyFactory;
-
-  @Before
-  public void init() {
-    folderCacheKeyFactory.setTestmode(true);
-  }
 
   @Test
   public void testRedirect() throws Exception {
