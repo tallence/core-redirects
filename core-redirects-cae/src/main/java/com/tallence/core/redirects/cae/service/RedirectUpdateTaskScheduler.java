@@ -22,6 +22,7 @@ import com.coremedia.cap.multisite.SitesService;
 import com.tallence.core.redirects.cae.service.tasks.RemoveDocumentTask;
 import com.tallence.core.redirects.cae.service.tasks.UpdateDocumentTask;
 import com.tallence.core.redirects.cae.service.tasks.UpdateSiteTask;
+import com.tallence.core.redirects.cae.service.util.PausableThreadPoolExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,8 +37,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -51,17 +52,20 @@ public class RedirectUpdateTaskScheduler {
   private final String redirectsPath;
 
   // A pool of single thread executors, one per site, so updates are queued per site.
-  private final Map<Site, ExecutorService> executors = new HashMap<>();
+  private final Map<Site, PausableThreadPoolExecutorService> executors = new HashMap<>();
+  private final ExecutorService siteUpdateExecutor;
 
   @Autowired
   public RedirectUpdateTaskScheduler(SitesService sitesService,
                                      ContentRepository contentRepository,
                                      @Qualifier("redirectsCache") ConcurrentMap<Site, SiteRedirects> redirectsCache,
-                                     @Value("${core.redirects.path}") String redirectsPath) {
+                                     @Value("${core.redirects.path}") String redirectsPath,
+                                     @Value("${core.redirects.cache.parallel.site.recompute.threads:4}") int parallelSiteThreads) {
     this.sitesService = sitesService;
     this.contentRepository = contentRepository;
     this.redirectsCache = redirectsCache;
     this.redirectsPath = redirectsPath;
+    siteUpdateExecutor = Executors.newFixedThreadPool(parallelSiteThreads);
   }
 
   /**
@@ -70,12 +74,12 @@ public class RedirectUpdateTaskScheduler {
   public void runUpdate(Content redirect) {
     Site site = getSite(redirect);
     if (site != null) {
-      ExecutorService executorService = executors.computeIfAbsent(site, o -> newSingleThreadExecutor());
+      PausableThreadPoolExecutorService executorService = executors.computeIfAbsent(site, o -> newSingleThreadExecutor());
       if (redirectsCache.containsKey(site)) {
         executorService.submit(new UpdateDocumentTask(redirectsCache, site, redirect));
       } else {
         // If the site of this redirect is not in the cache yet, we have to build an index for it
-        executorService.submit(new UpdateSiteTask(redirectsCache, contentRepository, redirectsPath, site));
+        submitSiteUpdate(site, executorService);
       }
     }
   }
@@ -85,13 +89,18 @@ public class RedirectUpdateTaskScheduler {
    */
   public void runUpdate(Site site) {
     if (site != null) {
-      ExecutorService executorService = executors.computeIfAbsent(site, o -> newSingleThreadExecutor());
+      PausableThreadPoolExecutorService executorService = executors.computeIfAbsent(site, o -> newSingleThreadExecutor());
       // Before a site update, we can cancel all running jobs, as they will be overwritten anyway
-      List<Runnable> abortedTasks = new ArrayList<>();
-      ((ThreadPoolExecutor) executorService).getQueue().drainTo(abortedTasks);
-      LOG.info("Re-indexing site {}, stopped {} pending tasks", site, abortedTasks.size());
-      executorService.submit(new UpdateSiteTask(redirectsCache, contentRepository, redirectsPath, site));
+      submitSiteUpdate(site, executorService);
     }
+  }
+
+  private void submitSiteUpdate(Site site, PausableThreadPoolExecutorService executorService) {
+    List<Runnable> abortedTasks = new ArrayList<>();
+    executorService.getQueue().drainTo(abortedTasks);
+    executorService.pause();
+    LOG.info("Re-indexing site {}, canceled {} pending tasks, paused queue", site, abortedTasks.size());
+    siteUpdateExecutor.submit(new UpdateSiteTask(redirectsCache, contentRepository, redirectsPath, site, executorService));
   }
 
   /**
@@ -126,8 +135,8 @@ public class RedirectUpdateTaskScheduler {
     });
   }
 
-  private ExecutorService newSingleThreadExecutor() {
+  private PausableThreadPoolExecutorService newSingleThreadExecutor() {
     // Copy from Executors.newSingleThreadExecutor() without the wrapping, so we can get to the queue
-    return new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
+    return new PausableThreadPoolExecutorService(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
   }
 }

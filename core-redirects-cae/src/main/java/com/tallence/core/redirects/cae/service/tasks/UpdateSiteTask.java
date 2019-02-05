@@ -20,6 +20,7 @@ import com.coremedia.cap.content.ContentRepository;
 import com.coremedia.cap.multisite.Site;
 import com.tallence.core.redirects.cae.model.Redirect;
 import com.tallence.core.redirects.cae.service.SiteRedirects;
+import com.tallence.core.redirects.cae.service.util.PausableThreadPoolExecutorService;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,12 +42,14 @@ public class UpdateSiteTask extends AbstractTask {
   private final ContentRepository contentRepository;
   private final String redirectsPath;
   private final Site site;
+  private final PausableThreadPoolExecutorService executorService;
 
-  public UpdateSiteTask(Map<Site, SiteRedirects> redirectsMap, ContentRepository contentRepository, String redirectsPath, Site targetSite) {
+  public UpdateSiteTask(Map<Site, SiteRedirects> redirectsMap, ContentRepository contentRepository, String redirectsPath, Site targetSite, PausableThreadPoolExecutorService executorService) {
     super(redirectsMap);
     this.contentRepository = contentRepository;
     this.redirectsPath = redirectsPath;
     this.site = targetSite;
+    this.executorService = executorService;
   }
 
   @Override
@@ -80,6 +83,8 @@ public class UpdateSiteTask extends AbstractTask {
 
     redirectsMap.put(site, result);
 
+    // Unpause the regular updates
+    executorService.resume();
   }
 
   /**
