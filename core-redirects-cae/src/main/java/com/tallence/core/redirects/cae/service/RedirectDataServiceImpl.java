@@ -201,33 +201,35 @@ public class RedirectDataServiceImpl implements RedirectDataService {
     @Override
     public void run() {
 
-      SiteRedirects existingRedirects = redirects.get(site);
+      Future<Boolean> initialSiteJob;
+      synchronized (initialJobs) {
+        initialSiteJob = initialJobs.get(site);
+      }
 
-      if (existingRedirects == null) {
+      if (initialSiteJob == null) {
+        LOG.info("[{}] seems to be a new site or the first redirect, start initial job", site.getSiteRootDocument().getPath());
+        startInitialJob(site);
+        return;
+      }
 
-        Future<Boolean> initialJob = initialJobs.get(site);
-
-        if (initialJob == null) {
-          LOG.error("No redirects for site [{}] found! Cannot process event for content [{}]",
-              site.getSiteRootDocument().getPath(), content.getId());
-          return;
-        }
-
+      if (!initialSiteJob.isDone()) {
         try {
           LOG.info("RedirectJob for site [{}] and type [{}] and content [{}] has to wait.",
               site.getSiteRootDocument().getPath(), jobType, content.getId());
-          initialJob.get(10, TimeUnit.MINUTES);
+
+          //Wait for the initial job to avoid race conditions.
+          initialSiteJob.get(10, TimeUnit.MINUTES);
+          LOG.debug("RedirectJob for site [{}] and type [{}] and content [{}] can now be proceed.",
+              site.getSiteRootDocument().getPath(), jobType, content.getId());
         } catch (Exception e) {
           LOG.error("Error during waiting for initialJob to complete for site [{}]",
               site.getSiteRootDocument().getPath(), e);
           return;
         }
-
-        LOG.debug("RedirectJob for site [{}] and type [{}] and content [{}] can now be proceed.",
-            site.getSiteRootDocument().getPath(), jobType, content.getId());
-        //Try again
-        existingRedirects = redirects.get(site);
       }
+
+
+      SiteRedirects existingRedirects = redirects.get(site);
 
       if (existingRedirects == null) {
         LOG.error("Error for new redirectEvent, no existing redirects for site [{}]", site.getSiteRootDocument().getPath());
@@ -246,11 +248,23 @@ public class RedirectDataServiceImpl implements RedirectDataService {
     }
   }
 
+  private void startInitialJob(Site site) {
+
+    if (site.getSiteRootFolder().getChild(redirectsPath) == null) {
+      LOG.warn("No redirectsPath found for site [{}]", site.getSiteRootDocument().getPath());
+      return;
+    }
+
+    synchronized (initialJobs) {
+      Future<Boolean> initialJob = redirectRecomputeThreadPool.submit(new RedirectInitialJob(site));
+      initialJobs.put(site, initialJob);
+    }
+  }
+
   @PostConstruct
   public void postConstruct() {
-
-    sitesService.getSites().stream()
-        .forEach(s -> initialJobs.put(s, redirectRecomputeThreadPool.submit(new RedirectInitialJob(s))));
+    //Start initial Jobs for each Site's redirects.
+    sitesService.getSites().forEach(this::startInitialJob);
   }
 
   private class RedirectInitialJob implements Callable<Boolean> {
