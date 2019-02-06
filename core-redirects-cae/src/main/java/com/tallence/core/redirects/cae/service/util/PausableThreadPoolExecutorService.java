@@ -1,6 +1,7 @@
 package com.tallence.core.redirects.cae.service.util;
 
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -13,12 +14,12 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class PausableThreadPoolExecutorService extends ThreadPoolExecutor {
 
-  private boolean isPaused;
+  private boolean isPaused = false;
   private ReentrantLock pauseLock = new ReentrantLock();
   private Condition unpaused = pauseLock.newCondition();
 
-  public PausableThreadPoolExecutorService(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue) {
-    super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue);
+  public PausableThreadPoolExecutorService(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory) {
+    super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory);
   }
 
   @Override

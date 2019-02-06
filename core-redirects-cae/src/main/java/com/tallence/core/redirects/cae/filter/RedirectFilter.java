@@ -90,6 +90,7 @@ public class RedirectFilter implements Filter {
     Result result = determinePreAction(redirects, request.getPathInfo());
     if (result.action == Result.Action.SEND) {
       sendPermanentRedirect(request, response, result.redirect);
+      return;
     } else if (result.action == Result.Action.WRAP) {
       // Because we might have to modify the response, we need to wrap it in order to prevent tomcat from starting
       // to write to the wire before we have inspected it.

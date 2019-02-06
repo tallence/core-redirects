@@ -19,6 +19,7 @@ import com.coremedia.cap.content.Content;
 import com.coremedia.cap.content.ContentRepository;
 import com.coremedia.cap.multisite.Site;
 import com.coremedia.cap.multisite.SitesService;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.tallence.core.redirects.cae.service.tasks.RemoveDocumentTask;
 import com.tallence.core.redirects.cae.service.tasks.UpdateDocumentTask;
 import com.tallence.core.redirects.cae.service.tasks.UpdateSiteTask;
@@ -39,6 +40,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -54,6 +56,9 @@ public class RedirectUpdateTaskScheduler {
   // A pool of single thread executors, one per site, so updates are queued per site.
   private final Map<Site, PausableThreadPoolExecutorService> executors = new HashMap<>();
   private final ExecutorService siteUpdateExecutor;
+
+  // Test mode disables the multithreading here
+  private boolean testMode = false;
 
   @Autowired
   public RedirectUpdateTaskScheduler(SitesService sitesService,
@@ -74,9 +79,13 @@ public class RedirectUpdateTaskScheduler {
   public void runUpdate(Content redirect) {
     Site site = getSite(redirect);
     if (site != null) {
-      PausableThreadPoolExecutorService executorService = executors.computeIfAbsent(site, o -> newSingleThreadExecutor());
+      PausableThreadPoolExecutorService executorService = executors.computeIfAbsent(site, o -> newSingleThreadExecutor(site));
       if (redirectsCache.containsKey(site)) {
-        executorService.submit(new UpdateDocumentTask(redirectsCache, site, redirect));
+        if (testMode) {
+          new UpdateDocumentTask(redirectsCache, site, redirect).run();
+        } else {
+          executorService.submit(new UpdateDocumentTask(redirectsCache, site, redirect));
+        }
       } else {
         // If the site of this redirect is not in the cache yet, we have to build an index for it
         submitSiteUpdate(site, executorService);
@@ -89,7 +98,7 @@ public class RedirectUpdateTaskScheduler {
    */
   public void runUpdate(Site site) {
     if (site != null) {
-      PausableThreadPoolExecutorService executorService = executors.computeIfAbsent(site, o -> newSingleThreadExecutor());
+      PausableThreadPoolExecutorService executorService = executors.computeIfAbsent(site, o -> newSingleThreadExecutor(site));
       // Before a site update, we can cancel all running jobs, as they will be overwritten anyway
       submitSiteUpdate(site, executorService);
     }
@@ -100,7 +109,11 @@ public class RedirectUpdateTaskScheduler {
     executorService.getQueue().drainTo(abortedTasks);
     executorService.pause();
     LOG.info("Re-indexing site {}, canceled {} pending tasks, paused queue", site, abortedTasks.size());
-    siteUpdateExecutor.submit(new UpdateSiteTask(redirectsCache, contentRepository, redirectsPath, site, executorService));
+    if (testMode) {
+      new UpdateSiteTask(redirectsCache, contentRepository, redirectsPath, site, executorService).run();
+    } else {
+      siteUpdateExecutor.submit(new UpdateSiteTask(redirectsCache, contentRepository, redirectsPath, site, executorService));
+    }
   }
 
   /**
@@ -109,8 +122,12 @@ public class RedirectUpdateTaskScheduler {
   public void runRemove(Content redirect) {
     Site site = getSiteOfDeletedContent(redirect);
     if (site != null) {
-      ExecutorService executorService = executors.computeIfAbsent(site, o -> newSingleThreadExecutor());
-      executorService.submit(new RemoveDocumentTask(redirectsCache, site, redirect));
+      ExecutorService executorService = executors.computeIfAbsent(site, o -> newSingleThreadExecutor(site));
+      if (testMode) {
+        new RemoveDocumentTask(redirectsCache, site, redirect).run();
+      } else {
+        executorService.submit(new RemoveDocumentTask(redirectsCache, site, redirect));
+      }
     }
   }
 
@@ -135,8 +152,13 @@ public class RedirectUpdateTaskScheduler {
     });
   }
 
-  private PausableThreadPoolExecutorService newSingleThreadExecutor() {
+  private PausableThreadPoolExecutorService newSingleThreadExecutor(Site site) {
     // Copy from Executors.newSingleThreadExecutor() without the wrapping, so we can get to the queue
-    return new PausableThreadPoolExecutorService(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
+    ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("redirect-updates-" + site.getName() + "-%d").build();
+    return new PausableThreadPoolExecutorService(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), namedThreadFactory);
+  }
+
+  void setTestMode(boolean testMode) {
+    this.testMode = testMode;
   }
 }
