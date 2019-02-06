@@ -1,10 +1,10 @@
 package com.tallence.core.redirects.cae.service;
 
-import com.coremedia.blueprint.common.contentbeans.CMLinkable;
 import com.coremedia.cap.content.Content;
 import com.coremedia.cap.content.ContentRepository;
 import com.coremedia.cap.multisite.Site;
 import com.coremedia.cap.multisite.SitesService;
+import com.coremedia.objectserver.beans.ContentBean;
 import com.tallence.core.redirects.cae.AbstractRedirectsTest;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +34,7 @@ public class RedirectContentListenerTest extends AbstractRedirectsTest {
   public void testAddRemoveRedirect() {
     redirectUpdateTaskScheduler.setTestMode(true);
 
-    CMLinkable target = getContentBean(1002);
+    ContentBean target = getContentBean(1002);
 
     Site site = sitesService.getSite("siteA");
     int staticSizeBefore = redirectService.getRedirectsForSite(site).getStaticRedirects().size();
