@@ -64,9 +64,17 @@ public class SiteRedirects {
    */
   public void addRedirect(Redirect redirect) {
     if (redirect.getSourceUrlType() == SourceUrlType.PLAIN) {
+      staticRedirects.entrySet().stream()
+              .filter(e -> e.getValue().getContentId().equalsIgnoreCase(redirect.getContentId()))
+              .forEach(e -> staticRedirects.remove(e.getKey()));
+
       staticRedirects.put(redirect.getSource(), redirect);
 
     } else if (redirect.getSourceUrlType() == SourceUrlType.REGEX) {
+
+      patternRedirects.entrySet().stream()
+              .filter(e -> e.getValue().getContentId().equalsIgnoreCase(redirect.getContentId()))
+              .forEach(e -> patternRedirects.remove(e.getKey()));
       try {
         patternRedirects.put(Pattern.compile(redirect.getSource()), redirect);
       } catch (PatternSyntaxException e) {
