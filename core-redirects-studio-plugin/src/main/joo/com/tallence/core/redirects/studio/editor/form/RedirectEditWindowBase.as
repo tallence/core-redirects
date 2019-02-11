@@ -38,6 +38,8 @@ use namespace editorContext;
  */
 public class RedirectEditWindowBase extends Window {
 
+  private static var SOURCE_TYPE_DEFAULT: String = RedirectImpl.SOURCE_TYPE_PLAIN;
+
   private var localModel:Bean;
   private var redirect:Redirect;
   private var isValidSourceVE:ValueExpression;
@@ -84,7 +86,7 @@ public class RedirectEditWindowBase extends Window {
       model.set(RedirectImpl.REDIRECT_TYPE, redirect.getRedirectType());
       model.set(RedirectImpl.CREATION_DATE, redirect.getCreationDate());
     } else {
-      model.set(RedirectImpl.SOURCE_TYPE, RedirectImpl.SOURCE_TYPE_PLAIN);
+      model.set(RedirectImpl.SOURCE_TYPE, SOURCE_TYPE_DEFAULT);
       model.set(RedirectImpl.REDIRECT_TYPE, RedirectImpl.REDIRECT_TYPE_404);
       model.set(RedirectImpl.CREATION_DATE, new Date());
     }
@@ -104,13 +106,15 @@ public class RedirectEditWindowBase extends Window {
       redirect.setRedirectType(model.get(RedirectImpl.REDIRECT_TYPE));
     } else {
       var siteId:String = redirect ? redirect.getSiteId() : selectedSiteIdVE.getValue();
+      var sourceType:* = model.get(RedirectImpl.SOURCE_TYPE);
       RedirectRepositoryImpl.getInstance().createRedirect(
           siteId,
           model.get(RedirectImpl.ACTIVE),
           model.get(RedirectImpl.TARGET_LINK)[0],
           model.get(RedirectImpl.DESCRIPTION),
           model.get(RedirectImpl.SOURCE),
-          model.get(RedirectImpl.SOURCE_TYPE),
+          //Default value, if the input field is hidden (because of missing permissions)
+          sourceType ? sourceType : SOURCE_TYPE_DEFAULT,
           model.get(RedirectImpl.REDIRECT_TYPE)
       );
     }
