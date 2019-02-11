@@ -20,15 +20,10 @@ import com.coremedia.cap.common.IdHelper;
 import com.coremedia.cap.content.Content;
 import com.coremedia.cap.content.ContentRepository;
 import com.coremedia.cap.content.ContentType;
-import com.coremedia.cap.content.authorization.AccessControl;
-import com.coremedia.cap.content.authorization.Right;
 import com.coremedia.cap.content.publication.PublicationHelper;
 import com.coremedia.cap.content.publication.PublicationService;
 import com.coremedia.cap.multisite.Site;
 import com.coremedia.cap.multisite.SitesService;
-import com.coremedia.cap.springframework.security.impl.CapUserDetails;
-import com.coremedia.cap.user.User;
-import com.coremedia.cap.user.UserRepository;
 import com.coremedia.rest.cap.content.search.SearchServiceResult;
 import com.coremedia.rest.cap.content.search.solr.SolrSearchService;
 import com.tallence.core.redirects.model.RedirectType;
@@ -37,15 +32,16 @@ import com.tallence.core.redirects.studio.model.Pageable;
 import com.tallence.core.redirects.studio.model.Redirect;
 import com.tallence.core.redirects.studio.model.RedirectImpl;
 import com.tallence.core.redirects.studio.model.RedirectUpdateProperties;
+import com.tallence.core.redirects.studio.service.RedirectPermissionService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * Default implementation of a {@link RedirectRepository}.
@@ -69,27 +65,26 @@ public class RedirectRepositoryImpl implements RedirectRepository {
   private final ContentRepository contentRepository;
   private final PublicationHelper publicationHelper;
   private final PublicationService publicationService;
-  private final UserRepository userRepository;
+  private final RedirectPermissionService redirectPermissionService;
 
   private ContentType redirectContentType;
 
   @Autowired
   public RedirectRepositoryImpl(SolrSearchService solrSearchService, ContentRepository contentRepository,
-                                SitesService sitesService, UserRepository userRepository) {
+                                SitesService sitesService, RedirectPermissionService redirectPermissionService) {
     this.solrSearchService = solrSearchService;
     this.contentRepository = contentRepository;
     this.sitesService = sitesService;
     redirectContentType = contentRepository.getContentType("Redirect");
     this.publicationService = contentRepository.getPublicationService();
     this.publicationHelper = new PublicationHelper(contentRepository);
-    this.userRepository = userRepository;
+    this.redirectPermissionService = redirectPermissionService;
   }
 
   @Override
   public Redirect createRedirect(String siteId, RedirectUpdateProperties updateProperties) {
 
-    RedirectRights redirectRights = resolveRights(siteId);
-    if (!redirectRights.isMayWrite() || isNotAllowedForRegex(redirectRights.isMayUseRegex(), updateProperties.getSourceUrlType())) {
+    if (!redirectPermissionService.mayCreate(getRedirectsRootFolder(siteId), updateProperties)) {
       throw new IllegalStateException("User has no rights to create a redirect in site " + siteId);
     }
 
@@ -138,14 +133,9 @@ public class RedirectRepositoryImpl implements RedirectRepository {
       throw new IllegalArgumentException("Redirect is checked out by other user.");
     }
 
-    //Only admins may edit regex redirects
-    boolean administrator = isAdministrator();
-    if (!mayWrite(redirect) ||
-        isNotAllowedForRegex(administrator, updateProperties.getSourceUrlType()) ||
-        isNotAllowedForRegex(administrator, SourceUrlType.asSourceUrlType(redirect.getString(SOURCE_URL_TYPE)))) {
+    if (!redirectPermissionService.mayWrite(redirect, updateProperties)) {
       throw new IllegalStateException("User has no rights to modify the redirect " + redirect.getId());
     }
-
 
     try {
       if (redirect.isCheckedIn()) {
@@ -166,15 +156,13 @@ public class RedirectRepositoryImpl implements RedirectRepository {
       LOG.error("Content {} is checked out by other user, could not delete redirect", redirect.getId());
       throw new IllegalArgumentException("Redirect is checked out by other user.");
     }
-    if (redirect.isCheckedOut()) {
-      redirect.checkIn();
+
+    if (!redirectPermissionService.mayDelete(redirect)) {
+      throw new IllegalStateException("User has no rights to delete the redirect " + redirect.getId());
     }
 
-    //Only admins may edit regex redirects
-    boolean administrator = isAdministrator();
-    if (!mayDelete(redirect) ||
-        isNotAllowedForRegex(administrator, SourceUrlType.asSourceUrlType(redirect.getString(SOURCE_URL_TYPE)))) {
-      throw new IllegalStateException("User has no rights to delete the redirect " + redirect.getId());
+    if (redirect.isCheckedOut()) {
+      redirect.checkIn();
     }
 
     if (publicationService.isPublished(redirect)) {
@@ -187,9 +175,7 @@ public class RedirectRepositoryImpl implements RedirectRepository {
   @Override
   public Pageable getRedirects(String siteId, String search, String sorter, String sortDirection, int pageSize, int page) {
 
-    boolean mayRead = contentRepository.getAccessControl()
-        .mayPerform(getRedirectsFolder(siteId), this.redirectContentType, Right.READ);
-    if (!mayRead) {
+    if (!redirectPermissionService.mayRead(getRedirectsRootFolder(siteId))) {
       return new Pageable(Collections.emptyList(), 0);
     }
 
@@ -202,60 +188,36 @@ public class RedirectRepositoryImpl implements RedirectRepository {
       sortCriteria = Collections.emptyList();
     }
 
-    SearchServiceResult result = search(siteId, Arrays.asList("isdeleted:false", query), sortCriteria);
+    SearchServiceResult result = search(siteId, Arrays.asList("isdeleted:false", query), sortCriteria, page * pageSize);
     List<Content> hits = result.getHits();
-    List<Redirect> redirects = new ArrayList<>();
-    for (int i = (page - 1) * pageSize; i < page * pageSize; i++) {
-      if (i < hits.size()) {
-        Content content = hits.get(i);
-        if (content.isInProduction()) {
-          redirects.add(convertToRedirect(content));
-        }
-      }
+    List<Content> relevantContent = new ArrayList<>();
+    //This complicated iteration is a workaround required by the lack of a "start" or "offset" parameter in
+    // com.coremedia.rest.cap.content.search.SearchService.search
+    for (int i = (page - 1) * pageSize; i < Math.min(page * pageSize, hits.size()); i++) {
+      relevantContent.add(hits.get(i));
     }
+
+    //Prefetch details for all contents with one call for performance reasons.
+    contentRepository.prefetch(relevantContent);
+
+    List<Redirect> redirects = relevantContent.stream()
+        //check the state (isInProduction) in case someone deleted the result but the solr was not notified yet.
+        .filter(Content::isInProduction)
+        .map(this::convertToRedirect).collect(Collectors.toList());
 
     return new Pageable(redirects, Math.toIntExact(result.getTotal()));
   }
 
-  public RedirectRights resolveRights(String siteId) {
-
-    Content redirectsFolder = getRedirectsFolder(siteId);
-
-    return new RedirectRights(mayWrite(redirectsFolder), isAdministrator());
-  }
-
-  private boolean isAdministrator() {
-    User user = userRepository.getUser(getUserId());
-    if (user == null) {
-      throw new IllegalStateException("No user could be found");
+  @Override
+  public Content getRedirectsRootFolder(String siteId) {
+    Site site = sitesService.getSite(siteId);
+    if (site != null) {
+      if (site.getSiteRootFolder().hasChild(REDIRECT_PATH)) {
+        return site.getSiteRootFolder().getChild(REDIRECT_PATH);
+      }
+      return site.getSiteRootFolder();
     }
-
-    return user.isAdministrative();
-  }
-
-  private boolean mayDelete(Content redirect) {
-    AccessControl accessControl = contentRepository.getAccessControl();
-    return accessControl.mayPerform(redirect, this.redirectContentType, Right.DELETE) &&
-        accessControl.mayPerform(redirect, this.redirectContentType, Right.PUBLISH);
-  }
-
-  private boolean mayWrite(Content redirect) {
-    AccessControl accessControl = contentRepository.getAccessControl();
-    return accessControl.mayPerform(redirect, this.redirectContentType, Right.WRITE) &&
-        accessControl.mayPerform(redirect, this.redirectContentType, Right.PUBLISH);
-  }
-
-  private String getUserId() {
-    Object user = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    if (user instanceof CapUserDetails) {
-      return ((CapUserDetails) user).getUserId();
-    } else {
-      throw new IllegalStateException("Could not get userId from authenticated user.");
-    }
-  }
-
-  private boolean isNotAllowedForRegex(boolean mayUseRegex, SourceUrlType sourceType) {
-    return !mayUseRegex && SourceUrlType.REGEX.equals(sourceType);
+    return contentRepository.getRoot().getChild(REDIRECT_PATH);
   }
 
   private boolean redirectAlreadyExists(String siteId, String redirectId, String source) {
@@ -263,7 +225,8 @@ public class RedirectRepositoryImpl implements RedirectRepository {
       return false;
     }
     List<String> filterQueries = Arrays.asList("isdeleted:false", "source:" + ClientUtils.escapeQueryChars(source), "-numericid:" + redirectId);
-    return !search(siteId, filterQueries, Collections.emptyList()).getHits().isEmpty();
+    //using limit 10 instead of 1 in case some of the results are deleted but the solr is not up to date.
+    return !search(siteId, filterQueries, Collections.emptyList(), 10).getHits().isEmpty();
   }
 
   private boolean redirectAlreadyExists(String siteId, String source) {
@@ -271,7 +234,8 @@ public class RedirectRepositoryImpl implements RedirectRepository {
       return false;
     }
     List<String> filterQueries = Arrays.asList("isdeleted:false", "source:" + ClientUtils.escapeQueryChars(source));
-    return !search(siteId, filterQueries, Collections.emptyList()).getHits().isEmpty();
+    //using limit 10 instead of 1 in case some of the results are deleted but the solr is not up to date.
+    return !search(siteId, filterQueries, Collections.emptyList(), 10).getHits().isEmpty();
   }
 
   /**
@@ -281,35 +245,18 @@ public class RedirectRepositoryImpl implements RedirectRepository {
    * @param filterQueries The filter queries.
    * @return the search result
    */
-  private SearchServiceResult search(String siteId, List<String> filterQueries, List<String> sortCriteria) {
+  private SearchServiceResult search(String siteId, List<String> filterQueries, List<String> sortCriteria, int limit) {
     return solrSearchService.search(
         "*",
-        1000,
+        limit,
         sortCriteria,
-        getRedirectsFolder(siteId),
+        getRedirectsRootFolder(siteId),
         true,
         Collections.singletonList(redirectContentType),
         false,
         filterQueries,
         new ArrayList<>(),
         new ArrayList<>());
-  }
-
-  /**
-   * Returns redirects folder for the given site. If no site is found, the root folder is used as fallback folder.
-   *
-   * @param siteId the site id
-   * @return the folder
-   */
-  private Content getRedirectsFolder(String siteId) {
-    Site site = sitesService.getSite(siteId);
-    if (site != null) {
-      if (site.getSiteRootFolder().hasChild(REDIRECT_PATH)) {
-        return site.getSiteRootFolder().getChild(REDIRECT_PATH);
-      }
-      return site.getSiteRootFolder();
-    }
-    return contentRepository.getRoot().getChild(REDIRECT_PATH);
   }
 
   /**

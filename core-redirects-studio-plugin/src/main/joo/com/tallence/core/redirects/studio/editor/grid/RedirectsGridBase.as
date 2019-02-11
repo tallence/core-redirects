@@ -47,13 +47,13 @@ public class RedirectsGridBase extends GridPanel {
 
   private var selectedSiteVE:ValueExpression;
   private var searchFieldVE:ValueExpression;
-  private var mayUseRegexVE:ValueExpression;
+  private var mayNotUseRegexVE:ValueExpression;
 
   public function RedirectsGridBase(config:RedirectsGrid = null) {
     super(config);
     addListener('rowDblclick', openEditWindow);
 
-    this.mayUseRegexVE = config.mayUseRegexVE;
+    this.mayNotUseRegexVE = config.mayNotUseRegexVE;
   }
 
   /**
@@ -132,7 +132,7 @@ public class RedirectsGridBase extends GridPanel {
     var window:RedirectEditWindow = new RedirectEditWindow(RedirectEditWindow({
       title: resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_edit_text'),
       redirect: getSelectedRedirect(),
-      mayUseRegexVE: this.mayUseRegexVE
+      mayNotUseRegexVE: this.mayNotUseRegexVE
     }));
     window.show()
   }

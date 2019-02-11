@@ -31,7 +31,7 @@
     public var errorMessagesVE:ValueExpression;
 
     [Bindable]
-    public var mayUseRegexVE:ValueExpression;
+    public var mayNotUseRegexVE:ValueExpression;
     ]]>
   </fx:Script>
   <local:items>
@@ -40,7 +40,7 @@
 
         <Checkbox
             fieldLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_active')}">
-          <plugins>
+          <plugins exml:mode="append">
             <ui:BindPropertyPlugin bidirectional="true" bindTo="{getBindTo(config.localModel, RedirectImpl.ACTIVE)}"/>
           </plugins>
         </Checkbox>
@@ -65,10 +65,10 @@
                forceSelection="true"
                triggerAction="all"
                editable="false"
-               store="{[ 
+               store="{[
                [RedirectImpl.REDIRECT_TYPE_404, resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_type_value_1')],
                [RedirectImpl.REDIRECT_TYPE_ALWAYS, resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_type_value_0')]]}">
-          <plugins>
+          <plugins exml:mode="append">
             <ui:BindPropertyPlugin bidirectional="true"
                                    bindTo="{getBindTo(config.localModel, RedirectImpl.REDIRECT_TYPE)}"/>
           </plugins>
@@ -81,7 +81,7 @@
           <items>
             <TextField width="500"
                        checkChangeBuffer="400">
-              <plugins>
+              <plugins exml:mode="append">
                 <ui:BEMPlugin block="redirect-source-field" modifier="{getSourceFieldModifiers(config.localModel, config.isValidVE)}"/>
                 <ui:BindPropertyPlugin bidirectional="true"
                                        bindTo="{getBindTo(config.localModel, RedirectImpl.SOURCE)}"/>
@@ -107,22 +107,29 @@
           </plugins>
         </FieldContainer>
 
-        <ui:BoundRadioGroup width="auto"
-                            columns="1"
-                            bindTo="{getBindTo(config.localModel, RedirectImpl.SOURCE_TYPE)}"
-                            >
-          <ui:items>
-            <Radio inputValue="{RedirectImpl.SOURCE_TYPE_PLAIN}"
-                   boxLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_sourceType_plain')}"/>
-            <Radio inputValue="{RedirectImpl.SOURCE_TYPE_REGEX}"
-                   boxLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_sourceType_regex')}"/>
-          </ui:items>
-          <ui:plugins>
-            <ui:BindPropertyPlugin componentProperty="disabled"
-                                   transformer="{function(value: Boolean): Boolean {return !value;}}"
-                                   bindTo="{config.mayUseRegexVE}"/>
-          </ui:plugins>
-        </ui:BoundRadioGroup>
+        <!--TODO both elements (spacer and comboBox) are bound to the mayNotUseRegexVE. There might is a more elegant way!-->
+        <editor:FormSpacerElement height="10px">
+          <editor:plugins exml:mode="append">
+            <ui:BindPropertyPlugin componentProperty="hidden"
+                                   bindTo="{config.mayNotUseRegexVE}"/>
+          </editor:plugins>
+        </editor:FormSpacerElement>
+        <Combo itemId="sourceTypeField"
+               fieldLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_sourceType')}"
+               forceSelection="true"
+               triggerAction="all"
+               editable="false"
+               store="{[
+               [RedirectImpl.SOURCE_TYPE_PLAIN, resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_sourceType_plain')],
+               [RedirectImpl.SOURCE_TYPE_REGEX, resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_sourceType_regex')]]}">
+          <plugins exml:mode="append">
+            <ui:BindPropertyPlugin bidirectional="true"
+                                   bindTo="{getBindTo(config.localModel, RedirectImpl.SOURCE_TYPE)}"/>
+            <ui:BindPropertyPlugin componentProperty="hidden"
+                                   bindTo="{config.mayNotUseRegexVE}"/>
+
+          </plugins>
+        </Combo>
 
         <editor:FormSpacerElement height="10px"/>
 
@@ -137,7 +144,7 @@
 
         <TextArea
             fieldLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_description')}">
-          <plugins>
+          <plugins exml:mode="append">
             <ui:BindPropertyPlugin bidirectional="true"
                                    bindTo="{getBindTo(config.localModel, RedirectImpl.DESCRIPTION)}"/>
           </plugins>
