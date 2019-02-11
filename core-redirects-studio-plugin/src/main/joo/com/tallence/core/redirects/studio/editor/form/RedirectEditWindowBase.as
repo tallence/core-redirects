@@ -38,7 +38,7 @@ use namespace editorContext;
  */
 public class RedirectEditWindowBase extends Window {
 
-  private static var SOURCE_TYPE_DEFAULT: String = RedirectImpl.SOURCE_TYPE_PLAIN;
+  private static var SOURCE_TYPE_DEFAULT:String = RedirectImpl.SOURCE_TYPE_PLAIN;
 
   private var localModel:Bean;
   private var redirect:Redirect;
@@ -106,7 +106,7 @@ public class RedirectEditWindowBase extends Window {
       redirect.setRedirectType(model.get(RedirectImpl.REDIRECT_TYPE));
     } else {
       var siteId:String = redirect ? redirect.getSiteId() : selectedSiteIdVE.getValue();
-      var sourceType:* = model.get(RedirectImpl.SOURCE_TYPE);
+      var sourceType:String = model.get(RedirectImpl.SOURCE_TYPE);
       RedirectRepositoryImpl.getInstance().createRedirect(
           siteId,
           model.get(RedirectImpl.ACTIVE),

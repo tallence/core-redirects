@@ -31,7 +31,7 @@
     public var errorMessagesVE:ValueExpression;
 
     [Bindable]
-    public var mayUseRegexVE:ValueExpression;
+    public var mayNotUseRegexVE:ValueExpression;
     ]]>
   </fx:Script>
   <local:items>
@@ -107,12 +107,11 @@
           </plugins>
         </FieldContainer>
 
-        <!--TODO both elements (spacer and comboBox) are bound to the mayUseRegexVE. There might is a more elegant way!-->
+        <!--TODO both elements (spacer and comboBox) are bound to the mayNotUseRegexVE. There might is a more elegant way!-->
         <editor:FormSpacerElement height="10px">
           <editor:plugins exml:mode="append">
             <ui:BindPropertyPlugin componentProperty="hidden"
-                                   transformer="{function(value: Boolean): Boolean {return !value;}}"
-                                   bindTo="{config.mayUseRegexVE}"/>
+                                   bindTo="{config.mayNotUseRegexVE}"/>
           </editor:plugins>
         </editor:FormSpacerElement>
         <Combo itemId="sourceTypeField"
@@ -127,8 +126,7 @@
             <ui:BindPropertyPlugin bidirectional="true"
                                    bindTo="{getBindTo(config.localModel, RedirectImpl.SOURCE_TYPE)}"/>
             <ui:BindPropertyPlugin componentProperty="hidden"
-                                   transformer="{function(value: Boolean): Boolean {return !value;}}"
-                                   bindTo="{config.mayUseRegexVE}"/>
+                                   bindTo="{config.mayNotUseRegexVE}"/>
 
           </plugins>
         </Combo>

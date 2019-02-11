@@ -34,8 +34,8 @@ public class RedirectManagerEditorBase extends Panel {
   protected static const ID:String = "redirectManagerEditor";
 
   private var selectedSiteVE:ValueExpression;
-  private var mayWriteVE:ValueExpression;
-  private var mayUseRegexVE:ValueExpression;
+  private var mayNotWriteVE:ValueExpression;
+  private var mayNotUseRegexVE:ValueExpression;
 
   public function RedirectManagerEditorBase(config:RedirectManagerEditor = null) {
     super(config);
@@ -49,12 +49,12 @@ public class RedirectManagerEditorBase extends Panel {
     var siteId:* = getSelectedSiteVE().getValue();
 
     //In case the request takes long or fails, the user has no rights
-    getMayWriteVE().setValue(false);
-    getMayUseRegexVE().setValue(false);
+    getMayNotWriteVE().setValue(true);
+    getMayNotUseRegexVE().setValue(true);
 
     RedirectRepositoryImpl.getInstance().resolvePermissions(siteId).then(function(response: PermissionResponse): void {
-      getMayWriteVE().setValue(response.isMayWrite());
-      getMayUseRegexVE().setValue(response.isMayUseRegex());
+      getMayNotWriteVE().setValue(!response.isMayWrite());
+      getMayNotUseRegexVE().setValue(!response.isMayUseRegex());
     });
   }
 
@@ -66,7 +66,7 @@ public class RedirectManagerEditorBase extends Panel {
     var window:RedirectEditWindow = new RedirectEditWindow(RedirectEditWindow({
       title: resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_new_text'),
       selectedSiteIdVE: getSelectedSiteVE(),
-      mayUseRegexVE: this.mayUseRegexVE
+      mayNotUseRegexVE: this.mayNotUseRegexVE
     }));
     window.show();
   }
@@ -92,18 +92,18 @@ public class RedirectManagerEditorBase extends Panel {
     return selectedSiteVE;
   }
 
-  protected function getMayWriteVE():ValueExpression {
-    if (!mayWriteVE) {
-      mayWriteVE = ValueExpressionFactory.createFromValue(false);
+  protected function getMayNotWriteVE():ValueExpression {
+    if (!mayNotWriteVE) {
+      mayNotWriteVE = ValueExpressionFactory.createFromValue(false);
     }
-    return mayWriteVE;
+    return mayNotWriteVE;
   }
 
-  protected function getMayUseRegexVE():ValueExpression {
-    if (!mayUseRegexVE) {
-      mayUseRegexVE = ValueExpressionFactory.createFromValue(false);
+  protected function getMayNotUseRegexVE():ValueExpression {
+    if (!mayNotUseRegexVE) {
+      mayNotUseRegexVE = ValueExpressionFactory.createFromValue(false);
     }
-    return mayUseRegexVE;
+    return mayNotUseRegexVE;
   }
 
   protected function getSiteIsNotSelectedVE():ValueExpression {
