@@ -88,15 +88,12 @@ public class Redirect {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Redirect redirect = (Redirect) o;
-    return sourceUrlType == redirect.sourceUrlType &&
-            Objects.equals(source, redirect.source) &&
-            redirectType == redirect.redirectType &&
-            Objects.equals(target, redirect.target);
+    return contentId.equals(redirect.contentId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(sourceUrlType, source, redirectType, target);
+    return Objects.hash(contentId);
   }
 
   @Override
