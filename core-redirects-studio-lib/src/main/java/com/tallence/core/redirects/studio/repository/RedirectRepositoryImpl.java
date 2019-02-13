@@ -93,7 +93,8 @@ public class RedirectRepositoryImpl implements RedirectRepository {
       throw new IllegalArgumentException("duplicated source url");
     }
     String uuid = UUID.randomUUID().toString();
-    Content redirect = contentRepository.createChild(getFolderForRedirect(siteId, uuid), uuid, redirectContentType, new HashMap<>());
+    String documentName = "redirect-" + uuid;
+    Content redirect = contentRepository.createChild(getFolderForRedirect(siteId, uuid), documentName, redirectContentType, new HashMap<>());
     try {
       updateRedirect(redirect, false, updateProperties);
     } finally {

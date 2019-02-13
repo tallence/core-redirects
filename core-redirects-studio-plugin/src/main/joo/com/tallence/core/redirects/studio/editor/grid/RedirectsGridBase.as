@@ -15,6 +15,7 @@
  */
 
 package com.tallence.core.redirects.studio.editor.grid {
+import com.coremedia.cap.undoc.content.Content;
 import com.coremedia.cms.editor.sdk.editorContext;
 import com.coremedia.cms.editor.sdk.sites.Site;
 import com.coremedia.ui.data.ValueExpression;
@@ -23,14 +24,11 @@ import com.coremedia.ui.store.BeanRecord;
 import com.coremedia.ui.util.EncodingUtil;
 import com.tallence.core.redirects.studio.data.Redirect;
 import com.tallence.core.redirects.studio.data.RedirectImpl;
-import com.tallence.core.redirects.studio.data.RedirectRepositoryImpl;
 import com.tallence.core.redirects.studio.editor.form.RedirectEditWindow;
 
 import ext.data.Store;
 import ext.grid.GridPanel;
 import ext.selection.RowSelectionModel;
-import ext.toolbar.PagingToolbar;
-import ext.toolbar.events.PagingToolbar_pageEvent;
 import ext.util.Format;
 
 use namespace editorContext;
@@ -139,6 +137,11 @@ public class RedirectsGridBase extends GridPanel {
 
   protected function deleteRedirect():void {
     getSelectedRedirect().deleteMe(resetPage);
+  }
+
+  protected function openRedirectTarget():void {
+    var targetLink:Content = getSelectedRedirect().getTargetLink();
+    editorContext.getContentTabManager().openDocument(targetLink);
   }
 
   /**
