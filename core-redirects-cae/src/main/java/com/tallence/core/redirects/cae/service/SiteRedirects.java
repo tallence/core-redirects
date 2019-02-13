@@ -35,8 +35,8 @@ public class SiteRedirects {
   private static final Logger LOG = LoggerFactory.getLogger(SiteRedirects.class);
 
   private String siteId;
-  private final ConcurrentHashMap<String, Redirect> staticRedirects = new ConcurrentHashMap<>();
-  private final Object staticRedirectsMonitor = new Object();
+  private final ConcurrentHashMap<String, Redirect> plainRedirects = new ConcurrentHashMap<>();
+  private final Object plainRedirectsMonitor = new Object();
   private final ConcurrentHashMap<Pattern, Redirect> patternRedirects = new ConcurrentHashMap<>();
   private final Object patternRedirectsMonitor = new Object();
 
@@ -48,10 +48,10 @@ public class SiteRedirects {
   }
 
   /**
-   * Returns the list of static redirects.
+   * Returns the list of plain redirects.
    */
-  public Map<String, Redirect> getStaticRedirects() {
-    return staticRedirects;
+  public Map<String, Redirect> getPlainRedirects() {
+    return plainRedirects;
   }
 
   /**
@@ -66,9 +66,9 @@ public class SiteRedirects {
    */
   public void addRedirect(Redirect redirect) {
     if (redirect.getSourceUrlType() == SourceUrlType.PLAIN) {
-      synchronized (staticRedirectsMonitor) {
-        staticRedirects.values().remove(redirect);
-        staticRedirects.put(redirect.getSource(), redirect);
+      synchronized (plainRedirectsMonitor) {
+        plainRedirects.values().remove(redirect);
+        plainRedirects.put(redirect.getSource(), redirect);
       }
 
     } else if (redirect.getSourceUrlType() == SourceUrlType.REGEX) {
@@ -91,8 +91,8 @@ public class SiteRedirects {
    */
   public void removeRedirect(Redirect redirect) {
     if (redirect.getSourceUrlType() == SourceUrlType.PLAIN) {
-      synchronized (staticRedirectsMonitor) {
-        staticRedirects.values().remove(redirect);
+      synchronized (plainRedirectsMonitor) {
+        plainRedirects.values().remove(redirect);
       }
     } else if (redirect.getSourceUrlType() == SourceUrlType.REGEX) {
       synchronized (patternRedirectsMonitor) {
@@ -106,20 +106,20 @@ public class SiteRedirects {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     SiteRedirects that = (SiteRedirects) o;
-    return Objects.equals(staticRedirects, that.staticRedirects) &&
+    return Objects.equals(plainRedirects, that.plainRedirects) &&
             Objects.equals(patternRedirects, that.patternRedirects);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(staticRedirects, patternRedirects);
+    return Objects.hash(plainRedirects, patternRedirects);
   }
 
   @Override
   public String toString() {
     return "SiteRedirects{" +
             "siteId='" + siteId + '\'' +
-            ", staticRedirects.size=" + staticRedirects.size() +
+            ", plainRedirects.size=" + plainRedirects.size() +
             ", patternRedirects.size=" + patternRedirects.size() +
             '}';
   }

@@ -54,8 +54,6 @@ public class UpdateSiteTask extends AbstractTask {
 
   @Override
   public void run() {
-    // Disable dependency tracking for the folder resolution, as we add the necessary dependencies ourselve and we don't
-    // want any folder deps.
     Content redirectsFolder = site.getSiteRootFolder().getChild(redirectsPath);
     if (redirectsFolder == null) {
       // In order to prevent the folder lookup from running on every request, we cache error results for a time.
@@ -79,7 +77,7 @@ public class UpdateSiteTask extends AbstractTask {
     redirectEntries.forEach(result::addRedirect);
 
     LOG.debug("Finished loading [{}] static and [{}] dynamic redirects for folder [{}]",
-            result.getStaticRedirects().size(), result.getPatternRedirects().size(), redirectsFolder.getPath());
+            result.getPlainRedirects().size(), result.getPatternRedirects().size(), redirectsFolder.getPath());
 
     redirectsMap.put(site, result);
 

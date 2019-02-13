@@ -37,7 +37,7 @@ public class RedirectContentListenerTest extends AbstractRedirectsTest {
     ContentBean target = getContentBean(1002);
 
     Site site = sitesService.getSite("siteA");
-    int staticSizeBefore = redirectService.getRedirectsForSite(site).getStaticRedirects().size();
+    int plainSizeBefore = redirectService.getRedirectsForSite(site).getPlainRedirects().size();
     int patternSizeBefore = redirectService.getRedirectsForSite(site).getPatternRedirects().size();
 
     Map<String, Object> properties = new HashMap<>();
@@ -51,16 +51,16 @@ public class RedirectContentListenerTest extends AbstractRedirectsTest {
     // Since we cant disable the repo listener, we call the redirectUpdateTaskScheduler directly, so we don't have to sleep here.
     redirectUpdateTaskScheduler.runUpdate(redirect);
 
-    assertThat(redirectService.getRedirectsForSite(site).getStaticRedirects().size(), equalTo(staticSizeBefore + 1));
+    assertThat(redirectService.getRedirectsForSite(site).getPlainRedirects().size(), equalTo(plainSizeBefore + 1));
     assertThat(redirectService.getRedirectsForSite(site).getPatternRedirects().size(), equalTo(patternSizeBefore));
-    assertThat(redirectService.getRedirectsForSite(site).getStaticRedirects().values(), hasItem(hasProperty("source", equalTo("/channela/redirect-test-dynamic"))));
+    assertThat(redirectService.getRedirectsForSite(site).getPlainRedirects().values(), hasItem(hasProperty("source", equalTo("/channela/redirect-test-dynamic"))));
 
     // Test deletion
     redirect.delete();
     // Since we cant disable the repo listener, we call the redirectUpdateTaskScheduler directly, so we don't have to sleep here.
     redirectUpdateTaskScheduler.runRemove(redirect);
 
-    assertThat(redirectService.getRedirectsForSite(site).getStaticRedirects().size(), equalTo(staticSizeBefore));
+    assertThat(redirectService.getRedirectsForSite(site).getPlainRedirects().size(), equalTo(plainSizeBefore));
     assertThat(redirectService.getRedirectsForSite(site).getPatternRedirects().size(), equalTo(patternSizeBefore));
 
     redirectUpdateTaskScheduler.setTestMode(false);
