@@ -86,6 +86,8 @@ public class RedirectEditWindowBase extends Window {
       model.set(RedirectImpl.REDIRECT_TYPE, redirect.getRedirectType());
       model.set(RedirectImpl.CREATION_DATE, redirect.getCreationDate());
     } else {
+      //Set default values
+      model.set(RedirectImpl.ACTIVE, true);
       model.set(RedirectImpl.SOURCE_TYPE, SOURCE_TYPE_DEFAULT);
       model.set(RedirectImpl.REDIRECT_TYPE, RedirectImpl.REDIRECT_TYPE_404);
       model.set(RedirectImpl.CREATION_DATE, new Date());
