@@ -40,7 +40,7 @@
             <Container>
               <items>
                 <DisplayField
-                    value="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectContentTypes', 'RedirectEntry_edit_hint_text')}"/>
+                    value="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectContentTypes', 'Redirect_edit_hint_text')}"/>
                 <Button
                     text="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_button_text')}"
                     tooltip="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_button_tooltip')}"
@@ -58,7 +58,6 @@
             <editor:StringPropertyField propertyName="sourceUrlType"/>
             <editor:StringPropertyField propertyName="source"/>
             <editor:LinkListPropertyField propertyName="targetLink"/>
-            <editor:BooleanPropertyField propertyName="imported"/>
             <editor:TextAreaStringPropertyField propertyName="description"/>
           </editor:items>
         </editor:PropertyFieldGroup>

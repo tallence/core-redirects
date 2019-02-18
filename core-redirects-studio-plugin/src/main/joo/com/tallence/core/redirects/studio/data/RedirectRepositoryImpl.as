@@ -146,7 +146,8 @@ public class RedirectRepositoryImpl extends RemoteBeanImpl implements RedirectRe
   public function validateSource(siteId:String,
                                  redirectId:String,
                                  source:String):IPromise {
-    var url:String = "/" + siteId + "/" + VALIDATE_URI_SEGMENT + "?siteId=" + siteId + "&source=" + source;
+    //Encode the source, it might contain characters like "&"
+    var url:String = "/" + siteId + "/" + VALIDATE_URI_SEGMENT + "?siteId=" + siteId + "&source=" + encodeURIComponent(source);
     if (redirectId) {
       url = url + "&redirectId=" + redirectId;
     }

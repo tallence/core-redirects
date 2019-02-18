@@ -94,7 +94,6 @@
                                        bindTo="{config.mayNotWriteVE}"/>
               </plugins>
             </MenuItem>
-            <MenuSeparator/>
             <MenuItem iconCls="{resourceManager.getString('com.coremedia.icons.CoreIcons', 'trash_bin')}"
                       text="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_grid_redirect_delete_label')}"
                       handler="{deleteRedirect}">
@@ -102,6 +101,11 @@
                 <ui:BindPropertyPlugin componentProperty="disabled"
                                        bindTo="{config.mayNotWriteVE}"/>
               </plugins>
+            </MenuItem>
+            <MenuSeparator/>
+            <MenuItem iconCls="{resourceManager.getString('com.coremedia.icons.CoreIcons', 'type_object')}"
+                      text="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_grid_redirect_open_label')}"
+                      handler="{openRedirectTarget}">
             </MenuItem>
           </items>
         </Menu>
