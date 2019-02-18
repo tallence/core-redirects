@@ -10,7 +10,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * A pausable executor service.
  *
- * After https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ThreadPoolExecutor.html
+ * Copied from https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ThreadPoolExecutor.html
  */
 public class PausableThreadPoolExecutorService extends ThreadPoolExecutor {
 

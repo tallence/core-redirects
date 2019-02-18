@@ -56,7 +56,7 @@ public class RedirectServiceImpl implements RedirectService {
     // Prewarm redirect cache to prevent longer initial requests.
     sitesService.getSites().stream().filter(Site::isReadable).forEach(this::getRedirectsForSite);
 
-    // Attach den content listener
+    // Attach the content listener
     contentRepository.addContentRepositoryListener(new RedirectContentListener(redirectUpdateTaskScheduler));
   }
 

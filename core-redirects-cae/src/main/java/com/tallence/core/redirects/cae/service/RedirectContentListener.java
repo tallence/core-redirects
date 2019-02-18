@@ -20,6 +20,7 @@ import com.coremedia.cap.content.events.ContentDestroyedEvent;
 import com.coremedia.cap.content.events.ContentEvent;
 import com.coremedia.cap.content.events.ContentRepositoryEventConstants;
 import com.coremedia.cap.content.events.ContentRepositoryListenerBase;
+import com.coremedia.cap.content.publication.events.PublicationContentEvent;
 
 /**
  * Listener for updates to the redirects.
@@ -65,4 +66,10 @@ public class RedirectContentListener extends ContentRepositoryListenerBase {
       }
     }
   }
+
+  @Override
+  protected void handlePublicationContentEvent(PublicationContentEvent event) {
+    super.handlePublicationContentEvent(event);
+  }
 }
+
