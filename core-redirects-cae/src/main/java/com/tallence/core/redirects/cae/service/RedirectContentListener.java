@@ -41,7 +41,7 @@ public class RedirectContentListener extends ContentRepositoryListenerBase {
 
       ContentDestroyedEvent destroyedEvent = (ContentDestroyedEvent) event;
       if (destroyedEvent.getContentType().isSubtypeOf("Redirect")) {
-        redirectUpdateTaskScheduler.runDestroy(content.getId());
+        redirectUpdateTaskScheduler.runDestroy(content.getId(), destroyedEvent.getFolder());
       }
       //content.getType will throw an exception for destroyed contents.
       return;

@@ -30,19 +30,23 @@ public class DestroyDocumentTask extends AbstractTask {
   private static final Logger LOG = LoggerFactory.getLogger(DestroyDocumentTask.class);
 
   private String targetDocId;
+  private Site targetSite;
 
-  public DestroyDocumentTask(Map<Site, SiteRedirects> redirectsMap, String targetDocId) {
+  public DestroyDocumentTask(Map<Site, SiteRedirects> redirectsMap, Site targetSite, String targetDocId) {
     super(redirectsMap);
     this.targetDocId = targetDocId;
+    this.targetSite = targetSite;
   }
 
   @Override
   public void run() {
 
-    redirectsMap.values().forEach(siteRedirects -> {
+    String rootSegment = getRootSegment(targetSite);
+    if (rootSegment != null) {
+      SiteRedirects siteRedirects = redirectsMap.get(targetSite);
       siteRedirects.removeRedirect(targetDocId);
-      LOG.info("Removed {} from redirect cache of site {}", targetDocId);
-    });
+      LOG.info("Removed {} from redirect cache of site {}", targetDocId, targetSite);
+    }
   }
 
 }

@@ -126,10 +126,17 @@ public class RedirectUpdateTaskScheduler {
 
   /**
    * Destroys redirects. Only the id is available for destroyed contents...
-   * TODO get the site of the destroyed content or consider refactoring the threadPool-architecture
    */
-  public void runDestroy(String redirectId) {
-    new DestroyDocumentTask(redirectsCache, redirectId).run();
+  public void runDestroy(String redirectId, Content folder) {
+
+    Site site = getSite(folder);
+    if (site != null) {
+      if (testMode) {
+        new DestroyDocumentTask(redirectsCache, site, redirectId).run();
+      } else {
+        itemUpdateExecutor.submit(new DestroyDocumentTask(redirectsCache, site, redirectId));
+      }
+    }
   }
 
 
