@@ -41,12 +41,9 @@ public class DestroyDocumentTask extends AbstractTask {
   @Override
   public void run() {
 
-    String rootSegment = getRootSegment(targetSite);
-    if (rootSegment != null) {
-      SiteRedirects siteRedirects = redirectsMap.get(targetSite);
-      siteRedirects.removeRedirect(targetDocId);
-      LOG.info("Removed {} from redirect cache of site {}", targetDocId, targetSite);
-    }
+    SiteRedirects siteRedirects = redirectsMap.get(targetSite);
+    siteRedirects.removeRedirect(targetDocId);
+    LOG.info("Removed {} from redirect cache of site {}", targetDocId, targetSite);
   }
 
 }
