@@ -71,7 +71,10 @@ public class RedirectImporter {
   public RedirectImportResponse importRedirects(String siteId, InputStream inputStream) {
     RedirectImportResponse redirectImportResponse = new RedirectImportResponse();
     try {
-      Iterable<CSVRecord> records = CSVFormat.EXCEL.withDelimiter(';').parse(new InputStreamReader(inputStream));
+      Iterable<CSVRecord> records = CSVFormat.EXCEL
+          .withDelimiter(';')
+          .withFirstRecordAsHeader()
+          .parse(new InputStreamReader(inputStream));
       for (CSVRecord record : records) {
         if (record.size() < 6) {
           redirectImportResponse.addErrorMessage(getCsvEntry(record), INVALID_CSV_ENTRY);
