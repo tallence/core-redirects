@@ -15,9 +15,7 @@
  */
 package com.tallence.core.redirects.cae.service.tasks;
 
-import com.coremedia.cap.content.Content;
 import com.coremedia.cap.multisite.Site;
-import com.tallence.core.redirects.cae.model.Redirect;
 import com.tallence.core.redirects.cae.service.SiteRedirects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,30 +23,26 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 
 /**
- * Removes deleted Redirects from the cache.
+ * Removes destroyed Redirects from the cache.
  */
-public class RemoveDocumentTask extends AbstractTask {
+public class DestroyDocumentTask extends AbstractTask {
 
-  private static final Logger LOG = LoggerFactory.getLogger(RemoveDocumentTask.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DestroyDocumentTask.class);
 
-  private Content targetDoc;
-  private Site targetSite;
+  private String targetDocId;
 
-  public RemoveDocumentTask(Map<Site, SiteRedirects> redirectsMap, Site targetSite, Content targetDoc) {
+  public DestroyDocumentTask(Map<Site, SiteRedirects> redirectsMap, String targetDocId) {
     super(redirectsMap);
-    this.targetDoc = targetDoc;
-    this.targetSite = targetSite;
+    this.targetDocId = targetDocId;
   }
 
   @Override
   public void run() {
-    String rootSegment = getRootSegment(targetSite);
-    if (rootSegment != null) {
-      Redirect redirect = new Redirect(targetDoc, rootSegment);
-      SiteRedirects siteRedirects = redirectsMap.get(targetSite);
-      siteRedirects.removeRedirect(redirect);
-      LOG.info("Removed {} from redirect cache of site {}", targetDoc, targetSite);
-    }
+
+    redirectsMap.values().forEach(siteRedirects -> {
+      siteRedirects.removeRedirect(targetDocId);
+      LOG.info("Removed {} from redirect cache of site {}", targetDocId);
+    });
   }
 
 }

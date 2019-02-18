@@ -93,13 +93,29 @@ public class SiteRedirects {
     if (redirect.getSourceUrlType() == SourceUrlType.PLAIN) {
       staticRedirects.remove(redirect.getSource());
     } else if (redirect.getSourceUrlType() == SourceUrlType.REGEX) {
-      Pattern key = null;
-      for (Map.Entry<Pattern, Redirect> entry : patternRedirects.entrySet()) {
-        if (entry.getValue().getContentId().equals(redirect.getContentId())) {
-          key = entry.getKey();
-        }
+      removePatternRedirect(redirect.getContentId());
+    }
+  }
+
+  /**
+   * Remove the redirect, identified by the given id.
+   * The type is not known -> try both lists.
+   */
+  public void removeRedirect(String id) {
+
+    staticRedirects.entrySet().stream()
+            .filter(e -> id.equals(e.getValue().getContentId()))
+            .forEach(e -> staticRedirects.remove(e.getKey()));
+
+    removePatternRedirect(id);
+  }
+
+  private void removePatternRedirect(String contentId) {
+    for (Map.Entry<Pattern, Redirect> entry : patternRedirects.entrySet()) {
+      if (entry.getValue().getContentId().equals(contentId)) {
+        patternRedirects.remove(entry.getKey());
+        break;
       }
-      patternRedirects.remove(key);
     }
   }
 

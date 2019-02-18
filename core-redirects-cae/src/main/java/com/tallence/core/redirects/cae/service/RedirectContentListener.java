@@ -16,6 +16,7 @@
 package com.tallence.core.redirects.cae.service;
 
 import com.coremedia.cap.content.Content;
+import com.coremedia.cap.content.events.ContentDestroyedEvent;
 import com.coremedia.cap.content.events.ContentEvent;
 import com.coremedia.cap.content.events.ContentRepositoryEventConstants;
 import com.coremedia.cap.content.events.ContentRepositoryListenerBase;
@@ -34,6 +35,17 @@ public class RedirectContentListener extends ContentRepositoryListenerBase {
   @Override
   protected void handleContentEvent(ContentEvent event) {
     Content content = event.getContent();
+
+    if (event instanceof ContentDestroyedEvent) {
+
+      ContentDestroyedEvent destroyedEvent = (ContentDestroyedEvent) event;
+      if (destroyedEvent.getContentType().isSubtypeOf("Redirect")) {
+        redirectUpdateTaskScheduler.runDestroy(content.getId());
+      }
+      //content.getType will throw an exception for destroyed contents.
+      return;
+    }
+
     if (content.getType().isSubtypeOf("Redirect")) {
 
       switch (event.getType()) {
