@@ -49,6 +49,12 @@ abstract class AbstractTask implements Runnable {
   }
 
   boolean validate(Content redirect) {
+
+    if (redirect.isDeleted() || redirect.isDestroyed()) {
+      LOG.warn("Redirect [{}] was destroyed or deleted in the meantime. Ignore it.", redirect.getId());
+      return false;
+    }
+
     String sourceUrl = redirect.getString(SOURCE_URL);
     if (!StringUtils.hasText(sourceUrl)) {
       LOG.warn("redirect [{}] has no valid sourceUrl [{}]", redirect.getId(), sourceUrl);

@@ -101,6 +101,28 @@ public class SiteRedirects {
     }
   }
 
+  /**
+   * Remove the redirect, identified by the given id.
+   * The type is not known -> try both lists.
+   */
+  public void removeRedirect(String id) {
+
+    synchronized (plainRedirectsMonitor) {
+      plainRedirects.entrySet().stream()
+          .filter(e -> id.equals(e.getValue().getContentId()))
+          .forEach(e -> plainRedirects.remove(e.getKey()));
+    }
+
+    synchronized (patternRedirectsMonitor) {
+      for (Map.Entry<Pattern, Redirect> entry : patternRedirects.entrySet()) {
+        if (entry.getValue().getContentId().equals(id)) {
+          patternRedirects.remove(entry.getKey());
+          break;
+        }
+      }
+    }
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;

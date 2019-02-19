@@ -20,6 +20,7 @@ import com.coremedia.cap.content.ContentRepository;
 import com.coremedia.cap.multisite.Site;
 import com.coremedia.cap.multisite.SitesService;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.tallence.core.redirects.cae.service.tasks.DestroyDocumentTask;
 import com.tallence.core.redirects.cae.service.tasks.RemoveDocumentTask;
 import com.tallence.core.redirects.cae.service.tasks.UpdateDocumentTask;
 import com.tallence.core.redirects.cae.service.tasks.UpdateSiteTask;
@@ -119,6 +120,21 @@ public class RedirectUpdateTaskScheduler {
         new RemoveDocumentTask(redirectsCache, site, redirect).run();
       } else {
         itemUpdateExecutor.submit(new RemoveDocumentTask(redirectsCache, site, redirect));
+      }
+    }
+  }
+
+  /**
+   * Destroys redirects. Only the id is available for destroyed contents...
+   */
+  public void runDestroy(String redirectId, Content folder) {
+
+    Site site = getSite(folder);
+    if (site != null) {
+      if (testMode) {
+        new DestroyDocumentTask(redirectsCache, site, redirectId).run();
+      } else {
+        itemUpdateExecutor.submit(new DestroyDocumentTask(redirectsCache, site, redirectId));
       }
     }
   }
