@@ -56,8 +56,7 @@ public class UpdateSiteTask extends AbstractTask {
   public void run() {
     Content redirectsFolder = site.getSiteRootFolder().getChild(redirectsPath);
     if (redirectsFolder == null) {
-      // In order to prevent the folder lookup from running on every request, we cache error results for a time.
-      LOG.error("Configuration error! Missing redirects folder at {}/{}. Please create at least an empty folder.", site.getSiteRootFolder().getPath(), redirectsPath);
+      LOG.info("Missing redirects folder at {}/{}. Cannot read redirects for this site.", site.getSiteRootFolder().getPath(), redirectsPath);
       redirectsMap.put(site, new SiteRedirects(site.getId()));
       return;
     } else {

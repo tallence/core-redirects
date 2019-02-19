@@ -115,7 +115,7 @@ public class RedirectUpdateTaskScheduler {
    */
   public void runRemove(Content redirect) {
     Site site = getSiteOfDeletedContent(redirect);
-    if (site != null) {
+    if (site != null && redirectsCache.containsKey(site)) {
       if (testMode) {
         new RemoveDocumentTask(redirectsCache, site, redirect).run();
       } else {
@@ -130,7 +130,7 @@ public class RedirectUpdateTaskScheduler {
   public void runDestroy(String redirectId, Content folder) {
 
     Site site = getSite(folder);
-    if (site != null) {
+    if (site != null && redirectsCache.containsKey(site)) {
       if (testMode) {
         new DestroyDocumentTask(redirectsCache, site, redirectId).run();
       } else {

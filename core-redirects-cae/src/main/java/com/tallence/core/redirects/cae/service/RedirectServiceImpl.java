@@ -54,7 +54,7 @@ public class RedirectServiceImpl implements RedirectService {
   @PostConstruct
   public void init() {
     // Prewarm redirect cache to prevent longer initial requests.
-    sitesService.getSites().stream().filter(Site::isReadable).forEach(this::getRedirectsForSite);
+    sitesService.getSites().stream().filter(Site::isReadable).forEach(this::initiateRedirects);
 
     // Attach the content listener
     contentRepository.addContentRepositoryListener(new RedirectContentListener(redirectUpdateTaskScheduler));
@@ -71,22 +71,28 @@ public class RedirectServiceImpl implements RedirectService {
     if (site == null) {
       return new SiteRedirects();
     }
-    try {
-      return getRedirectsFor(site);
-    } catch (Exception e) {
-      LOG.error("Error during fetching redirects for site [{}]", site.getId(), e);
+    SiteRedirects redirects = redirectsCache.get(site);
+    if (redirects ==  null) {
+      LOG.warn("No Redirects structure exists for site [{}]. Returning empty Redirects. This is probably caused by " +
+              "requests received before the initial siteUpdate jobs was finished. Request-threads should not wait for " +
+              "the job to finish to prevent an overflowing request-threadPool. Consider more time for the cae to warm " +
+              "up before being put back in the load-balancing.", site.getId());
       return new SiteRedirects();
+    } else {
+      return redirects;
     }
+
   }
 
-  private SiteRedirects getRedirectsFor(Site site) {
-    if (!redirectsCache.containsKey(site)) {
+  private void initiateRedirects(Site site) {
+    try {
       // Calc site (or fetch from drive)
       LOG.debug("Missing site {} in cache, queueing fetch", site);
       redirectUpdateTaskScheduler.runUpdate(site);
       // FIXME Possible add fetch from disk here (or another speed-fix)
+    } catch (Exception e) {
+      LOG.error("Error during fetching redirects for site [{}]", site.getId(), e);
     }
-    return redirectsCache.get(site);
   }
 
 }
