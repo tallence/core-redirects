@@ -65,8 +65,8 @@ public class UpdateSiteTask extends AbstractTask {
     // Fetch the redirect content from
     Collection<Content> redirectContents = fetchRedirectDocumentsFromFolder(redirectsFolder);
 
-    //Prefetch to get data with just one server call
-    contentRepository.prefetch(redirectContents);
+    //Prefetch to get data with just one server call. Using chunks which will work more stable for large sets.
+    contentRepository.withPrefetch(redirectContents, 2000);
 
     // In order to create dependencies on the redirects found, the conversion needs to happen after re-enabling the tracking.
     List<Redirect> redirectEntries = mapToRedirects(redirectContents, site);
