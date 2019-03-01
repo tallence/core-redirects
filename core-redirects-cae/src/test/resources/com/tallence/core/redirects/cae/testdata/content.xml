@@ -79,6 +79,18 @@
                   <intProperty name="imported" value="0"/>
                 </version>
               </document>
+              <document id="1115112" name="TestRedirect2" type="Redirect">
+                <version number="1">
+                  <stringProperty name="sourceUrlType" value="REGEX"/>
+                  <stringProperty name="source" value="/redirect-test2/.*"/>
+                  <linkProperty name="targetLink" Max="1" LinkType="CMLinkable">
+                    <link id="1002"/>
+                  </linkProperty>
+                  <stringProperty name="redirectType" value="AFTER_NOT_FOUND"/>
+                  <stringProperty name="description" value="Description2"/>
+                  <intProperty name="imported" value="0"/>
+                </version>
+              </document>
             </folder>
           </folder>
         </folder>

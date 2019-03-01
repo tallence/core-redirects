@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tallence.core.redirects.cae.filter;
+package com.tallence.core.redirects.cae;
 
 import com.coremedia.blueprint.cae.handlers.HandlerTestConfiguration;
 import com.coremedia.blueprint.cae.handlers.RequestTestHelper;
@@ -24,14 +24,20 @@ import com.coremedia.cap.test.xmlrepo.XmlUapiConfig;
 import com.coremedia.springframework.xml.ResourceAwareXmlBeanDefinitionReader;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.Scope;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
 import static com.coremedia.cap.test.xmlrepo.XmlRepoResources.*;
-import static com.tallence.core.redirects.cae.filter.AbstractRedirectsTest.LocalConfig.PROFILE;
+import static com.tallence.core.redirects.cae.AbstractRedirectsTest.LocalConfig.PROFILE;
 import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_SINGLETON;
 
 /**

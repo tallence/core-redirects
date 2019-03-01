@@ -20,9 +20,9 @@ import com.tallence.core.redirects.model.SourceUrlType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -35,8 +35,10 @@ public class SiteRedirects {
   private static final Logger LOG = LoggerFactory.getLogger(SiteRedirects.class);
 
   private String siteId;
-  private Map<String, Redirect> staticRedirects = new LinkedHashMap<>();
-  private Map<Pattern, Redirect> patternRedirects = new LinkedHashMap<>();
+  private final ConcurrentHashMap<String, Redirect> plainRedirects = new ConcurrentHashMap<>();
+  private final Object plainRedirectsMonitor = new Object();
+  private final ConcurrentHashMap<Pattern, Redirect> patternRedirects = new ConcurrentHashMap<>();
+  private final Object patternRedirectsMonitor = new Object();
 
   public SiteRedirects() {
   }
@@ -46,20 +48,10 @@ public class SiteRedirects {
   }
 
   /**
-   * Returns the list of static redirects.
+   * Returns the list of plain redirects.
    */
-  public Map<String, Redirect> getStaticRedirects() {
-    return staticRedirects;
-  }
-
-  /**
-   * Add a simple (static)
-   */
-  public void addStaticRedirect(Redirect redirect) {
-    if (redirect.getSourceUrlType() != SourceUrlType.PLAIN) {
-      LOG.error("Illegal source type on rule {}, ignoring redirect", redirect);
-    }
-    staticRedirects.put(redirect.getSource(), redirect);
+  public Map<String, Redirect> getPlainRedirects() {
+    return plainRedirects;
   }
 
   /**
@@ -70,17 +62,64 @@ public class SiteRedirects {
   }
 
   /**
-   * Adds pattern redirect to map, if it contains a valid pattern.
+   * Adds the given redirect to the cache, if it is valid.
    */
-  public void addPatternRedirect(Redirect redirect) {
-    if ((redirect.getSourceUrlType() != SourceUrlType.REGEX)) {
-      LOG.error("Illegal source type on rule {}, ignoring redirect", redirect);
+  public void addRedirect(Redirect redirect) {
+    if (redirect.getSourceUrlType() == SourceUrlType.PLAIN) {
+      synchronized (plainRedirectsMonitor) {
+        plainRedirects.values().remove(redirect);
+        plainRedirects.put(redirect.getSource(), redirect);
+      }
+
+    } else if (redirect.getSourceUrlType() == SourceUrlType.REGEX) {
+      try {
+        synchronized (patternRedirectsMonitor) {
+          patternRedirects.values().remove(redirect);
+          patternRedirects.put(Pattern.compile(redirect.getSource()), redirect);
+        }
+      } catch (PatternSyntaxException e) {
+        LOG.error("Unable to compile pattern on redirect {}, ignoring redirect", redirect);
+      }
+
+    } else {
+      LOG.error("Illegal source type {} on redirect {}, ignoring redirect", redirect.getSourceUrlType(), redirect);
+    }
+  }
+
+  /**
+   * Removes the given redirect from the correct list.
+   */
+  public void removeRedirect(Redirect redirect) {
+    if (redirect.getSourceUrlType() == SourceUrlType.PLAIN) {
+      synchronized (plainRedirectsMonitor) {
+        plainRedirects.values().remove(redirect);
+      }
+    } else if (redirect.getSourceUrlType() == SourceUrlType.REGEX) {
+      synchronized (patternRedirectsMonitor) {
+        patternRedirects.values().remove(redirect);
+      }
+    }
+  }
+
+  /**
+   * Remove the redirect, identified by the given id.
+   * The type is not known -> try both lists.
+   */
+  public void removeRedirect(String id) {
+
+    synchronized (plainRedirectsMonitor) {
+      plainRedirects.entrySet().stream()
+          .filter(e -> id.equals(e.getValue().getContentId()))
+          .forEach(e -> plainRedirects.remove(e.getKey()));
     }
 
-    try {
-      patternRedirects.put(Pattern.compile(redirect.getSource()), redirect);
-    } catch (PatternSyntaxException e) {
-      LOG.error("Unable to compile pattern on redirect {}, ignoring redirect", redirect);
+    synchronized (patternRedirectsMonitor) {
+      for (Map.Entry<Pattern, Redirect> entry : patternRedirects.entrySet()) {
+        if (entry.getValue().getContentId().equals(id)) {
+          patternRedirects.remove(entry.getKey());
+          break;
+        }
+      }
     }
   }
 
@@ -89,20 +128,20 @@ public class SiteRedirects {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     SiteRedirects that = (SiteRedirects) o;
-    return Objects.equals(staticRedirects, that.staticRedirects) &&
+    return Objects.equals(plainRedirects, that.plainRedirects) &&
             Objects.equals(patternRedirects, that.patternRedirects);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(staticRedirects, patternRedirects);
+    return Objects.hash(plainRedirects, patternRedirects);
   }
 
   @Override
   public String toString() {
     return "SiteRedirects{" +
             "siteId='" + siteId + '\'' +
-            ", staticRedirects.size=" + staticRedirects.size() +
+            ", plainRedirects.size=" + plainRedirects.size() +
             ", patternRedirects.size=" + patternRedirects.size() +
             '}';
   }

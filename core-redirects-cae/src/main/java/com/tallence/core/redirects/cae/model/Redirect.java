@@ -34,16 +34,25 @@ public class Redirect {
   private static final String SOURCE_URL_TYPE = "sourceUrlType";
   private static final String REDIRECT_TYPE = "redirectType";
 
+  private final String contentId;
   private final SourceUrlType sourceUrlType;
   private final String source;
   private final RedirectType redirectType;
   private final Content target;
 
   public Redirect(Content redirect, String rootSegment) {
+    contentId = redirect.getId();
     sourceUrlType = SourceUrlType.asSourceUrlType(redirect.getString(SOURCE_URL_TYPE));
     source = rootSegment + redirect.getString(SOURCE_URL);
     redirectType = RedirectType.asRedirectType(redirect.getString(REDIRECT_TYPE));
     target = redirect.getLink(TARGET_LINK);
+  }
+
+  /**
+   * Returns the content id of the {@link Content} (of type Redirect) backing this model.
+   */
+  public String getContentId() {
+    return contentId;
   }
 
   /**
@@ -79,14 +88,18 @@ public class Redirect {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Redirect redirect = (Redirect) o;
-    return sourceUrlType == redirect.sourceUrlType &&
-            Objects.equals(source, redirect.source) &&
-            redirectType == redirect.redirectType &&
-            Objects.equals(target, redirect.target);
+    return contentId.equals(redirect.contentId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(sourceUrlType, source, redirectType, target);
+    return Objects.hash(contentId);
+  }
+
+  @Override
+  public String toString() {
+    return "Redirect{" +
+            "contentId='" + contentId + '\'' +
+            '}';
   }
 }
