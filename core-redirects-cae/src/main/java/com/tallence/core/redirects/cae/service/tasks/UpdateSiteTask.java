@@ -56,8 +56,7 @@ public class UpdateSiteTask extends AbstractTask {
   public void run() {
     Content redirectsFolder = site.getSiteRootFolder().getChild(redirectsPath);
     if (redirectsFolder == null) {
-      // In order to prevent the folder lookup from running on every request, we cache error results for a time.
-      LOG.error("Configuration error! Missing redirects folder at {}/{}. Please create at least an empty folder.", site.getSiteRootFolder().getPath(), redirectsPath);
+      LOG.info("Missing redirects folder at {}/{}. Cannot read redirects for this site.", site.getSiteRootFolder().getPath(), redirectsPath);
       redirectsMap.put(site, new SiteRedirects(site.getId()));
       return;
     } else {
@@ -66,8 +65,8 @@ public class UpdateSiteTask extends AbstractTask {
     // Fetch the redirect content from
     Collection<Content> redirectContents = fetchRedirectDocumentsFromFolder(redirectsFolder);
 
-    //Prefetch to get data with just one server call
-    contentRepository.prefetch(redirectContents);
+    //Prefetch to get data with just one server call. Using chunks which will work more stable for large sets.
+    contentRepository.withPrefetch(redirectContents, 2000);
 
     // In order to create dependencies on the redirects found, the conversion needs to happen after re-enabling the tracking.
     List<Redirect> redirectEntries = mapToRedirects(redirectContents, site);
