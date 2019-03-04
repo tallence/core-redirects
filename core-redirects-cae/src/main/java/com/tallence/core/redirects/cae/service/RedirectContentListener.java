@@ -21,11 +21,15 @@ import com.coremedia.cap.content.events.ContentEvent;
 import com.coremedia.cap.content.events.ContentRepositoryEventConstants;
 import com.coremedia.cap.content.events.ContentRepositoryListenerBase;
 import com.coremedia.cap.content.publication.events.PublicationContentEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Listener for updates to the redirects.
  */
 public class RedirectContentListener extends ContentRepositoryListenerBase {
+
+  private static final Logger LOG = LoggerFactory.getLogger(RedirectContentListener.class);
 
   private final RedirectUpdateTaskScheduler redirectUpdateTaskScheduler;
 
@@ -47,7 +51,10 @@ public class RedirectContentListener extends ContentRepositoryListenerBase {
       return;
     }
 
-    if (content.getType().isSubtypeOf("Redirect")) {
+    //Check isDestroyed again, the document might be destroyed in the meantime
+    if (!content.isDestroyed() && content.getType().isSubtypeOf("Redirect")) {
+
+      LOG.debug("Received new event of type [{}] for Redirect with id [{}]", event.getType(), content.getId());
 
       switch (event.getType()) {
         case ContentRepositoryEventConstants.CONTENT_CREATED:
