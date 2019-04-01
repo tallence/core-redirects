@@ -32,6 +32,7 @@ import com.tallence.core.redirects.studio.util.PromiseUtil;
 import ext.IPromise;
 import ext.JSON;
 import ext.Promise;
+import ext.StringUtil;
 import ext.data.operation.ReadOperation;
 import ext.util.Sorter;
 
@@ -44,7 +45,6 @@ public class RedirectRepositoryImpl extends RemoteBeanImpl implements RedirectRe
 
   private static const DEFAULT_UPLOAD_SIZE:int = 67108864;
   private static const CREATE_URI_SEGMENT:String = "create";
-  private static const VALIDATE_URI_SEGMENT:String = "validate";
   private static var instance:RedirectRepository;
 
   public function RedirectRepositoryImpl(path:String) {
@@ -143,15 +143,19 @@ public class RedirectRepositoryImpl extends RemoteBeanImpl implements RedirectRe
     upldr.upload(file);
   }
 
-  public function validateSource(siteId:String,
-                                 redirectId:String,
-                                 source:String):IPromise {
-    //Encode the source, it might contain characters like "&"
-    var url:String = "/" + siteId + "/" + VALIDATE_URI_SEGMENT + "?siteId=" + siteId + "&source=" + encodeURIComponent(source);
-    if (redirectId) {
-      url = url + "&redirectId=" + redirectId;
-    }
-
+  public function validateRedirect(siteId:String,
+                                   redirectId:String,
+                                   source:String,
+                                   targetId:String,
+                                   active:Boolean):IPromise {
+    var urlTemplate:String = "/{0}/validate/?source={1}&redirectId={2}&targetId={3}&active={4}";
+    var url:String = StringUtil.format(
+        urlTemplate,
+        siteId,
+        encodeURIComponent(source),
+        encodeURIComponent(redirectId),
+        encodeURIComponent(targetId),
+        active);
     return PromiseUtil.getRequest(this.getUriPath() + url, {}, ValidationResponse);
   }
 

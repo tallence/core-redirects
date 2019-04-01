@@ -25,9 +25,6 @@
     public var localModel:Bean;
 
     [Bindable]
-    public var isValidVE:ValueExpression;
-
-    [Bindable]
     public var errorMessagesVE:ValueExpression;
 
     [Bindable]
@@ -82,7 +79,7 @@
             <TextField width="500"
                        checkChangeBuffer="400">
               <plugins exml:mode="append">
-                <ui:BEMPlugin block="redirect-source-field" modifier="{getSourceFieldModifiers(config.localModel, config.isValidVE)}"/>
+                <ui:BEMPlugin block="redirect-source-field" modifier="{getSourceFieldModifiers(config.localModel, config.errorMessagesVE)}"/>
                 <ui:BindPropertyPlugin bidirectional="true"
                                        bindTo="{getBindTo(config.localModel, RedirectImpl.SOURCE)}"/>
               </plugins>
@@ -96,16 +93,8 @@
           </layout>
         </FieldContainer>
 
-        <FieldContainer>
-          <plugins>
-            <ui:BindComponentsPlugin valueExpression="{config.errorMessagesVE}"
-                                     configBeanParameterName="value">
-              <ui:template>
-                <DisplayField/>
-              </ui:template>
-            </ui:BindComponentsPlugin>
-          </plugins>
-        </FieldContainer>
+        <local:ErrorFieldContainer errorMessagesVE="{config.errorMessagesVE}"
+                                   propertyName="{RedirectImpl.SOURCE}"/>
 
         <!--TODO both elements (spacer and comboBox) are bound to the mayNotUseRegexVE. There might is a more elegant way!-->
         <editor:FormSpacerElement height="10px">
@@ -139,6 +128,9 @@
                                  cls="redirect-linked-content"
                                  bindTo="{getBindTo(config.localModel, RedirectImpl.TARGET_LINK)}"
                                  linkListLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_targetLink')}"/>
+
+        <local:ErrorFieldContainer errorMessagesVE="{config.errorMessagesVE}"
+                                   propertyName="{RedirectImpl.TARGET_LINK}"/>
 
         <editor:FormSpacerElement height="10px"/>
 

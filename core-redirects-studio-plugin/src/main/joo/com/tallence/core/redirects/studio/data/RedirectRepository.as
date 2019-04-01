@@ -73,16 +73,21 @@ public interface RedirectRepository extends RemoteBean {
                            error:Function):void;
 
   /**
-   * Creates a promise that validates the returns a validation result.
+   * Creates a promise that validates a redirect and returns a validation result.
    *
    * @param siteId the site id.
    * @param redirectId the redirect id.
    * @param source the source.
+   * @param targetId the id of the target
+   * @param active true, if the redirect is published
+   *
    * @return The promise. Resolve method signature: <code>function(response:ValidationResponse):void</code>
    */
-  function validateSource(siteId:String,
-                          redirectId:String,
-                          source:String):IPromise;
+  function validateRedirect(siteId:String,
+                            redirectId:String,
+                            source:String,
+                            targetId:String,
+                            active:Boolean):IPromise;
 
   /**
    * Resolve the permissions for the redirects in the selected site.

@@ -15,6 +15,7 @@
  */
 
 package com.tallence.core.redirects.studio.data {
+import ext.util.HashMap;
 
 /**
  * Redirect validation response containing the error codes if the redirect is invalid.
@@ -22,7 +23,7 @@ package com.tallence.core.redirects.studio.data {
 public class ValidationResponse {
 
   private var valid:Boolean;
-  private var errorCodes:Array;
+  private var errorCodes:HashMap;
 
   public function ValidationResponse(jsonResponse:Object) {
     this.valid = jsonResponse.valid;
@@ -33,7 +34,12 @@ public class ValidationResponse {
     return valid;
   }
 
-  public function getErrorCodes():Array {
+  /**
+   * A map with error codes.
+   *
+   * Example: {'source': ['invalid'] }
+   */
+  public function getErrorCodes():HashMap {
     return errorCodes;
   }
 }

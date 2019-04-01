@@ -54,13 +54,15 @@ public class RedirectEditPanelBase extends Container {
    * If no content is linked to the redirect, the field must be highlighted.
    *
    * @param localModel the bean.
+   * @param errorCodesVE value expression containing the error codes
    * @return an array of css modifiers.
    */
-  protected function getSourceFieldModifiers(localModel:Bean, isValidVE:ValueExpression):ValueExpression {
+  protected function getSourceFieldModifiers(localModel:Bean, errorCodesVE:ValueExpression):ValueExpression {
     return ValueExpressionFactory.createFromFunction(function ():Array {
       var modifiers:Array = [];
       var source:String = localModel.get(RedirectImpl.SOURCE);
-      if (!source || source.length == 0 || !isValidVE.getValue()) {
+      var isValid:Boolean = errorCodesVE.extendBy(RedirectImpl.SOURCE);
+      if (!source || source.length == 0 || !isValid) {
         modifiers.push("empty");
       }
       return modifiers;
