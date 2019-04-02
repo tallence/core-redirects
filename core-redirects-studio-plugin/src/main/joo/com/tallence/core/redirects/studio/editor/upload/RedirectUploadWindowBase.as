@@ -21,6 +21,7 @@ import com.coremedia.cms.editor.sdk.editorContext;
 import com.coremedia.cms.editor.sdk.upload.FileWrapper;
 import com.coremedia.ui.data.ValueExpression;
 import com.coremedia.ui.data.ValueExpressionFactory;
+import com.coremedia.ui.logging.Logger;
 import com.coremedia.ui.util.EventUtil;
 
 use namespace editorContext;
@@ -71,7 +72,20 @@ public class RedirectUploadWindowBase extends StudioDialog {
     if (!this.validationExpression) {
       this.validationExpression = ValueExpressionFactory.createFromFunction(function ():Boolean {
         var files:Array = getFileListVE().getValue();
-        return !(files.length == 1 && files[0].getMimeType() == "text/csv")
+
+        if (files.length == 1) {
+          var file:FileWrapper = files[0];
+          var name:String = file.getFile().name;
+
+          if (file.getMimeType() != "text/csv") {
+            //only log a warning, the mimeType seems to be different in some browsers.
+            Logger.warn('The fileType of uploaded file is invalid: ' + file.getMimeType());
+          }
+          //Check for the file extension instead: does it end with '.csv'?
+          return (name.length - name.indexOf('.csv')) != 4;
+        }
+
+        return true;
       });
     }
     return this.validationExpression;
