@@ -15,7 +15,6 @@
  */
 
 package com.tallence.core.redirects.studio.editor.form {
-import com.coremedia.cms.editor.sdk.editorContext;
 import com.coremedia.cms.editor.sdk.util.MessageBoxUtil;
 import com.coremedia.ui.data.Bean;
 import com.coremedia.ui.data.ValueExpression;
@@ -24,7 +23,6 @@ import com.coremedia.ui.data.ValueExpressionFactory;
 import ext.Ext;
 import ext.container.Container;
 
-use namespace editorContext;
 
 /**
  * A form for editing redirects. Changes are bind to the localModel.

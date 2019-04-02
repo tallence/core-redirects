@@ -77,15 +77,15 @@
         <FieldContainer
             fieldLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_source')}">
           <items>
-            <TextField width="500"
-                       checkChangeBuffer="400">
-              <plugins exml:mode="append">
+            <ui:StatefulTextField width="500"
+                                  checkChangeBuffer="400">
+              <ui:plugins exml:mode="append">
                 <rm:BindValidationStatePlugin bindTo="{config.errorMessagesVE}"
                                               propertyName="{RedirectImpl.SOURCE}"/>
                 <ui:BindPropertyPlugin bidirectional="true"
                                        bindTo="{getBindTo(config.localModel, RedirectImpl.SOURCE)}"/>
-              </plugins>
-            </TextField>
+              </ui:plugins>
+            </ui:StatefulTextField>
             <ui:IconButton iconCls="{resourceManager.getString('com.coremedia.icons.CoreIcons', 'help')}"
                            tooltip="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_help_tooltip')}"
                            handler="{showInfoDialog}"/>
@@ -129,10 +129,10 @@
                                  width="580"
                                  bindTo="{getBindTo(config.localModel, RedirectImpl.TARGET_LINK)}"
                                  linkListLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_targetLink')}">
-            <editor:plugins exml:mode="append">
-              <rm:BindValidationStatePlugin bindTo="{config.errorMessagesVE}"
-                                            propertyName="{RedirectImpl.TARGET_LINK}"/>
-            </editor:plugins>
+          <editor:plugins exml:mode="append">
+            <rm:BindValidationStatePlugin bindTo="{config.errorMessagesVE}"
+                                          propertyName="{RedirectImpl.TARGET_LINK}"/>
+          </editor:plugins>
         </editor:SingleLinkEditor>
 
         <local:ErrorFieldContainer errorMessagesVE="{config.errorMessagesVE}"
