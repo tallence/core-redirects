@@ -74,7 +74,7 @@ public class RedirectUploadWindowBase extends StudioDialog {
         var files:Array = getFileListVE().getValue();
 
         if (files.length == 1) {
-          var file:* = files[0];
+          var file:FileWrapper = files[0];
           var name:String = file.getFile().name;
 
           if (file.getMimeType() != "text/csv") {
