@@ -81,6 +81,7 @@ public class RedirectUploadWindowBase extends StudioDialog {
             //only log a warning, the mimeType seems to be different in some browsers.
             Logger.warn('The fileType of uploaded file is invalid: ' + file.getMimeType());
           }
+          //Check for the file extension instead: does it end with '.csv'?
           return (name.length - name.indexOf('.csv')) != 4;
         }
 
