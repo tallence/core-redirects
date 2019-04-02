@@ -136,7 +136,7 @@ public class RedirectImporter {
     if (targetLink == null) {
       valid = false;
       response.addErrorMessage(csvEntry, INVALID_TAGET_LINK_VALUE);
-    } else if (active.equalsIgnoreCase("true") && redirectRepository.targetIsInvalid(targetLink.getId())) {
+    } else if (active.equalsIgnoreCase("true") && redirectRepository.targetIsInvalid(targetLink)) {
       valid = false;
       response.addErrorMessage(csvEntry, INVALID_TAGET_LINK_VALUE);
     } else {

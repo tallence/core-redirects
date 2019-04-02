@@ -17,6 +17,7 @@
 package com.tallence.core.redirects.studio.rest;
 
 import com.coremedia.cap.content.Content;
+import com.coremedia.cap.content.ContentRepository;
 import com.coremedia.rest.linking.AbstractLinkingResource;
 import com.coremedia.rest.linking.LinkResolver;
 import com.sun.jersey.multipart.FormDataParam;
@@ -58,12 +59,18 @@ public class RedirectsResource extends AbstractLinkingResource {
   private final RedirectRepository redirectRepository;
   private final RedirectImporter redirectImporter;
   private final RedirectPermissionService redirectPermissionService;
+  private final ContentRepository contentRepository;
 
   @Autowired
-  public RedirectsResource(RedirectRepository redirectRepository, LinkResolver linkResolver, RedirectImporter redirectImporter, RedirectPermissionService redirectPermissionService) {
+  public RedirectsResource(RedirectRepository redirectRepository,
+                           LinkResolver linkResolver,
+                           RedirectImporter redirectImporter,
+                           RedirectPermissionService redirectPermissionService,
+                           ContentRepository contentRepository) {
     this.redirectRepository = redirectRepository;
     this.redirectImporter = redirectImporter;
     this.redirectPermissionService = redirectPermissionService;
+    this.contentRepository = contentRepository;
     setLinkResolver(linkResolver);
   }
 
@@ -121,7 +128,7 @@ public class RedirectsResource extends AbstractLinkingResource {
 
     if (StringUtils.isBlank(targetId)) {
       validationResult.addErrorCode(TARGET_LINK, MISSING_TARGET_LINK);
-    } else if (active && redirectRepository.targetIsInvalid(targetId)) {
+    } else if (active && redirectRepository.targetIsInvalid(contentRepository.getContent(targetId))) {
       validationResult.addErrorCode(TARGET_LINK, INVALID_TARGET_LINK);
     }
 

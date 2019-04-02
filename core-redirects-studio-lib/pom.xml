@@ -52,11 +52,6 @@
       <artifactId>cap-spring-security</artifactId>
     </dependency>
 
-    <dependency>
-      <groupId>com.coremedia.cms</groupId>
-      <artifactId>coremedia-rest-plugins</artifactId>
-    </dependency>
-
     <!-- Other dependencies -->
     <dependency>
       <groupId>javax.ws.rs</groupId>

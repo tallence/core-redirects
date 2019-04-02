@@ -26,9 +26,6 @@ import com.coremedia.cap.multisite.Site;
 import com.coremedia.cap.multisite.SitesService;
 import com.coremedia.rest.cap.content.search.SearchServiceResult;
 import com.coremedia.rest.cap.content.search.solr.SolrSearchService;
-import com.coremedia.rest.validation.Severity;
-import com.coremedia.rest.validation.impl.IssuesImpl;
-import com.coremedia.rest.validation.impl.Validators;
 import com.tallence.core.redirects.model.RedirectType;
 import com.tallence.core.redirects.model.SourceUrlType;
 import com.tallence.core.redirects.studio.model.Pageable;
@@ -69,13 +66,12 @@ public class RedirectRepositoryImpl implements RedirectRepository {
   private final PublicationHelper publicationHelper;
   private final PublicationService publicationService;
   private final RedirectPermissionService redirectPermissionService;
-  private final Validators validators;
 
   private ContentType redirectContentType;
 
   @Autowired
   public RedirectRepositoryImpl(SolrSearchService solrSearchService, ContentRepository contentRepository,
-                                SitesService sitesService, RedirectPermissionService redirectPermissionService, Validators validators) {
+                                SitesService sitesService, RedirectPermissionService redirectPermissionService) {
     this.solrSearchService = solrSearchService;
     this.contentRepository = contentRepository;
     this.sitesService = sitesService;
@@ -83,7 +79,6 @@ public class RedirectRepositoryImpl implements RedirectRepository {
     this.publicationService = contentRepository.getPublicationService();
     this.publicationHelper = new PublicationHelper(contentRepository);
     this.redirectPermissionService = redirectPermissionService;
-    this.validators = validators;
   }
 
   @Override
@@ -126,11 +121,8 @@ public class RedirectRepositoryImpl implements RedirectRepository {
   }
 
   @Override
-  public boolean targetIsInvalid(String targetId) {
-    Content target = contentRepository.getContent(targetId);
-    IssuesImpl issues = new IssuesImpl<>(target, Collections.emptySet());
-    validators.validate(target, issues);
-    return issues.hasIssueAtSeverity(Severity.ERROR);
+  public boolean targetIsInvalid(Content target) {
+    return !contentRepository.getPublicationService().isPublished(target);
   }
 
   @Override

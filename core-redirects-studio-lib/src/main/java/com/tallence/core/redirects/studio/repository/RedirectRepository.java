@@ -65,10 +65,10 @@ public interface RedirectRepository {
   /**
    * Checks if the target of the redirect is invalid.
    *
-   * @param targetId the id of the target.
+   * @param target the target of the redirect
    * @return true, if the redirect has issues.
    */
-  boolean targetIsInvalid(String targetId);
+  boolean targetIsInvalid(Content target);
 
   /**
    * Loads the redirect for the given id.

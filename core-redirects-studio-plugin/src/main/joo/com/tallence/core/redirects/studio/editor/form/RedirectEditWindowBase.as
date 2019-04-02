@@ -53,15 +53,15 @@ public class RedirectEditWindowBase extends Window {
   }
 
   /**
-   * Initializes the change listeners to validate the redirect. If properties of the redirect or the validation state
-   * of the redirect target change, the redirect must be validated again.
+   * Initializes the change listeners to validate the redirect. If the lifecycle satus of the target change, the
+   * redirect must be validated again.
    */
   private function initValidationChangeListeners():void {
     getLocalModel().addPropertyChangeListener(RedirectImpl.ACTIVE, validateRedirect);
     getLocalModel().addPropertyChangeListener(RedirectImpl.SOURCE, validateRedirect);
     getLocalModel().addPropertyChangeListener(RedirectImpl.TARGET_LINK, validateRedirect);
-    var targetIssuesVE:ValueExpression = ValueExpressionFactory.create(RedirectImpl.TARGET_LINK, getLocalModel()).extendBy("0", "issues", "valid");
-    targetIssuesVE.addChangeListener(validateRedirect);
+    var lifecycleStatusVE:ValueExpression = ValueExpressionFactory.create(RedirectImpl.TARGET_LINK, getLocalModel()).extendBy("0", "lifecycleStatus");
+    lifecycleStatusVE.addChangeListener(validateRedirect);
     validateRedirect();
   }
 

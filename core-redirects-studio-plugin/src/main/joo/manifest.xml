@@ -3,6 +3,7 @@
   <component class="com.tallence.core.redirects.studio.RedirectManagerStudioPlugin"/>
   <component class="com.tallence.core.redirects.studio.action.OpenRedirectManagerEditorAction"/>
   <component class="com.tallence.core.redirects.studio.plugins.AddRedirectManagerPlugin"/>
+  <component class="com.tallence.core.redirects.studio.plugins.BindValidationStatePlugin"/>
   <component class="com.tallence.core.redirects.studio.editor.RedirectManagerEditor"/>
   <component class="com.tallence.core.redirects.studio.editor.grid.RedirectsGrid"/>
   <component class="com.tallence.core.redirects.studio.editor.grid.columns.RedirectStatusColumn"/>
