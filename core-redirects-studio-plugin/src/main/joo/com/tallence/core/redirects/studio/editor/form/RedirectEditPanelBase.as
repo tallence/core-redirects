@@ -15,17 +15,14 @@
  */
 
 package com.tallence.core.redirects.studio.editor.form {
-import com.coremedia.cms.editor.sdk.editorContext;
 import com.coremedia.cms.editor.sdk.util.MessageBoxUtil;
 import com.coremedia.ui.data.Bean;
 import com.coremedia.ui.data.ValueExpression;
 import com.coremedia.ui.data.ValueExpressionFactory;
-import com.tallence.core.redirects.studio.data.RedirectImpl;
 
 import ext.Ext;
 import ext.container.Container;
 
-use namespace editorContext;
 
 /**
  * A form for editing redirects. Changes are bind to the localModel.
@@ -47,24 +44,6 @@ public class RedirectEditPanelBase extends Container {
         Ext.emptyFn,
         false
     );
-  }
-
-  /**
-   * Creates a ValueExpression which returns an array of css modifiers.
-   * If no content is linked to the redirect, the field must be highlighted.
-   *
-   * @param localModel the bean.
-   * @return an array of css modifiers.
-   */
-  protected function getSourceFieldModifiers(localModel:Bean, isValidVE:ValueExpression):ValueExpression {
-    return ValueExpressionFactory.createFromFunction(function ():Array {
-      var modifiers:Array = [];
-      var source:String = localModel.get(RedirectImpl.SOURCE);
-      if (!source || source.length == 0 || !isValidVE.getValue()) {
-        modifiers.push("empty");
-      }
-      return modifiers;
-    });
   }
 
   protected static function getBindTo(localModel:Bean, propertyName:String):ValueExpression {

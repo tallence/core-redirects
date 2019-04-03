@@ -35,7 +35,6 @@ The Windows is not "modal" because the editor might drag a document from the wor
   </fx:Script>
   <local:items>
     <local:RedirectEditPanel localModel="{getLocalModel()}"
-                             isValidVE="{getIsValidSourceVE()}"
                              mayNotUseRegexVE="{config.mayNotUseRegexVE}"
                              errorMessagesVE="{getErrorMessagesVE()}"/>
   </local:items>

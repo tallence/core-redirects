@@ -17,7 +17,9 @@
 package com.tallence.core.redirects.studio.rest;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents the redirect validation result used by the studio.
@@ -25,20 +27,20 @@ import java.util.List;
 public class RedirectValidationResult {
 
   private boolean valid = true;
-  private List<String> errorCodes = new ArrayList<>();
+  private Map<String, List<String>> errorCodes = new HashMap<>();
 
 
   public boolean isValid() {
     return valid;
   }
 
-  public List<String> getErrorCodes() {
+  public Map<String, List<String>> getErrorCodes() {
     return errorCodes;
   }
 
-  void addErrorCode(String errorCode) {
+  void addErrorCode(String property, String errorCode) {
     valid = false;
-    errorCodes.add(errorCode);
+    errorCodes.computeIfAbsent(property, codes -> new ArrayList<>()).add(errorCode);
   }
 
 }

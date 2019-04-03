@@ -15,7 +15,7 @@
  */
 
 package com.tallence.core.redirects.studio.editor.form {
-import com.coremedia.cms.editor.sdk.editorContext;
+import com.coremedia.cap.content.Content;
 import com.coremedia.ui.data.Bean;
 import com.coremedia.ui.data.ValueExpression;
 import com.coremedia.ui.data.ValueExpressionFactory;
@@ -30,8 +30,6 @@ import com.tallence.core.redirects.studio.util.NotificationUtil;
 import ext.window.Window;
 
 import mx.resources.ResourceManager;
-
-use namespace editorContext;
 
 /**
  * A window to create or edit redirects.
@@ -51,21 +49,36 @@ public class RedirectEditWindowBase extends Window {
     redirect = config.redirect;
     selectedSiteIdVE = config.selectedSiteIdVE;
     initLocalModel();
-    getLocalModel().addPropertyChangeListener(RedirectImpl.SOURCE, sourcePropertyChanged);
+    initValidationChangeListeners();
   }
 
-  private function sourcePropertyChanged():void {
+  /**
+   * Initializes the change listeners to validate the redirect. If the lifecycle satus of the target change, the
+   * redirect must be validated again.
+   */
+  private function initValidationChangeListeners():void {
+    getLocalModel().addPropertyChangeListener(RedirectImpl.ACTIVE, validateRedirect);
+    getLocalModel().addPropertyChangeListener(RedirectImpl.SOURCE, validateRedirect);
+    getLocalModel().addPropertyChangeListener(RedirectImpl.TARGET_LINK, validateRedirect);
+    var lifecycleStatusVE:ValueExpression = ValueExpressionFactory.create(RedirectImpl.TARGET_LINK, getLocalModel()).extendBy("0", "lifecycleStatus");
+    lifecycleStatusVE.addChangeListener(validateRedirect);
+    validateRedirect();
+  }
+
+  private function validateRedirect():void {
     var siteId:String = redirect ? redirect.getSiteId() : selectedSiteIdVE.getValue();
-    var redirectId:String = redirect ? redirect.getUriPath().replace("redirect/", "").replace(siteId + "/", "") : null;
-    RedirectRepositoryImpl.getInstance().validateSource(siteId, redirectId, getLocalModel().get(RedirectImpl.SOURCE))
+    var redirectId:String = redirect ? redirect.getUriPath().replace("redirect/", "").replace(siteId + "/", "") : "";
+    var targetLink:Content = getLocalModel().get(RedirectImpl.TARGET_LINK)[0];
+    var targetId:String = targetLink ? targetLink.getId() : "";
+    var active:Boolean = getLocalModel().get(RedirectImpl.ACTIVE);
+    RedirectRepositoryImpl.getInstance()
+        .validateRedirect(siteId, redirectId, getLocalModel().get(RedirectImpl.SOURCE), targetId, active)
         .then(handleValidationResponse, validationErrorHandler);
   }
 
   private function handleValidationResponse(response:ValidationResponse):void {
     getIsValidSourceVE().setValue(response.isValid());
-    getErrorMessagesVE().setValue(response.getErrorCodes().map(function (errorCode:String):String {
-      return ResourceManager.getInstance().getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_csvupload_import_error_' + errorCode);
-    }));
+    getErrorMessagesVE().setValue(response.getErrorCodes());
   }
 
   private static function validationErrorHandler(error:RemoteError):void {

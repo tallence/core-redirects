@@ -17,6 +17,7 @@
 package com.tallence.core.redirects.studio.rest;
 
 import com.coremedia.cap.content.Content;
+import com.coremedia.cap.content.ContentRepository;
 import com.coremedia.rest.linking.AbstractLinkingResource;
 import com.coremedia.rest.linking.LinkResolver;
 import com.sun.jersey.multipart.FormDataParam;
@@ -26,6 +27,7 @@ import com.tallence.core.redirects.studio.model.RedirectUpdateProperties;
 import com.tallence.core.redirects.studio.repository.RedirectRepository;
 import com.tallence.core.redirects.studio.service.RedirectImporter;
 import com.tallence.core.redirects.studio.service.RedirectPermissionService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
@@ -45,19 +47,30 @@ import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
 @Path("redirects/{siteId:[^/]+}")
 public class RedirectsResource extends AbstractLinkingResource {
 
+  private static final String SOURCE = "source";
   private static final String SOURCE_ALREADY_EXISTS = "source_already_exists";
   private static final String INVALID_SOURCE = "source_invalid";
+
+  private static final String TARGET_LINK = "targetLink";
+  private static final String INVALID_TARGET_LINK = "target_invalid";
+  private static final String MISSING_TARGET_LINK = "target_missing";
 
   private String siteId;
   private final RedirectRepository redirectRepository;
   private final RedirectImporter redirectImporter;
   private final RedirectPermissionService redirectPermissionService;
+  private final ContentRepository contentRepository;
 
   @Autowired
-  public RedirectsResource(RedirectRepository redirectRepository, LinkResolver linkResolver, RedirectImporter redirectImporter, RedirectPermissionService redirectPermissionService) {
+  public RedirectsResource(RedirectRepository redirectRepository,
+                           LinkResolver linkResolver,
+                           RedirectImporter redirectImporter,
+                           RedirectPermissionService redirectPermissionService,
+                           ContentRepository contentRepository) {
     this.redirectRepository = redirectRepository;
     this.redirectImporter = redirectImporter;
     this.redirectPermissionService = redirectPermissionService;
+    this.contentRepository = contentRepository;
     setLinkResolver(linkResolver);
   }
 
@@ -101,14 +114,22 @@ public class RedirectsResource extends AbstractLinkingResource {
   @GET
   @Path("validate")
   public RedirectValidationResult validateRedirect(@QueryParam("source") String source,
-                                                   @QueryParam("redirectId") String redirectId) {
+                                                   @QueryParam("redirectId") String redirectId,
+                                                   @QueryParam("targetId") String targetId,
+                                                   @QueryParam("active") Boolean active) {
     RedirectValidationResult validationResult = new RedirectValidationResult();
-    if (redirectId != null && redirectRepository.sourceAlreadyExists(getSiteId(), redirectId, source) ||
-        redirectId == null && redirectRepository.sourceAlreadyExists(getSiteId(), source)) {
-      validationResult.addErrorCode(SOURCE_ALREADY_EXISTS);
+    if (StringUtils.isNotBlank(redirectId) && redirectRepository.sourceAlreadyExists(getSiteId(), redirectId, source) ||
+        StringUtils.isBlank(redirectId) && redirectRepository.sourceAlreadyExists(getSiteId(), source)) {
+      validationResult.addErrorCode(SOURCE, SOURCE_ALREADY_EXISTS);
     }
     if (!redirectRepository.sourceIsValid(source)) {
-      validationResult.addErrorCode(INVALID_SOURCE);
+      validationResult.addErrorCode(SOURCE, INVALID_SOURCE);
+    }
+
+    if (StringUtils.isBlank(targetId)) {
+      validationResult.addErrorCode(TARGET_LINK, MISSING_TARGET_LINK);
+    } else if (active && redirectRepository.targetIsInvalid(contentRepository.getContent(targetId))) {
+      validationResult.addErrorCode(TARGET_LINK, INVALID_TARGET_LINK);
     }
 
     return validationResult;

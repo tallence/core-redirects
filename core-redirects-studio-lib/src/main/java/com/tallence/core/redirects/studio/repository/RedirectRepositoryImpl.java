@@ -121,6 +121,11 @@ public class RedirectRepositoryImpl implements RedirectRepository {
   }
 
   @Override
+  public boolean targetIsInvalid(Content target) {
+    return !contentRepository.getPublicationService().isPublished(target);
+  }
+
+  @Override
   public Redirect getRedirect(String id) {
     return convertToRedirect(contentRepository.getContent(id));
   }
