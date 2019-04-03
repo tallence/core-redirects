@@ -116,11 +116,6 @@ public class RedirectRepositoryImpl implements RedirectRepository {
   }
 
   @Override
-  public boolean sourceIsValid(String source) {
-    return StringUtils.isNotEmpty(source) && source.startsWith("/");
-  }
-
-  @Override
   public boolean targetIsInvalid(Content target) {
     return !contentRepository.getPublicationService().isPublished(target);
   }

@@ -20,12 +20,16 @@ import com.coremedia.cap.content.Content;
 import com.tallence.core.redirects.model.RedirectType;
 import com.tallence.core.redirects.model.SourceUrlType;
 import com.tallence.core.redirects.studio.repository.RedirectRepository;
+import org.apache.commons.lang3.StringUtils;
 
-import java.util.Map;
+import java.util.*;
 
 /**
- * This class is used by the {@link RedirectRepository}
- * to create new redirects, import redirects or edit existing redirects.
+ * This class is used to create new redirects, import redirects or edit existing redirects.
+ * It's offering typed getters to make the access to untyped properties (in the properties-map) more convenient.
+ *
+ * It also offers a validation-logic, which is placed here because of the access to the typed getters and the raw
+ * properties map.
  */
 public class RedirectUpdateProperties {
 
@@ -37,11 +41,25 @@ public class RedirectUpdateProperties {
   public static final String DESCRIPTION = "description";
   public static final String IMPORTED = "imported";
 
+  static final String INVALID_ACTIVE_VALUE = "active_invalid";
+  static final String INVALID_SOURCE_URL_TYPE_VALUE = "sourceUrlType_invalid";
+  static final String INVALID_SOURCE_VALUE = "source_invalid";
+  static final String SOURCE_ALREADY_EXISTS = "source_already_exists";
+  static final String INVALID_REDIRECT_TYPE_VALUE = "redirectType_invalid";
+  static final String MISSING_TARGET_LINK = "target_missing";
+  static final String INVALID_TARGET_LINK = "target_invalid";
 
-  private Map<String, Object> properties;
 
-  public RedirectUpdateProperties(Map<String, Object> properties) {
+  private final Map<String, Object> properties;
+  private final RedirectRepository repository;
+  private final String siteId;
+  private final String redirectId;
+
+  public RedirectUpdateProperties(Map<String, Object> properties, RedirectRepository repository, String siteId, String redirectId) {
     this.properties = properties;
+    this.repository = repository;
+    this.siteId = siteId;
+    this.redirectId = redirectId;
   }
 
   public Boolean getActive() {
@@ -78,6 +96,76 @@ public class RedirectUpdateProperties {
       return (T) properties.get(propertyName);
     }
     return null;
+  }
+
+  /**
+   * @see #validate(boolean)
+   */
+  public Map<String, String> validate() {
+    return validate(false);
+  }
+
+  /**
+   * Validating the properties data.
+   * @param update true means, that the properties are used for updating existing data. Which does not require mandatory
+   *               properties such as "active" or "targetId" which are not available if they are not changed by the update-request.
+   * @return a list of errors mapped to the corresponding field-name
+   */
+  public Map<String, String> validate(boolean update) {
+
+    Map<String, String> errors = new HashMap<>();
+
+    //If the properties are used to create a new redirect, active is required
+    if (!update && getActive() == null) {
+      errors.put(ACTIVE, INVALID_ACTIVE_VALUE);
+    }
+
+    //If the properties are used to create a new redirect, SourceUrlType is required
+    if (!update && getSourceUrlType() == null) {
+      errors.put(SOURCE_URL_TYPE, INVALID_SOURCE_URL_TYPE_VALUE);
+    } else if (getSourceUrlType() == null && Optional.ofNullable(properties.get(SOURCE_URL_TYPE)).map(Object::toString).isPresent()) {
+      //if the property contain a value, but it does not match any SourceUrlType-enum-value
+      errors.put(SOURCE_URL_TYPE, INVALID_SOURCE_URL_TYPE_VALUE);
+    }
+
+    String source = getSource();
+    //If the properties are used to create a new redirect, source is required
+    if (!update && StringUtils.isEmpty(source)) {
+      errors.put(SOURCE, INVALID_SOURCE_VALUE);
+    }
+    if (StringUtils.isNotEmpty(source)) {
+      if (!sourceIsValid(source)) {
+        errors.put(SOURCE, INVALID_SOURCE_VALUE);
+      } else if (StringUtils.isNotBlank(redirectId) && repository.sourceAlreadyExists(siteId, redirectId, source) ||
+              StringUtils.isBlank(redirectId) && repository.sourceAlreadyExists(siteId, source)) {
+        errors.put(SOURCE, SOURCE_ALREADY_EXISTS);
+      }
+    }
+
+
+    Content targetLink = getTargetLink();
+    //If the properties are used to create a new redirect, the targetLink is required
+    if (!update && targetLink == null) {
+      errors.put(TARGET_LINK, MISSING_TARGET_LINK);
+    } else if (targetLink != null && Boolean.TRUE.equals(getActive()) && repository.targetIsInvalid(targetLink)) {
+      errors.put(TARGET_LINK, INVALID_TARGET_LINK);
+    }
+
+
+
+    //If the properties are used to create a new redirect, RedirectType is required
+    if (!update && getRedirectType() == null) {
+      errors.put(REDIRECT_TYPE, INVALID_REDIRECT_TYPE_VALUE);
+    } else if (getRedirectType() == null && Optional.ofNullable(properties.get(REDIRECT_TYPE)).map(Object::toString).isPresent()) {
+      //if the property contain a value, but it does not match any RedirectType-enum-value
+      errors.put(REDIRECT_TYPE, INVALID_REDIRECT_TYPE_VALUE);
+    }
+
+    return errors;
+  }
+
+  private static boolean sourceIsValid(String source) {
+    return StringUtils.isNotEmpty(source) && source.startsWith("/");
   }
 
 }

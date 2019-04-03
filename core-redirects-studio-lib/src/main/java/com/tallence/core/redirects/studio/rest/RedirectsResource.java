@@ -28,6 +28,8 @@ import com.tallence.core.redirects.studio.repository.RedirectRepository;
 import com.tallence.core.redirects.studio.service.RedirectImporter;
 import com.tallence.core.redirects.studio.service.RedirectPermissionService;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
@@ -38,6 +40,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.*;
 import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
 
 /**
@@ -47,13 +50,7 @@ import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
 @Path("redirects/{siteId:[^/]+}")
 public class RedirectsResource extends AbstractLinkingResource {
 
-  private static final String SOURCE = "source";
-  private static final String SOURCE_ALREADY_EXISTS = "source_already_exists";
-  private static final String INVALID_SOURCE = "source_invalid";
-
-  private static final String TARGET_LINK = "targetLink";
-  private static final String INVALID_TARGET_LINK = "target_invalid";
-  private static final String MISSING_TARGET_LINK = "target_missing";
+  private static final Logger LOG = LoggerFactory.getLogger(RedirectsResource.class);
 
   private String siteId;
   private final RedirectRepository redirectRepository;
@@ -100,7 +97,16 @@ public class RedirectsResource extends AbstractLinkingResource {
   @Path("create")
   @Consumes({"application/json"})
   public Response createRedirect(Map<String, Object> rawJson) {
-    Redirect redirect = redirectRepository.createRedirect(getSiteId(), resolveUpdateProperties(rawJson));
+    RedirectUpdateProperties creationProperties = resolveCreationProperties(rawJson);
+
+    Map<String, String> errors = creationProperties.validate();
+    if (!errors.isEmpty()) {
+      LOG.error("Validation failed for new redirect with properties [{}] and errors: [{}]. This should not happen, " +
+              "frontend should already take care of invalid values.", rawJson, errors);
+      return Response.status(Response.Status.BAD_REQUEST).build();
+    }
+
+    Redirect redirect = redirectRepository.createRedirect(getSiteId(), creationProperties);
     return Response.ok(new RedirectReference(redirect)).build();
   }
 
@@ -117,26 +123,22 @@ public class RedirectsResource extends AbstractLinkingResource {
                                                    @QueryParam("redirectId") String redirectId,
                                                    @QueryParam("targetId") String targetId,
                                                    @QueryParam("active") Boolean active) {
-    RedirectValidationResult validationResult = new RedirectValidationResult();
-    if (StringUtils.isNotBlank(redirectId) && redirectRepository.sourceAlreadyExists(getSiteId(), redirectId, source) ||
-        StringUtils.isBlank(redirectId) && redirectRepository.sourceAlreadyExists(getSiteId(), source)) {
-      validationResult.addErrorCode(SOURCE, SOURCE_ALREADY_EXISTS);
-    }
-    if (!redirectRepository.sourceIsValid(source)) {
-      validationResult.addErrorCode(SOURCE, INVALID_SOURCE);
-    }
+    Map<String, Object> properties = new HashMap<>();
 
-    if (StringUtils.isBlank(targetId)) {
-      validationResult.addErrorCode(TARGET_LINK, MISSING_TARGET_LINK);
-    } else if (active && redirectRepository.targetIsInvalid(contentRepository.getContent(targetId))) {
-      validationResult.addErrorCode(TARGET_LINK, INVALID_TARGET_LINK);
-    }
+    properties.put(ACTIVE, active);
+    properties.put(TARGET_LINK, StringUtils.isNotBlank(targetId) ? contentRepository.getContent(targetId) : null);
+    properties.put(SOURCE, source);
+
+    Map<String, String> errors = new RedirectUpdateProperties(properties, redirectRepository, siteId, redirectId).validate();
+
+    RedirectValidationResult validationResult = new RedirectValidationResult();
+    errors.forEach(validationResult::addErrorCode);
 
     return validationResult;
   }
 
-  private RedirectUpdateProperties resolveUpdateProperties(Map<String, Object> rawJson) {
-    return new RedirectUpdateProperties((Map<String, Object>) resolveJson(rawJson));
+  private RedirectUpdateProperties resolveCreationProperties(Map<String, Object> rawJson) {
+    return new RedirectUpdateProperties((Map<String, Object>) resolveJson(rawJson), redirectRepository, getSiteId(), null);
   }
 
   private String getSiteId() {

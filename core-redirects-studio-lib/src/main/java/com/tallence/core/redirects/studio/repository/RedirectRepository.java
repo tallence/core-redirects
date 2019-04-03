@@ -55,14 +55,6 @@ public interface RedirectRepository {
   boolean sourceAlreadyExists(String siteId, String source);
 
   /**
-   * Checks if the given source is valid.
-   *
-   * @param source The source.
-   * @return boolean.
-   */
-  boolean sourceIsValid(String source);
-
-  /**
    * Checks if the target of the redirect is invalid.
    *
    * @param target the target of the redirect

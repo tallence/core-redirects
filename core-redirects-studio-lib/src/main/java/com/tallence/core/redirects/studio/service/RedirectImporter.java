@@ -44,12 +44,6 @@ public class RedirectImporter {
   private static final Logger LOG = LoggerFactory.getLogger(RedirectImporter.class);
 
   private static final String INVALID_CSV_ENTRY = "length_invalid";
-  private static final String INVALID_ACTIVE_VALUE = "active_invalid";
-  private static final String INVALID_SOURCE_URL_TYPE_VALUE = "sourceUrlType_invalid";
-  private static final String INVALID_SOURCE_VALUE = "source_invalid";
-  private static final String SOURCE_ALREADY_EXISTS = "source_already_exists";
-  private static final String INVALID_TAGET_LINK_VALUE = "targetLink_invalid";
-  private static final String INVALID_REDIRECT_TYPE_VALUE = "redirectType_invalid";
   private static final String CREATION_FAILURE = "creation_failure";
 
   private final RedirectRepository redirectRepository;
@@ -99,67 +93,39 @@ public class RedirectImporter {
    * @param response the redirect import response.
    */
   private void createRedirect(String siteId, CSVRecord record, RedirectImportResponse response) {
-    boolean valid = true;
     String csvEntry = getCsvEntry(record);
 
-    Map<String, Object> updateProperties = new HashMap<>();
+    Map<String, Object> properties = new HashMap<>();
 
     String active = record.get(0);
-    if ((active != null) &&
-        !(active.equalsIgnoreCase("true") || active.equalsIgnoreCase("false"))) {
-      valid = false;
-      response.addErrorMessage(csvEntry, INVALID_ACTIVE_VALUE);
-    } else {
-      updateProperties.put(RedirectUpdateProperties.ACTIVE, Boolean.valueOf(active));
-    }
+    properties.put(RedirectUpdateProperties.ACTIVE, Boolean.valueOf(active));
 
     String sourceUrlType = record.get(1);
-    if (StringUtils.isEmpty(sourceUrlType)) {
-      valid = false;
-      response.addErrorMessage(csvEntry, INVALID_SOURCE_URL_TYPE_VALUE);
-    } else {
-      updateProperties.put(RedirectUpdateProperties.SOURCE_URL_TYPE, sourceUrlType);
-    }
+    properties.put(RedirectUpdateProperties.SOURCE_URL_TYPE, sourceUrlType);
 
     String source = record.get(2);
-    if (StringUtils.isEmpty(source) || !redirectRepository.sourceIsValid(source)) {
-      valid = false;
-      response.addErrorMessage(csvEntry, INVALID_SOURCE_VALUE);
-    } else if (redirectRepository.sourceAlreadyExists(siteId, source)) {
-      valid = false;
-      response.addErrorMessage(csvEntry, SOURCE_ALREADY_EXISTS);
-    } else {
-      updateProperties.put(RedirectUpdateProperties.SOURCE, source);
-    }
+    properties.put(RedirectUpdateProperties.SOURCE, source);
 
     Content targetLink = getTargetLink(record);
-    if (targetLink == null) {
-      valid = false;
-      response.addErrorMessage(csvEntry, INVALID_TAGET_LINK_VALUE);
-    } else if (active.equalsIgnoreCase("true") && redirectRepository.targetIsInvalid(targetLink)) {
-      valid = false;
-      response.addErrorMessage(csvEntry, INVALID_TAGET_LINK_VALUE);
-    } else {
-      updateProperties.put(RedirectUpdateProperties.TARGET_LINK, targetLink);
-    }
+    properties.put(RedirectUpdateProperties.TARGET_LINK, targetLink);
 
     String redirectType = record.get(4);
-    if (StringUtils.isEmpty(redirectType)) {
-      valid = false;
-      response.addErrorMessage(csvEntry, INVALID_REDIRECT_TYPE_VALUE);
-    } else {
-      updateProperties.put(RedirectUpdateProperties.REDIRECT_TYPE, redirectType);
-    }
+    properties.put(RedirectUpdateProperties.REDIRECT_TYPE, redirectType);
 
-    updateProperties.put(RedirectUpdateProperties.DESCRIPTION, record.get(5));
-    updateProperties.put(RedirectUpdateProperties.IMPORTED, true);
-    if (valid) {
+    properties.put(RedirectUpdateProperties.DESCRIPTION, record.get(5));
+    properties.put(RedirectUpdateProperties.IMPORTED, true);
+
+    RedirectUpdateProperties updateProperties = new RedirectUpdateProperties(properties, redirectRepository, siteId, null);
+    Map<String, String> errors = updateProperties.validate();
+    if (errors.isEmpty()) {
       try {
-        Redirect redirect = redirectRepository.createRedirect(siteId, new RedirectUpdateProperties(updateProperties));
+        Redirect redirect = redirectRepository.createRedirect(siteId, updateProperties);
         response.addCreated(redirect);
       } catch (Exception e) {
-        response.addErrorMessage(getCsvEntry(record), CREATION_FAILURE);
+        response.addErrorMessage(csvEntry, CREATION_FAILURE);
       }
+    } else {
+      errors.values().forEach(e -> response.addErrorMessage(csvEntry, e));
     }
   }
 
