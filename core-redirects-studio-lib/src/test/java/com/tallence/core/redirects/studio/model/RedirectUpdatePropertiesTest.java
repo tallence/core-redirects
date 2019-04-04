@@ -69,7 +69,7 @@ public class RedirectUpdatePropertiesTest {
   }
 
   @Test
-  public void testCreateValidation() {
+  public void testCreateValidationInvalidEnumsAndSource() {
 
     Content targetLink = mock(Content.class);
     when(repository.targetIsInvalid(eq(targetLink))).thenReturn(false);
@@ -90,6 +90,44 @@ public class RedirectUpdatePropertiesTest {
     assertThat(errors.get(REDIRECT_TYPE), equalTo(INVALID_REDIRECT_TYPE_VALUE));
     assertThat(errors.get(SOURCE), equalTo(INVALID_SOURCE_VALUE));
 
+  }
+
+  @Test
+  public void testCreateValidationInvalidTargetLink() {
+
+    Content targetLink = mock(Content.class);
+    when(repository.targetIsInvalid(eq(targetLink))).thenReturn(true);
+
+    Map<String, Object> properties = new HashMap<>();
+    properties.put(ACTIVE, true);
+    properties.put(SOURCE, "/valid-url");
+    properties.put(SOURCE_URL_TYPE, "PLAIN");
+    properties.put(REDIRECT_TYPE, "ALWAYS");
+    properties.put(TARGET_LINK, targetLink);
+
+    RedirectUpdateProperties creationProperties = new RedirectUpdateProperties(properties, repository, null, null);
+
+    Map<String, String> errors = creationProperties.validate();
+
+    assertThat(errors.size(), equalTo(1));
+    assertThat(errors.get(TARGET_LINK), equalTo(INVALID_TARGET_LINK));
+  }
+
+  @Test
+  public void testCreateValidationNoFields() {
+
+    Map<String, Object> properties = new HashMap<>();
+
+    RedirectUpdateProperties creationProperties = new RedirectUpdateProperties(properties, repository, null, null);
+
+    Map<String, String> errors = creationProperties.validate();
+
+    assertThat(errors.size(), equalTo(5));
+    assertThat(errors.get(ACTIVE), equalTo(INVALID_ACTIVE_VALUE));
+    assertThat(errors.get(TARGET_LINK), equalTo(MISSING_TARGET_LINK));
+    assertThat(errors.get(SOURCE_URL_TYPE), equalTo(INVALID_SOURCE_URL_TYPE_VALUE));
+    assertThat(errors.get(REDIRECT_TYPE), equalTo(INVALID_REDIRECT_TYPE_VALUE));
+    assertThat(errors.get(SOURCE), equalTo(INVALID_SOURCE_VALUE));
   }
 
   @Test

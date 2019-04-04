@@ -123,7 +123,7 @@ public class RedirectUpdateProperties {
     //If the properties are used to create a new redirect, SourceUrlType is required
     if (!update && getSourceUrlType() == null) {
       errors.put(SOURCE_URL_TYPE, INVALID_SOURCE_URL_TYPE_VALUE);
-    } else if (getSourceUrlType() == null && Optional.ofNullable(properties.get(SOURCE_URL_TYPE)).map(Object::toString).isPresent()) {
+    } else if (getSourceUrlType() == null && properties.get(SOURCE_URL_TYPE) != null) {
       //if the property contain a value, but it does not match any SourceUrlType-enum-value
       errors.put(SOURCE_URL_TYPE, INVALID_SOURCE_URL_TYPE_VALUE);
     }
@@ -156,7 +156,7 @@ public class RedirectUpdateProperties {
     //If the properties are used to create a new redirect, RedirectType is required
     if (!update && getRedirectType() == null) {
       errors.put(REDIRECT_TYPE, INVALID_REDIRECT_TYPE_VALUE);
-    } else if (getRedirectType() == null && Optional.ofNullable(properties.get(REDIRECT_TYPE)).map(Object::toString).isPresent()) {
+    } else if (getRedirectType() == null && properties.get(REDIRECT_TYPE) != null) {
       //if the property contain a value, but it does not match any RedirectType-enum-value
       errors.put(REDIRECT_TYPE, INVALID_REDIRECT_TYPE_VALUE);
     }
