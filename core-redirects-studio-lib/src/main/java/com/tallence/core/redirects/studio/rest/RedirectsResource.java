@@ -21,6 +21,8 @@ import com.coremedia.cap.content.ContentRepository;
 import com.coremedia.rest.linking.AbstractLinkingResource;
 import com.coremedia.rest.linking.LinkResolver;
 import com.sun.jersey.multipart.FormDataParam;
+import com.tallence.core.redirects.model.RedirectType;
+import com.tallence.core.redirects.model.SourceUrlType;
 import com.tallence.core.redirects.studio.model.Pageable;
 import com.tallence.core.redirects.studio.model.Redirect;
 import com.tallence.core.redirects.studio.model.RedirectUpdateProperties;
@@ -128,6 +130,10 @@ public class RedirectsResource extends AbstractLinkingResource {
     properties.put(ACTIVE, active);
     properties.put(TARGET_LINK, StringUtils.isNotBlank(targetId) ? contentRepository.getContent(targetId) : null);
     properties.put(SOURCE, source);
+    //Let's assume default values for the types, so that the validation does not fail.
+    // These are not sent by the validation request, as they cannot be empty.
+    properties.put(REDIRECT_TYPE, RedirectType.AFTER_NOT_FOUND.toString());
+    properties.put(SOURCE_URL_TYPE, SourceUrlType.PLAIN.toString());
 
     Map<String, String> errors = new RedirectUpdateProperties(properties, redirectRepository, siteId, redirectId).validate();
 
