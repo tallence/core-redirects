@@ -118,13 +118,16 @@ public class RedirectUpdateProperties {
     //If the properties are used to create a new redirect, active is required
     if (!update && getActive() == null) {
       errors.put(ACTIVE, INVALID_ACTIVE_VALUE);
+    } else if (getActive() == null && properties.get(ACTIVE) != null) {
+      //if the property contains a value, but it does not match "true" or "false". Might occur in the csv-upload.
+      errors.put(ACTIVE, INVALID_ACTIVE_VALUE);
     }
 
     //If the properties are used to create a new redirect, SourceUrlType is required
     if (!update && getSourceUrlType() == null) {
       errors.put(SOURCE_URL_TYPE, INVALID_SOURCE_URL_TYPE_VALUE);
     } else if (getSourceUrlType() == null && properties.get(SOURCE_URL_TYPE) != null) {
-      //if the property contain a value, but it does not match any SourceUrlType-enum-value
+      //if the property contains a value, but it does not match any SourceUrlType-enum-value. Might occur in the csv-upload.
       errors.put(SOURCE_URL_TYPE, INVALID_SOURCE_URL_TYPE_VALUE);
     }
 
@@ -157,7 +160,7 @@ public class RedirectUpdateProperties {
     if (!update && getRedirectType() == null) {
       errors.put(REDIRECT_TYPE, INVALID_REDIRECT_TYPE_VALUE);
     } else if (getRedirectType() == null && properties.get(REDIRECT_TYPE) != null) {
-      //if the property contain a value, but it does not match any RedirectType-enum-value
+      //if the property contains a value, but it does not match any RedirectType-enum-value. Might occur in the csv-upload.
       errors.put(REDIRECT_TYPE, INVALID_REDIRECT_TYPE_VALUE);
     }
 
