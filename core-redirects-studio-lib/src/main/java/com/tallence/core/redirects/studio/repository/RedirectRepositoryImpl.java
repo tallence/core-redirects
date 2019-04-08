@@ -97,8 +97,14 @@ public class RedirectRepositoryImpl implements RedirectRepository {
     Content redirect = contentRepository.createChild(getFolderForRedirect(siteId, uuid), documentName, redirectContentType, new HashMap<>());
     try {
       updateRedirect(redirect, false, updateProperties);
-    } finally {
+    } catch (Exception e) {
       if (redirect.isCheckedOut()) {
+        redirect.checkIn();
+        redirect.delete();
+      }
+      throw e;
+    } finally {
+      if (!redirect.isDeleted() && redirect.isCheckedOut()) {
         redirect.checkIn();
       }
     }
