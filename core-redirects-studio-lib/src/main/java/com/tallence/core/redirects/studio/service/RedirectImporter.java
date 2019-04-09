@@ -35,6 +35,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * A service to import redirects.
@@ -44,6 +45,7 @@ public class RedirectImporter {
   private static final Logger LOG = LoggerFactory.getLogger(RedirectImporter.class);
 
   private static final String INVALID_CSV_ENTRY = "length_invalid";
+  private static final String DUPLICATE_SOURCE = "duplicate_source";
   private static final String CREATION_FAILURE = "creation_failure";
 
   private final RedirectRepository redirectRepository;
@@ -69,13 +71,19 @@ public class RedirectImporter {
           .withDelimiter(';')
           .withFirstRecordAsHeader()
           .parse(new InputStreamReader(inputStream));
+
+      Map<String, RedirectUpdateProperties> imports = new HashMap<>();
       for (CSVRecord record : records) {
+        String csvEntry = getCsvEntry(record);
         if (record.size() < 6) {
-          redirectImportResponse.addErrorMessage(getCsvEntry(record), INVALID_CSV_ENTRY);
+          redirectImportResponse.addErrorMessage(csvEntry, INVALID_CSV_ENTRY);
         } else {
-          createRedirect(siteId, record, redirectImportResponse);
+          addIfNoDuplicate(siteId, redirectImportResponse, imports, record, csvEntry);
+
         }
       }
+
+      imports.forEach((csvEntry, properties) -> createRedirect(siteId, csvEntry, properties, redirectImportResponse));
     } catch (IOException e) {
       redirectImportResponse.addErrorMessage("", CREATION_FAILURE);
       LOG.error("Error while processing uploaded file", e);
@@ -84,16 +92,25 @@ public class RedirectImporter {
     return redirectImportResponse;
   }
 
-  /**
-   * Creates a redirect for the given {@link CSVRecord}. If the csv record is invalid,
-   * corresponding error messages are added to the {@link RedirectImportResponse}.
-   *
-   * @param siteId   the site id.
-   * @param record   the csv record.
-   * @param response the redirect import response.
-   */
-  private void createRedirect(String siteId, CSVRecord record, RedirectImportResponse response) {
-    String csvEntry = getCsvEntry(record);
+  private void addIfNoDuplicate(String siteId, RedirectImportResponse redirectImportResponse, Map<String, RedirectUpdateProperties> imports, CSVRecord record, String csvEntry) {
+    //Add to map, if no duplicate sourceUrl
+    RedirectUpdateProperties properties = mapToProperties(siteId, record);
+    if (imports.values().stream().noneMatch(p -> sourcesMatch(properties, p))) {
+      imports.put(csvEntry, properties);
+    } else {
+      redirectImportResponse.addErrorMessage(csvEntry, DUPLICATE_SOURCE);
+    }
+  }
+
+  private boolean sourcesMatch(RedirectUpdateProperties value, RedirectUpdateProperties p) {
+
+    String source1 = Optional.ofNullable(p.getSource()).map(String::trim).orElse(null);
+    String source2 = Optional.ofNullable(value.getSource()).map(String::trim).orElse(null);
+
+    return source1 != null && source1.equalsIgnoreCase(source2);
+  }
+
+  private RedirectUpdateProperties mapToProperties(String siteId, CSVRecord record) {
 
     Map<String, Object> properties = new HashMap<>();
 
@@ -115,11 +132,24 @@ public class RedirectImporter {
     properties.put(RedirectUpdateProperties.DESCRIPTION, record.get(5));
     properties.put(RedirectUpdateProperties.IMPORTED, true);
 
-    RedirectUpdateProperties updateProperties = new RedirectUpdateProperties(properties, redirectRepository, siteId, null);
-    Map<String, String> errors = updateProperties.validate();
+    return new RedirectUpdateProperties(properties, redirectRepository, siteId, null);
+  }
+
+  /**
+   * Creates a redirect for the given {@link RedirectUpdateProperties}. If the csv record is invalid,
+   * corresponding error messages are added to the {@link RedirectImportResponse}.
+   *
+   * @param siteId     the site id.
+   * @param csvEntry   the csv record.
+   * @param properties the already created properties.
+   * @param response   the redirect import response.
+   */
+  private void createRedirect(String siteId, String csvEntry, RedirectUpdateProperties properties, RedirectImportResponse response) {
+
+    Map<String, String> errors = properties.validate();
     if (errors.isEmpty()) {
       try {
-        Redirect redirect = redirectRepository.createRedirect(siteId, updateProperties);
+        Redirect redirect = redirectRepository.createRedirect(siteId, properties);
         response.addCreated(redirect);
       } catch (Exception e) {
         response.addErrorMessage(csvEntry, CREATION_FAILURE);

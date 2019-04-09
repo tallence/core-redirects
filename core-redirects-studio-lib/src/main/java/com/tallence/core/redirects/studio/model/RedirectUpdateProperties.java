@@ -46,6 +46,7 @@ public class RedirectUpdateProperties {
   static final String INVALID_SOURCE_VALUE = "source_invalid";
   static final String SOURCE_ALREADY_EXISTS = "source_already_exists";
   static final String INVALID_REDIRECT_TYPE_VALUE = "redirectType_invalid";
+  static final String INVALID_DESCRIPTION_VALUE = "description_invalid";
   static final String MISSING_TARGET_LINK = "target_missing";
   static final String INVALID_TARGET_LINK = "target_invalid";
 
@@ -164,11 +165,15 @@ public class RedirectUpdateProperties {
       errors.put(REDIRECT_TYPE, INVALID_REDIRECT_TYPE_VALUE);
     }
 
+    if (getDescription() != null && getDescription().length() > 1024) {
+      errors.put(DESCRIPTION, INVALID_DESCRIPTION_VALUE);
+    }
+
     return errors;
   }
 
   private static boolean sourceIsValid(String source) {
-    return StringUtils.isNotEmpty(source) && source.startsWith("/");
+    return StringUtils.isNotEmpty(source) && source.startsWith("/") && source.length() < 512;
   }
 
 }
