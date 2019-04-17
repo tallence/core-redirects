@@ -198,6 +198,7 @@ public class RedirectFilter implements Filter {
    * Look into the plain redirects map with the given pathInfo.
    *
    * @param pathInfo the requestUrl. A trailing slash will be cut off.
+   * @param redirects the lookup will happen in this dataStructure.
    */
   private Redirect getMatchingRedirect(SiteRedirects redirects, String pathInfo) {
 
