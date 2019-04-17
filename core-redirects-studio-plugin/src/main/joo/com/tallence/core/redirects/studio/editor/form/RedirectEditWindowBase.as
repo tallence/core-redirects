@@ -112,8 +112,8 @@ public class RedirectEditWindowBase extends Window {
   /**
    * If a redirect is available, the redirects will be updated. Otherwise a new redirect is created.
    *
-   * If the source ends with "-", followed by a number, the type should be REDIRECT_TYPE_ALWAYS. If it is, the user will be warned.
-   * If the source does not end with "-", followed by a number, the type should be REDIRECT_TYPE_404. If it is, the user will be warned.
+   * If the source ends with "-", followed by a number, the type should be REDIRECT_TYPE_ALWAYS. If it is not, the user will be warned.
+   * If the source does not end with "-", followed by a number, the type should be REDIRECT_TYPE_404. If it is not, the user will be warned.
    */
   protected function save():void {
     var model:Bean = getLocalModel();
