@@ -72,7 +72,9 @@ public class RedirectUpdateProperties {
   }
 
   public String getSource() {
-    return getProperty(SOURCE, String.class);
+    return Optional.ofNullable(getProperty(SOURCE, String.class))
+            .map(s -> s.endsWith("/") ? s.substring(0, s.length() - 1) : s)
+            .orElse(null);
   }
 
   public Content getTargetLink() {
