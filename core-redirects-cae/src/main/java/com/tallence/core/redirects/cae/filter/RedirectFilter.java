@@ -195,18 +195,18 @@ public class RedirectFilter implements Filter {
   }
 
   /**
-   * Look into the plain redirectss map with or without the trailing "/".
+   * Look into the plain redirects map with the given pathInfo.
+   *
+   * @param pathInfo the requestUrl. A trailing slash will be cut off.
+   * @param redirects the lookup will happen in this dataStructure.
    */
   private Redirect getMatchingRedirect(SiteRedirects redirects, String pathInfo) {
-    Redirect redirect = redirects.getPlainRedirects().get(pathInfo);
-    if (redirect == null) {
-      if (pathInfo.endsWith("/")) {
-        pathInfo = pathInfo.substring(0, pathInfo.length() - 1);
-      } else {
-        pathInfo += "/";
-      }
-      redirect = redirects.getPlainRedirects().get(pathInfo);
+
+    if (pathInfo.endsWith("/")) {
+      pathInfo = pathInfo.substring(0, pathInfo.length() - 1);
     }
+
+    Redirect redirect = redirects.getPlainRedirects().get(pathInfo);
 
     if (redirect != null && isTargetInvalid(redirect.getTarget())) {
       return null;

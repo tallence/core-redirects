@@ -16,6 +16,7 @@
 
 package com.tallence.core.redirects.studio.editor.grid.columns {
 import com.coremedia.cms.editor.sdk.editorContext;
+import com.tallence.core.redirects.studio.data.RedirectImpl;
 
 import ext.grid.column.Column;
 
@@ -29,9 +30,9 @@ public class RedirectTypeColumnBase extends Column {
   }
 
   protected function typeColRenderer(value:String):String {
-    if (value.toUpperCase() === "ALWAYS") {
+    if (value.toUpperCase() === RedirectImpl.REDIRECT_TYPE_ALWAYS) {
       return resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_type_value_0');
-    } else if (value.toUpperCase() === "AFTER_NOT_FOUND") {
+    } else if (value.toUpperCase() === RedirectImpl.REDIRECT_TYPE_404) {
       return resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_type_value_1');
     } else {
       return resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_type_invalid');

@@ -16,6 +16,7 @@
 
 package com.tallence.core.redirects.studio.editor.form {
 import com.coremedia.cap.content.Content;
+import com.coremedia.cms.editor.sdk.util.MessageBoxUtil;
 import com.coremedia.ui.data.Bean;
 import com.coremedia.ui.data.ValueExpression;
 import com.coremedia.ui.data.ValueExpressionFactory;
@@ -37,6 +38,7 @@ import mx.resources.ResourceManager;
 public class RedirectEditWindowBase extends Window {
 
   private static var SOURCE_TYPE_DEFAULT:String = RedirectImpl.SOURCE_TYPE_PLAIN;
+  private static const MESSAGE_BOX_DECISION_POSITIVE:String = "yes";
 
   private var localModel:Bean;
   private var redirect:Redirect;
@@ -108,10 +110,50 @@ public class RedirectEditWindowBase extends Window {
   }
 
   /**
-   * If a redirect is available, the redirects will be updates. Otherwise a new redirect is created.
+   * If a redirect is available, the redirects will be updated. Otherwise a new redirect is created.
+   *
+   * If the source ends with "-", followed by a number, the type should be REDIRECT_TYPE_ALWAYS. If it is not, the user will be warned.
+   * If the source does not end with "-", followed by a number, the type should be REDIRECT_TYPE_404. If it is not, the user will be warned.
    */
   protected function save():void {
     var model:Bean = getLocalModel();
+
+    var source:String = model.get(RedirectImpl.SOURCE);
+    var redirectType:String = model.get(RedirectImpl.REDIRECT_TYPE);
+
+    if (source && source.match(".+-\\d+") && RedirectImpl.REDIRECT_TYPE_404 == redirectType) {
+
+      MessageBoxUtil.showDecision(ResourceManager.getInstance().getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_decision_title'),
+              ResourceManager.getInstance().getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_decision_use404Type'),
+              ResourceManager.getInstance().getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_decision_ok'),
+              //when clicked on ok:
+              function (decision: String):void {
+                processSaveWithDecision(decision, RedirectImpl.REDIRECT_TYPE_ALWAYS);
+              });
+    } else if (source && !source.match(".+\\d+") && RedirectImpl.REDIRECT_TYPE_ALWAYS == redirectType) {
+      MessageBoxUtil.showDecision(ResourceManager.getInstance().getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_decision_title'),
+              ResourceManager.getInstance().getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_decision_useAlwaysType'),
+              ResourceManager.getInstance().getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_decision_ok'),
+              //when clicked on ok:
+              function (decision: String):void {
+                processSaveWithDecision(decision, RedirectImpl.REDIRECT_TYPE_404);
+              });
+    } else {
+      processSave();
+    }
+  }
+
+  private function processSaveWithDecision(decision:String, redirectType:String): void {
+    if (decision == MESSAGE_BOX_DECISION_POSITIVE) {
+      getLocalModel().set(RedirectImpl.REDIRECT_TYPE, redirectType);
+    }
+    processSave();
+  }
+
+  private function processSave(): void {
+
+    var model:Bean = getLocalModel();
+
     if (redirect) {
       redirect.setActive(model.get(RedirectImpl.ACTIVE));
       redirect.setTargetLink(model.get(RedirectImpl.TARGET_LINK)[0]);
