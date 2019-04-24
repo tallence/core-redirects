@@ -127,7 +127,7 @@ public class RedirectPermissionServiceImpl implements RedirectPermissionService 
 
   private boolean mayPerformPublish(Content content) {
     AccessControl accessControl = contentRepository.getAccessControl();
-    return !accessControl.mayPerform(content, redirectContentType, Right.PUBLISH);
+    return accessControl.mayPerform(content, redirectContentType, Right.PUBLISH);
   }
 
   private boolean mayPerformDelete(Content content) {
