@@ -65,11 +65,13 @@ public interface RedirectPermissionService {
      */
     class RedirectRights {
         final boolean mayWrite;
+        final boolean mayPublish;
         final boolean mayUseRegex;
 
-        RedirectRights(boolean mayWrite, boolean mayUseRegex) {
-            this.mayWrite = mayWrite;
-            this.mayUseRegex = mayUseRegex;
+        RedirectRights(boolean mayWrite, boolean mayPublish, boolean mayUseRegex) {
+          this.mayWrite = mayWrite;
+          this.mayPublish = mayPublish;
+          this.mayUseRegex = mayUseRegex;
         }
 
         public boolean isMayWrite() {
@@ -79,6 +81,10 @@ public interface RedirectPermissionService {
         public boolean isMayUseRegex() {
             return mayUseRegex;
         }
+
+      public boolean isMayPublish() {
+        return mayPublish;
+      }
     }
 
 }

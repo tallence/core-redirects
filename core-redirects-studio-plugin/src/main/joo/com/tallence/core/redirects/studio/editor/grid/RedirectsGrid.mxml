@@ -33,6 +33,9 @@
     public var mayNotWriteVE:ValueExpression;
 
     [Bindable]
+    public var mayNotPublishVE:ValueExpression;
+
+    [Bindable]
     public var mayNotUseRegexVE:ValueExpression;
 
     [Bindable]

@@ -19,15 +19,21 @@ package com.tallence.core.redirects.studio.data {
 public class PermissionResponse {
 
   private var mayWrite:Boolean;
+  private var mayPublish:Boolean;
   private var mayUseRegex:Boolean;
 
   public function PermissionResponse(jsonResponse:Object = null) {
     this.mayWrite = jsonResponse ? jsonResponse.mayWrite : false;
+    this.mayPublish = jsonResponse ? jsonResponse.mayPublish : false;
     this.mayUseRegex = jsonResponse ? jsonResponse.mayUseRegex : false;
   }
 
   public function isMayWrite():Boolean {
     return mayWrite;
+  }
+
+  public function isMayPublish():Boolean {
+    return mayPublish;
   }
 
   public function isMayUseRegex():Boolean {
