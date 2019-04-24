@@ -70,14 +70,27 @@ public class RedirectPermissionServiceImpl implements RedirectPermissionService 
 
   @Override
   public boolean mayCreate(Content rootFolder, RedirectUpdateProperties updateProperties) {
-    return mayPerformWriteAndPublish(rootFolder) && isAllowedForRegex(isUserAllowedForRegex(), updateProperties.getSourceUrlType());
+    Boolean toBePublished = updateProperties.getActive();
+
+    if (toBePublished == null) {
+      //It should not be null
+      LOG.warn("The active flag should not be null!");
+      return false;
+    }
+
+    return mayPerformWrite(rootFolder) &&
+            (!toBePublished || mayPerformPublish(rootFolder)) &&
+            isAllowedForRegex(isUserAllowedForRegex(), updateProperties.getSourceUrlType());
   }
 
   @Override
   public boolean mayDelete(Content redirect) {
     //Only admins may delete regex redirects
     boolean administrator = isUserAllowedForRegex();
-    return mayPerformDeleteAndPublish(redirect) &&
+
+    boolean published = contentRepository.getPublicationService().isPublished(redirect);
+    return mayPerformDelete(redirect) &&
+            (!published || mayPerformPublish(redirect)) &&
             isAllowedForRegex(administrator, SourceUrlType.asSourceUrlType(redirect.getString(SOURCE_URL_TYPE)));
   }
 
@@ -85,30 +98,41 @@ public class RedirectPermissionServiceImpl implements RedirectPermissionService 
   public boolean mayWrite(Content redirect, RedirectUpdateProperties updateProperties) {
     //Only admins may edit regex redirects
     boolean administrator = isUserAllowedForRegex();
-    return mayPerformWriteAndPublish(redirect) &&
+
+    //publication rights are required if the document is already published or if it is meant to be,
+    // according to the given properties.
+    boolean alreadyPublished = contentRepository.getPublicationService().isPublished(redirect);
+    Boolean publishDocument = updateProperties.getActive();
+    boolean requirePublicationRights = Boolean.TRUE.equals(publishDocument) || alreadyPublished;
+
+    return mayPerformWrite(redirect) &&
+            (!requirePublicationRights || mayPerformPublish(redirect)) &&
             isAllowedForRegex(administrator, updateProperties.getSourceUrlType()) &&
             isAllowedForRegex(administrator, SourceUrlType.asSourceUrlType(redirect.getString(SOURCE_URL_TYPE)));
   }
 
   @Override
   public RedirectRights resolveRights(Content rootFolder) {
-    return new RedirectRights(mayPerformWriteAndPublish(rootFolder), isUserAllowedForRegex());
+    return new RedirectRights(mayPerformWrite(rootFolder), mayPerformPublish(rootFolder), isUserAllowedForRegex());
   }
 
   private boolean isAllowedForRegex(boolean mayUseRegex, SourceUrlType sourceType) {
     return mayUseRegex || !SourceUrlType.REGEX.equals(sourceType);
   }
 
-  private boolean mayPerformWriteAndPublish(Content content) {
+  private boolean mayPerformWrite(Content content) {
     AccessControl accessControl = contentRepository.getAccessControl();
-    return accessControl.mayPerform(content, redirectContentType, Right.WRITE) &&
-            accessControl.mayPerform(content, redirectContentType, Right.PUBLISH);
+    return accessControl.mayPerform(content, redirectContentType, Right.WRITE);
   }
 
-  private boolean mayPerformDeleteAndPublish(Content content) {
+  private boolean mayPerformPublish(Content content) {
     AccessControl accessControl = contentRepository.getAccessControl();
-    return accessControl.mayPerform(content, redirectContentType, Right.DELETE) &&
-            accessControl.mayPerform(content, redirectContentType, Right.PUBLISH);
+    return !accessControl.mayPerform(content, redirectContentType, Right.PUBLISH);
+  }
+
+  private boolean mayPerformDelete(Content content) {
+    AccessControl accessControl = contentRepository.getAccessControl();
+    return accessControl.mayPerform(content, redirectContentType, Right.DELETE);
   }
 
   private boolean isUserAllowedForRegex() {

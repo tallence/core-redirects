@@ -29,6 +29,9 @@
     public var errorMessagesVE:ValueExpression;
 
     [Bindable]
+    public var mayNotPublishVE:ValueExpression;
+
+    [Bindable]
     public var mayNotUseRegexVE:ValueExpression;
     ]]>
   </fx:Script>
@@ -40,6 +43,7 @@
             fieldLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_active')}">
           <plugins exml:mode="append">
             <ui:BindPropertyPlugin bidirectional="true" bindTo="{getBindTo(config.localModel, RedirectImpl.ACTIVE)}"/>
+            <ui:BindPropertyPlugin componentProperty="hidden" bindTo="{config.mayNotPublishVE}"/>
           </plugins>
         </Checkbox>
 

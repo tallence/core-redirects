@@ -45,11 +45,13 @@ public class RedirectEditWindowBase extends Window {
   private var isValidSourceVE:ValueExpression;
   private var errorMessagesVE:ValueExpression;
   private var selectedSiteIdVE:ValueExpression;
+  private var mayNotPublishVE:ValueExpression;
 
   public function RedirectEditWindowBase(config:RedirectEditWindow = null) {
     super(config);
     redirect = config.redirect;
     selectedSiteIdVE = config.selectedSiteIdVE;
+    mayNotPublishVE = config.mayNotPublishVE;
     initLocalModel();
     initValidationChangeListeners();
   }
@@ -101,8 +103,8 @@ public class RedirectEditWindowBase extends Window {
       model.set(RedirectImpl.REDIRECT_TYPE, redirect.getRedirectType());
       model.set(RedirectImpl.CREATION_DATE, redirect.getCreationDate());
     } else {
-      //Set default values
-      model.set(RedirectImpl.ACTIVE, true);
+      //Set default values. The redirect is active by default, if the user has publication rights
+      model.set(RedirectImpl.ACTIVE, !mayNotPublishVE.getValue());
       model.set(RedirectImpl.SOURCE_TYPE, SOURCE_TYPE_DEFAULT);
       model.set(RedirectImpl.REDIRECT_TYPE, RedirectImpl.REDIRECT_TYPE_404);
       model.set(RedirectImpl.CREATION_DATE, new Date());
@@ -111,9 +113,6 @@ public class RedirectEditWindowBase extends Window {
 
   /**
    * If a redirect is available, the redirects will be updated. Otherwise a new redirect is created.
-   *
-   * If the source ends with "-", followed by a number, the type should be REDIRECT_TYPE_ALWAYS. If it is not, the user will be warned.
-   * If the source does not end with "-", followed by a number, the type should be REDIRECT_TYPE_404. If it is not, the user will be warned.
    */
   protected function save():void {
     var model:Bean = getLocalModel();
@@ -121,7 +120,9 @@ public class RedirectEditWindowBase extends Window {
     var source:String = model.get(RedirectImpl.SOURCE);
     var redirectType:String = model.get(RedirectImpl.REDIRECT_TYPE);
 
-    if (source && source.match(".+-\\d+") && RedirectImpl.REDIRECT_TYPE_404 == redirectType) {
+    var endsWithEvenId: Boolean = source && source.match(".+-.*[02468]");
+
+    if (source && endsWithEvenId && RedirectImpl.REDIRECT_TYPE_404 == redirectType) {
 
       MessageBoxUtil.showDecision(ResourceManager.getInstance().getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_decision_title'),
               ResourceManager.getInstance().getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_decision_use404Type'),
@@ -130,7 +131,7 @@ public class RedirectEditWindowBase extends Window {
               function (decision: String):void {
                 processSaveWithDecision(decision, RedirectImpl.REDIRECT_TYPE_ALWAYS);
               });
-    } else if (source && !source.match(".+\\d+") && RedirectImpl.REDIRECT_TYPE_ALWAYS == redirectType) {
+    } else if (source && !endsWithEvenId && RedirectImpl.REDIRECT_TYPE_ALWAYS == redirectType) {
       MessageBoxUtil.showDecision(ResourceManager.getInstance().getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_decision_title'),
               ResourceManager.getInstance().getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_decision_useAlwaysType'),
               ResourceManager.getInstance().getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_decision_ok'),
@@ -187,7 +188,15 @@ public class RedirectEditWindowBase extends Window {
     return ValueExpressionFactory.createFromFunction(function ():Boolean {
       var model:Bean = getLocalModel();
       var isValid:Boolean = getIsValidSourceVE().getValue();
-      return !isValid || (!model.get(RedirectImpl.SOURCE) || !model.get(RedirectImpl.TARGET_LINK) || (model.get(RedirectImpl.TARGET_LINK) as Array).length == 0);
+
+      var active:Boolean = model.get(RedirectImpl.ACTIVE);
+      var invalidPublishAttempt: Boolean = active && mayNotPublishVE.getValue();
+
+      var source:* = model.get(RedirectImpl.SOURCE);
+      var targetLink:* = model.get(RedirectImpl.TARGET_LINK);
+      return invalidPublishAttempt ||
+              !isValid ||
+              (!source || !targetLink || (targetLink as Array).length == 0);
     })
   }
 

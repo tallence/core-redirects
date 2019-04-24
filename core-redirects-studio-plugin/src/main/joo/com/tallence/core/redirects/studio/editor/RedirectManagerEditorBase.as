@@ -35,6 +35,7 @@ public class RedirectManagerEditorBase extends Panel {
 
   private var selectedSiteVE:ValueExpression;
   private var mayNotWriteVE:ValueExpression;
+  private var mayNotPublishVE:ValueExpression;
   private var mayNotUseRegexVE:ValueExpression;
 
   public function RedirectManagerEditorBase(config:RedirectManagerEditor = null) {
@@ -50,10 +51,12 @@ public class RedirectManagerEditorBase extends Panel {
 
     //In case the request takes long or fails, the user has no rights
     getMayNotWriteVE().setValue(true);
+    getMayNotPublishVE().setValue(true);
     getMayNotUseRegexVE().setValue(true);
 
     RedirectRepositoryImpl.getInstance().resolvePermissions(siteId).then(function(response: PermissionResponse): void {
       getMayNotWriteVE().setValue(!response.isMayWrite());
+      getMayNotPublishVE().setValue(!response.isMayPublish());
       getMayNotUseRegexVE().setValue(!response.isMayUseRegex());
     });
   }
@@ -66,6 +69,7 @@ public class RedirectManagerEditorBase extends Panel {
     var window:RedirectEditWindow = new RedirectEditWindow(RedirectEditWindow({
       title: resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_new_text'),
       selectedSiteIdVE: getSelectedSiteVE(),
+      mayNotPublishVE: this.mayNotPublishVE,
       mayNotUseRegexVE: this.mayNotUseRegexVE
     }));
     window.show();
@@ -97,6 +101,13 @@ public class RedirectManagerEditorBase extends Panel {
       mayNotWriteVE = ValueExpressionFactory.createFromValue(false);
     }
     return mayNotWriteVE;
+  }
+
+  protected function getMayNotPublishVE():ValueExpression {
+    if (!mayNotPublishVE) {
+      mayNotPublishVE = ValueExpressionFactory.createFromValue(false);
+    }
+    return mayNotPublishVE;
   }
 
   protected function getMayNotUseRegexVE():ValueExpression {

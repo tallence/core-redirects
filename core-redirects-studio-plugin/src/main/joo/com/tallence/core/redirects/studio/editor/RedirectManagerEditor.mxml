@@ -43,6 +43,7 @@
                 <grid:RedirectsGrid height="100%"
                                     selectedSiteIdVE="{getSelectedSiteVE()}"
                                     mayNotWriteVE="{getMayNotWriteVE()}"
+                                    mayNotPublishVE="{getMayNotPublishVE()}"
                                     mayNotUseRegexVE="{getMayNotUseRegexVE()}"
                                     siteIsNotSelectedVE="{getSiteIsNotSelectedVE()}"/>
               </editor:items>
