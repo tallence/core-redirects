@@ -15,10 +15,10 @@ multiple redirects for import (4). Double-clicking an entry will open an edit di
 
 ![Edit dialog](core-redirects_edit_dialog.png)
 
-Redirects contain a number of fields, some of which are only informational (marked &#2139;):
+Redirects contain a number of fields, some of which are only informational (marked :information_source:):
 
 - Published: Setting or removing this checkmark will automatically publish or withdraw this redirect.
-- Creation date &#2139;: Automatically filled on creation with the current date.
+- Creation date :information_source: : Automatically filled on creation with the current date.
 - Type: There are two different kinds of redirects
   - Always: This redirect will always be executed, regardless of any page that would normally be shown for this url.
   - Only after 404: These redirects will only execute, if the source url results in a 404 Not found error. This can for
@@ -28,7 +28,7 @@ Redirects contain a number of fields, some of which are only informational (mark
   - Plain: Simple redirects, very fast, but only for a single source url
   - Regular Expression: Defines a rule for severals source urls to match. Slower, but more flexible.
 - Target Link: The target of the redirect (where to redirect to). Can also be a CMExternalLink for external urls.
-- Description &#2139;: Can be used to keep notes for this redirect. Also searchable.
+- Description :information_source: : Can be used to keep notes for this redirect. Also searchable.
 
 Considerations on Redirects
 ---------------------------
