@@ -154,9 +154,9 @@ public class RedirectUpdateTaskScheduler {
 
   private Site getSite(Content content) {
     Site site = sitesService.getContentSiteAspect(content).getSite();
-    if (site == null || !redirectsCache.containsKey(site)) {
+    if (site == null) {
       // Nothing we can do here...
-      LOG.error("No site found (or found in cache) for document {}. This is probably a serious error.", content);
+      LOG.error("No site found for document {}. Is the SiteMarker already published?", content);
     }
     return site;
   }
