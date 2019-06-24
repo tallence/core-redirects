@@ -108,7 +108,6 @@ class RedirectHttpServletResponseWrapper extends HttpServletResponseWrapper {
     } else {
       super.setStatus(tempStatus);
       String result = writer.toString();
-      super.setContentLength(result.length());
       super.getWriter().write(result);
     }
   }
