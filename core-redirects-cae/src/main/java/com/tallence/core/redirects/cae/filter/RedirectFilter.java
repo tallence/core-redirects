@@ -239,9 +239,10 @@ public class RedirectFilter implements Filter {
 
     String targetLink = linkFormatter.formatLink(targetBean, null, request, response, true);
 
-    if (keepSourceUrlParams) {
+    Map<String, String[]> parameterMap = request.getParameterMap();
+    if (keepSourceUrlParams && !parameterMap.isEmpty()) {
       UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(targetLink);
-      request.getParameterMap().forEach((key, value) -> uriBuilder.queryParam(key, value[0]));
+      parameterMap.forEach((key, value) -> uriBuilder.queryParam(key, value[0]));
 
       targetLink = uriBuilder.build(true).toString();
     }
