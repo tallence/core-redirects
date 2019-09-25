@@ -51,7 +51,7 @@ public abstract class AbstractRedirectsTest {
 
 
   @Configuration
-  @PropertySource("classpath:/META-INF/coremedia/component-core-redirects-cae.properties")
+  @PropertySource("classpath:/test.properties")
   @ImportResource(
           value = {
                   CACHE,

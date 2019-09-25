@@ -22,6 +22,7 @@ import com.coremedia.cap.multisite.Site;
 import com.coremedia.objectserver.beans.ContentBean;
 import com.coremedia.objectserver.beans.ContentBeanFactory;
 import com.coremedia.objectserver.web.links.LinkFormatter;
+import com.google.common.annotations.VisibleForTesting;
 import com.tallence.core.redirects.cae.model.Redirect;
 import com.tallence.core.redirects.cae.service.RedirectService;
 import com.tallence.core.redirects.cae.service.SiteRedirects;
@@ -31,9 +32,11 @@ import edu.umd.cs.findbugs.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -60,9 +63,13 @@ public class RedirectFilter implements Filter {
   private final SiteResolver siteResolver;
   private final RedirectService redirectService;
   private final LinkFormatter linkFormatter;
+  @VisibleForTesting
+  final boolean keepSourceUrlParams;
 
   @Autowired
   public RedirectFilter(ContentBeanFactory contentBeanFactory,
+                        @Value("${core.redirects.filter.keepParams:false}")
+                        boolean keepSourceUrlParams,
                         SiteResolver siteResolver,
                         RedirectService redirectService,
                         LinkFormatter linkFormatter) {
@@ -70,6 +77,7 @@ public class RedirectFilter implements Filter {
     this.siteResolver = siteResolver;
     this.redirectService = redirectService;
     this.linkFormatter = linkFormatter;
+    this.keepSourceUrlParams = keepSourceUrlParams;
   }
 
 
@@ -235,7 +243,17 @@ public class RedirectFilter implements Filter {
     response.setHeader(HttpHeaders.PRAGMA, "no-cache");
     response.setDateHeader(HttpHeaders.EXPIRES, 0);
     ContentBean targetBean = contentBeanFactory.createBeanFor(target.getTarget());
-    response.setHeader(HttpHeaders.LOCATION, linkFormatter.formatLink(targetBean, null, request, response, true));
+
+    String targetLink = linkFormatter.formatLink(targetBean, null, request, response, true);
+
+    if (keepSourceUrlParams) {
+      UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(targetLink);
+      request.getParameterMap().forEach((key, value) -> uriBuilder.queryParam(key, value[0]));
+
+      targetLink = uriBuilder.build(true).toString();
+    }
+
+    response.setHeader(HttpHeaders.LOCATION, targetLink);
   }
 
   private boolean isTargetInvalid(Content targetLink) {
