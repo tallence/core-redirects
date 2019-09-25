@@ -63,8 +63,7 @@ public class RedirectFilter implements Filter {
   private final SiteResolver siteResolver;
   private final RedirectService redirectService;
   private final LinkFormatter linkFormatter;
-  @VisibleForTesting
-  final boolean keepSourceUrlParams;
+  private final boolean keepSourceUrlParams;
 
   @Autowired
   public RedirectFilter(ContentBeanFactory contentBeanFactory,
