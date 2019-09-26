@@ -41,6 +41,7 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -239,15 +240,25 @@ public class RedirectFilter implements Filter {
 
     String targetLink = linkFormatter.formatLink(targetBean, null, request, response, true);
 
+    try {
+      targetLink = handleSourceParams(request, targetLink);
+    } catch (Exception e) {
+      LOG.warn("Error during handling query params [{}] of source url [{}]: [{}]. The query params will be ignored.",
+              Arrays.toString(request.getParameterMap().entrySet().toArray()), request.getPathInfo(), e.getMessage());
+    }
+
+    response.setHeader(HttpHeaders.LOCATION, targetLink);
+  }
+
+  private String handleSourceParams(HttpServletRequest request, String targetLink) {
     Map<String, String[]> parameterMap = request.getParameterMap();
-    if (keepSourceUrlParams && !parameterMap.isEmpty()) {
+    if (keepSourceUrlParams && parameterMap != null && !parameterMap.isEmpty()) {
       UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(targetLink);
       parameterMap.forEach((key, value) -> uriBuilder.queryParam(key, value[0]));
 
       targetLink = uriBuilder.build(true).toString();
     }
-
-    response.setHeader(HttpHeaders.LOCATION, targetLink);
+    return targetLink;
   }
 
   private boolean isTargetInvalid(Content targetLink) {
