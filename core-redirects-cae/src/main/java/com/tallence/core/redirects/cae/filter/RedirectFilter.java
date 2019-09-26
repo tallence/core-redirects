@@ -43,6 +43,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Map;
@@ -55,7 +56,7 @@ import java.util.regex.Pattern;
 public class RedirectFilter implements Filter {
 
   private static final Logger LOG = LoggerFactory.getLogger(RedirectFilter.class);
-  private static final Charset UTF8 = Charset.forName("utf-8");
+  private static final Charset UTF8 = StandardCharsets.UTF_8;
 
   private final ContentBeanFactory contentBeanFactory;
   private final SiteResolver siteResolver;
