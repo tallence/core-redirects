@@ -31,19 +31,17 @@ import edu.umd.cs.findbugs.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -60,9 +58,12 @@ public class RedirectFilter implements Filter {
   private final SiteResolver siteResolver;
   private final RedirectService redirectService;
   private final LinkFormatter linkFormatter;
+  private final boolean keepSourceUrlParams;
 
   @Autowired
   public RedirectFilter(ContentBeanFactory contentBeanFactory,
+                        @Value("${core.redirects.filter.keepParams:false}")
+                        boolean keepSourceUrlParams,
                         SiteResolver siteResolver,
                         RedirectService redirectService,
                         LinkFormatter linkFormatter) {
@@ -70,6 +71,7 @@ public class RedirectFilter implements Filter {
     this.siteResolver = siteResolver;
     this.redirectService = redirectService;
     this.linkFormatter = linkFormatter;
+    this.keepSourceUrlParams = keepSourceUrlParams;
   }
 
 
@@ -235,7 +237,28 @@ public class RedirectFilter implements Filter {
     response.setHeader(HttpHeaders.PRAGMA, "no-cache");
     response.setDateHeader(HttpHeaders.EXPIRES, 0);
     ContentBean targetBean = contentBeanFactory.createBeanFor(target.getTarget());
-    response.setHeader(HttpHeaders.LOCATION, linkFormatter.formatLink(targetBean, null, request, response, true));
+
+    String targetLink = linkFormatter.formatLink(targetBean, null, request, response, true);
+
+    try {
+      targetLink = handleSourceParams(request, targetLink);
+    } catch (RuntimeException e) {
+      LOG.warn("Error during handling query params [{}] of source url [{}]: [{}]. The query params will be ignored.",
+              Arrays.toString(request.getParameterMap().entrySet().toArray()), request.getPathInfo(), e.getMessage());
+    }
+
+    response.setHeader(HttpHeaders.LOCATION, targetLink);
+  }
+
+  private String handleSourceParams(HttpServletRequest request, String targetLink) {
+    Map<String, String[]> parameterMap = request.getParameterMap();
+    if (keepSourceUrlParams && parameterMap != null && !parameterMap.isEmpty()) {
+      UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(targetLink);
+      parameterMap.forEach((key, value) -> Arrays.asList(value).forEach(v -> uriBuilder.queryParam(key, v)));
+
+      targetLink = uriBuilder.build(true).toString();
+    }
+    return targetLink;
   }
 
   private boolean isTargetInvalid(Content targetLink) {

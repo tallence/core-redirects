@@ -22,6 +22,7 @@
               <linkProperty name="children">
                 <link id="10022"/>
                 <link id="10024"/>
+                <link id="10026"/>
               </linkProperty>
             </version>
           </document>
@@ -36,6 +37,11 @@
           <document id="10024" name="ChannelA2" type="CMChannel">
             <version number="1">
               <stringProperty name="segment" value="ChannelA2"/>
+            </version>
+          </document>
+          <document id="10026" name="ChannelSpecialChar" type="CMChannel">
+            <version number="1">
+              <stringProperty name="segment" value="Chánnelง"/>
             </version>
           </document>
           <document id="100222" name="ChannelA11" type="CMChannel">
@@ -88,6 +94,17 @@
                   </linkProperty>
                   <stringProperty name="redirectType" value="AFTER_NOT_FOUND"/>
                   <stringProperty name="description" value="Description2"/>
+                  <intProperty name="imported" value="0"/>
+                </version>
+              </document>
+              <document id="1115114" name="TestRedirectSpecialChar" type="Redirect">
+                <version number="1">
+                  <stringProperty name="sourceUrlType" value="PLAIN"/>
+                  <stringProperty name="source" value="/redirect-special-char"/>
+                  <linkProperty name="targetLink" Max="1" LinkType="CMLinkable">
+                    <link id="10026"/>
+                  </linkProperty>
+                  <stringProperty name="redirectType" value="ALWAYS"/>
                   <intProperty name="imported" value="0"/>
                 </version>
               </document>

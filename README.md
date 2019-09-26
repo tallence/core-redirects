@@ -62,5 +62,13 @@ works, if this code is within a blueprint workspace) of the content config-set m
 3. Redirects are stored in/read from a site-specific folder (`Options/Settings/Redirects`), to which users need to have
 permissions to edit and publish Redirect documents.
 
+Configuration
+-------
+These options can be configured:
+1. `core.redirects.filter.keepParams` if enabled, the query params of the source url will be appended to the redirect target url.
+2. `core.redirects.path` the site-relative path where the redirect-documents are stored
+3. `core.redirects.cache.parallel.site.recompute.threads` Maximum number of threads for complete site index updates. Will be used at CAE startUp.
+4. `core.redirects.cache.parallel.item.recompute.threads` Maximum number of threads for item (single redirect) updates. Will be used for changes in a running CAE.  
+
 That's it. Have fun ;) If you have any problems, questions, ideas, or feedback please contact us or
 [create an issue](https://github.com/tallence/core-redirects/issues). 
