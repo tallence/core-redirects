@@ -36,13 +36,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.util.UriUtils;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Map;
@@ -55,6 +55,7 @@ import java.util.regex.Pattern;
 public class RedirectFilter implements Filter {
 
   private static final Logger LOG = LoggerFactory.getLogger(RedirectFilter.class);
+  private static final Charset UTF8 = Charset.forName("utf-8");
 
   private final ContentBeanFactory contentBeanFactory;
   private final SiteResolver siteResolver;
@@ -256,20 +257,11 @@ public class RedirectFilter implements Filter {
     Map<String, String[]> parameterMap = request.getParameterMap();
     if (keepSourceUrlParams && parameterMap != null && !parameterMap.isEmpty()) {
       UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(targetLink);
-      parameterMap.forEach((key, value) -> Arrays.stream(value).map(this::encodeUrlParam).forEach(v -> uriBuilder.queryParam(key, v)));
+      parameterMap.forEach((key, value) -> Arrays.stream(value).map(v -> UriUtils.encodeQueryParam(v, UTF8)).forEach(v -> uriBuilder.queryParam(key, v)));
 
       targetLink = uriBuilder.build(true).toString();
     }
     return targetLink;
-  }
-
-  private String encodeUrlParam(String v) {
-    try {
-      return URLEncoder.encode(v, "utf-8");
-    } catch (UnsupportedEncodingException e) {
-      LOG.error("Error during encoding url query parameter", e);
-      return "";
-    }
   }
 
   private boolean isTargetInvalid(Content targetLink) {
