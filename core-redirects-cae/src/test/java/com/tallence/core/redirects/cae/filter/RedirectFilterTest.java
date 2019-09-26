@@ -109,7 +109,7 @@ public class RedirectFilterTest extends AbstractRedirectsTest {
   @Test
   public void testKeepParams() throws Exception {
     MockServletContext servletContext = new MockServletContext();
-    HttpServletRequest request = requestTestHelper.createRequest("/channela/redirect-special-char").param("param1", "testValue1").buildRequest(servletContext);
+    HttpServletRequest request = requestTestHelper.createRequest("/channela/redirect-test").param("param1", "testValue1").buildRequest(servletContext);
     HttpServletResponse response = new MockHttpServletResponse();
     FilterChain filterChain = new MockFilterChain(getOkServlet());
 
@@ -118,8 +118,24 @@ public class RedirectFilterTest extends AbstractRedirectsTest {
     assertEquals(HttpServletResponse.SC_MOVED_PERMANENTLY, response.getStatus());
     // This assertion is a bit strange, because it depends of the context of the extension: If the testcases in this
     // extension are running stand-alone, the blueprint link rewriter that removes the /context/servlet part is missing.
-    //The special characters are url-encoded, the decode result looks like: /channela/chánnelง?param1=testValue1
-    String expectedUrl = "/channela/ch%C3%A1nnel%E0%B8%87?param1=testValue1";
+    String expectedUrl = "/channela?param1=testValue1";
+    assertThat(response.getHeader(HttpHeaders.LOCATION), anyOf(is("/context/servlet" + expectedUrl), is(expectedUrl)));
+  }
+
+  @Test
+  public void testKeepParamsWithSpecialChar() throws Exception {
+    MockServletContext servletContext = new MockServletContext();
+    HttpServletRequest request = requestTestHelper.createRequest("/channela/redirect-special-char").param("param1", "testVálüe1").buildRequest(servletContext);
+    HttpServletResponse response = new MockHttpServletResponse();
+    FilterChain filterChain = new MockFilterChain(getOkServlet());
+
+    testling.doFilter(request, response, filterChain);
+
+    assertEquals(HttpServletResponse.SC_MOVED_PERMANENTLY, response.getStatus());
+    // This assertion is a bit strange, because it depends of the context of the extension: If the testcases in this
+    // extension are running stand-alone, the blueprint link rewriter that removes the /context/servlet part is missing.
+    //The special characters are url-encoded, the decode result looks like: /channela/chánnelง?param1=testVálüe1
+    String expectedUrl = "/channela/ch%C3%A1nnel%E0%B8%87?param1=testV%C3%A1l%C3%BCe1";
     assertThat(response.getHeader(HttpHeaders.LOCATION), anyOf(is("/context/servlet" + expectedUrl), is(expectedUrl)));
   }
 
