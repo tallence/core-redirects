@@ -242,7 +242,7 @@ public class RedirectFilter implements Filter {
 
     try {
       targetLink = handleSourceParams(request, targetLink);
-    } catch (Exception e) {
+    } catch (RuntimeException e) {
       LOG.warn("Error during handling query params [{}] of source url [{}]: [{}]. The query params will be ignored.",
               Arrays.toString(request.getParameterMap().entrySet().toArray()), request.getPathInfo(), e.getMessage());
     }
@@ -254,7 +254,7 @@ public class RedirectFilter implements Filter {
     Map<String, String[]> parameterMap = request.getParameterMap();
     if (keepSourceUrlParams && parameterMap != null && !parameterMap.isEmpty()) {
       UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(targetLink);
-      parameterMap.forEach((key, value) -> uriBuilder.queryParam(key, value[0]));
+      parameterMap.forEach((key, value) -> Arrays.asList(value).forEach(v -> uriBuilder.queryParam(key, v)));
 
       targetLink = uriBuilder.build(true).toString();
     }
