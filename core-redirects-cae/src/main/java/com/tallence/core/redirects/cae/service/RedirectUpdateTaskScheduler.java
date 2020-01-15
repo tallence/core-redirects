@@ -34,10 +34,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 @Service
 public class RedirectUpdateTaskScheduler {
@@ -61,14 +58,13 @@ public class RedirectUpdateTaskScheduler {
                                      ContentRepository contentRepository,
                                      @Qualifier("redirectsCache") ConcurrentMap<Site, SiteRedirects> redirectsCache,
                                      @Value("${core.redirects.path}") String redirectsPath,
-                                     @Value("${core.redirects.cache.parallel.site.recompute.threads:4}") int parallelSiteThreads,
                                      @Value("${core.redirects.cache.parallel.item.recompute.threads:4}") int parallelItemThreads) {
     this.sitesService = sitesService;
     this.contentRepository = contentRepository;
     this.redirectsCache = redirectsCache;
     this.redirectsPath = redirectsPath;
     itemUpdateExecutor = newPausableItemUpdateExecutor(parallelItemThreads);
-    siteUpdateExecutor = newControllingThreadPoolExecutorService(parallelSiteThreads, itemUpdateExecutor);
+    siteUpdateExecutor = newControllingThreadPoolExecutorService(sitesService, itemUpdateExecutor);
   }
 
   /**
@@ -144,12 +140,16 @@ public class RedirectUpdateTaskScheduler {
 
   private PausableThreadPoolExecutorService newPausableItemUpdateExecutor(int maxThreadCount) {
     ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("redirect-item-updates-%d").build();
-    return new PausableThreadPoolExecutorService(1, maxThreadCount, 1L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), namedThreadFactory);
+    return new PausableThreadPoolExecutorService(2, maxThreadCount, 1L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), namedThreadFactory);
   }
 
-  private ControllingThreadPoolExecutorService newControllingThreadPoolExecutorService(int maxThreadCount, PausableThreadPoolExecutorService pausableThreadPoolExecutorService) {
+  private ControllingThreadPoolExecutorService newControllingThreadPoolExecutorService(SitesService sitesService, PausableThreadPoolExecutorService pausableThreadPoolExecutorService) {
+    int halfOfAllSites = sitesService.getSites().size() / 2;
     ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("redirect-site-updates-%d").build();
-    return new ControllingThreadPoolExecutorService(1, maxThreadCount, 1L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), namedThreadFactory, pausableThreadPoolExecutorService);
+    //Use a pool which can execute 50% of the initial siteTasks parallel. The rest will be parked in the queue.
+    return new ControllingThreadPoolExecutorService(Math.min(2, halfOfAllSites), halfOfAllSites, 1L,
+            TimeUnit.SECONDS, new ArrayBlockingQueue<>(halfOfAllSites),
+            namedThreadFactory, pausableThreadPoolExecutorService);
   }
 
   private Site getSite(Content content) {
