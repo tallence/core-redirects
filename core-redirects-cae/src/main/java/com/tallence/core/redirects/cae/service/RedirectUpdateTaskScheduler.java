@@ -26,6 +26,7 @@ import com.tallence.core.redirects.cae.service.tasks.UpdateDocumentTask;
 import com.tallence.core.redirects.cae.service.tasks.UpdateSiteTask;
 import com.tallence.core.redirects.cae.service.util.ControllingThreadPoolExecutorService;
 import com.tallence.core.redirects.cae.service.util.PausableThreadPoolExecutorService;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,13 +59,14 @@ public class RedirectUpdateTaskScheduler {
                                      ContentRepository contentRepository,
                                      @Qualifier("redirectsCache") ConcurrentMap<Site, SiteRedirects> redirectsCache,
                                      @Value("${core.redirects.path}") String redirectsPath,
+                                     @Value("${core.redirects.cache.parallel.site.recompute.threads:}") Integer parallelSiteThreads,
                                      @Value("${core.redirects.cache.parallel.item.recompute.threads:4}") int parallelItemThreads) {
     this.sitesService = sitesService;
     this.contentRepository = contentRepository;
     this.redirectsCache = redirectsCache;
     this.redirectsPath = redirectsPath;
     itemUpdateExecutor = newPausableItemUpdateExecutor(parallelItemThreads);
-    siteUpdateExecutor = newControllingThreadPoolExecutorService(sitesService, itemUpdateExecutor);
+    siteUpdateExecutor = newControllingThreadPoolExecutorService(sitesService, parallelSiteThreads, itemUpdateExecutor);
   }
 
   /**
@@ -143,13 +145,28 @@ public class RedirectUpdateTaskScheduler {
     return new PausableThreadPoolExecutorService(2, maxThreadCount, 1L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), namedThreadFactory);
   }
 
-  private ControllingThreadPoolExecutorService newControllingThreadPoolExecutorService(SitesService sitesService, PausableThreadPoolExecutorService pausableThreadPoolExecutorService) {
-    int halfOfAllSites = sitesService.getSites().size() / 2;
+  private ControllingThreadPoolExecutorService newControllingThreadPoolExecutorService(SitesService sitesService,
+                                                                                       @Nullable Integer parallelSiteThreads,
+                                                                                       PausableThreadPoolExecutorService pausableThreadPoolExecutorService) {
     ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("redirect-site-updates-%d").build();
-    //Use a pool which can execute 50% of the initial siteTasks parallel. The rest will be parked in the queue.
-    return new ControllingThreadPoolExecutorService(Math.min(2, halfOfAllSites), halfOfAllSites, 1L,
-            TimeUnit.SECONDS, new ArrayBlockingQueue<>(halfOfAllSites),
-            namedThreadFactory, pausableThreadPoolExecutorService);
+
+    //If the number of threads has not been configured: try to run all threads at once, to fill the cache as fast as
+    // possible. A SynchronousQueue wil try to pass the tasks to the pool, which can take as many threads as the number
+    // of all sites.
+    if (parallelSiteThreads == null) {
+      int numberOfSites = sitesService.getSites().size();
+      return new ControllingThreadPoolExecutorService(1, numberOfSites, 1L,
+              TimeUnit.SECONDS, new SynchronousQueue<>(),
+              namedThreadFactory, pausableThreadPoolExecutorService);
+    } else {
+      //If the number of threads has been configured: use it as the core pool size and as the number of max threads,
+      //combined with a LinkedBlockingDeque (which is unbounded). The configured number of threads are availble (core pool)
+      // and potential new threads will be parked in the queue
+      return new ControllingThreadPoolExecutorService(parallelSiteThreads, parallelSiteThreads, 1L,
+              TimeUnit.SECONDS, new LinkedBlockingDeque<>(),
+              namedThreadFactory, pausableThreadPoolExecutorService);
+    }
+
   }
 
   private Site getSite(Content content) {
