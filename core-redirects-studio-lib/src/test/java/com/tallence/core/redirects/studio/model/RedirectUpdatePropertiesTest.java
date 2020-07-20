@@ -93,6 +93,19 @@ public class RedirectUpdatePropertiesTest {
   }
 
   @Test
+  public void testUpdateValidationWhitespacesSource() {
+    Map<String, Object> properties = new HashMap<>();
+    properties.put(SOURCE, "/url-with-whitespaces  ");
+
+    RedirectUpdateProperties updateProperties = new RedirectUpdateProperties(properties, repository, null, "123");
+
+    Map<String, String> errors = updateProperties.validate();
+    assertThat(errors.get(SOURCE), equalTo(INVALID_SOURCE_WHITESPACE));
+
+  }
+
+
+  @Test
   public void testCreateValidationInvalidTargetLink() {
 
     Content targetLink = mock(Content.class);
