@@ -44,6 +44,7 @@ public class RedirectUpdateProperties {
   static final String INVALID_ACTIVE_VALUE = "active_invalid";
   static final String INVALID_SOURCE_URL_TYPE_VALUE = "sourceUrlType_invalid";
   static final String INVALID_SOURCE_VALUE = "source_invalid";
+  static final String INVALID_SOURCE_WHITESPACE = "source_whitespace";
   static final String SOURCE_ALREADY_EXISTS = "source_already_exists";
   static final String INVALID_REDIRECT_TYPE_VALUE = "redirectType_invalid";
   static final String INVALID_DESCRIPTION_VALUE = "description_invalid";
@@ -142,6 +143,8 @@ public class RedirectUpdateProperties {
     if (StringUtils.isNotEmpty(source)) {
       if (!sourceIsValid(source)) {
         errors.put(SOURCE, INVALID_SOURCE_VALUE);
+      } else if (sourceHasWhitespaces(source)) {
+        errors.put(SOURCE, INVALID_SOURCE_WHITESPACE);
       } else if (StringUtils.isNotBlank(redirectId) && repository.sourceAlreadyExists(siteId, redirectId, source) ||
               StringUtils.isBlank(redirectId) && repository.sourceAlreadyExists(siteId, source)) {
         errors.put(SOURCE, SOURCE_ALREADY_EXISTS);
@@ -176,6 +179,10 @@ public class RedirectUpdateProperties {
 
   private static boolean sourceIsValid(String source) {
     return StringUtils.isNotEmpty(source) && source.startsWith("/") && source.length() < 512;
+  }
+
+  private static boolean sourceHasWhitespaces(String source) {
+    return StringUtils.isNotEmpty(source) && !source.matches("\\S+"); //only non-whitespace characters
   }
 
 }
