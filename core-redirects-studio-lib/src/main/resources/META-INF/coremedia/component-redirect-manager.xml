@@ -5,7 +5,6 @@
                            http://www.springframework.org/schema/beans/spring-beans.xsd">
 
   <import resource="classpath:com/coremedia/cap/common/uapi-services.xml"/>
-  <import resource="classpath:com/coremedia/rest/cap/cap-rest-service.xml"/>
 
   <bean id="redirects" class="com.tallence.core.redirects.studio.rest.RedirectsResource" scope="prototype"/>
   <bean id="redirect" class="com.tallence.core.redirects.studio.rest.RedirectResource" scope="prototype"/>

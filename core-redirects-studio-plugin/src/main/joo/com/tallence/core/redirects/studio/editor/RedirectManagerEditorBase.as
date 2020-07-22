@@ -20,9 +20,9 @@ import com.coremedia.cms.editor.sdk.sites.Site;
 import com.coremedia.ui.data.ValueExpression;
 import com.coremedia.ui.data.ValueExpressionFactory;
 import com.tallence.core.redirects.studio.data.PermissionResponse;
-import com.tallence.core.redirects.studio.data.RedirectRepositoryImpl;
 import com.tallence.core.redirects.studio.editor.form.RedirectEditWindow;
 import com.tallence.core.redirects.studio.editor.upload.RedirectUploadWindow;
+import com.tallence.core.redirects.studio.util.RedirectsUtil;
 
 import ext.Ext;
 import ext.panel.Panel;
@@ -54,7 +54,7 @@ public class RedirectManagerEditorBase extends Panel {
     getMayNotPublishVE().setValue(true);
     getMayNotUseRegexVE().setValue(true);
 
-    RedirectRepositoryImpl.getInstance().resolvePermissions(siteId).then(function(response: PermissionResponse): void {
+    RedirectsUtil.resolvePermissions(siteId).then(function(response: PermissionResponse): void {
       getMayNotWriteVE().setValue(!response.isMayWrite());
       getMayNotPublishVE().setValue(!response.isMayPublish());
       getMayNotUseRegexVE().setValue(!response.isMayUseRegex());

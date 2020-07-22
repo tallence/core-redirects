@@ -22,11 +22,8 @@ link, so for example `CMExternalLink`s can be configured to redirect to their ta
 Getting started
 ===============
 
-The extension is always kept compatible with the newest CoreMedia version (currently cms-9-1904.1) and is also known to
-work with cms-9-1901 and cms-9-1810.
-
-If you have any further information e.g. "it works for CM 10" or "it does not work for CM 10 because of ..." feel free
-to [create an issue](https://github.com/tallence/core-redirects/issues).
+The extension is always kept compatible with the newest CoreMedia version (currently cmcc-10-2004.2). The redirect 
+manager is also known to work with cms-9-1904, cms-9-1901 and cms-9-1810 (https://github.com/tallence/core-redirects/tree/cm9-1904).
 
 There is a [simple user guide](docs/userguide.md) available.
 

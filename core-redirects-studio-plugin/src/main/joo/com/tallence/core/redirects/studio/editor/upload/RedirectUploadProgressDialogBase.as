@@ -21,7 +21,6 @@ import com.coremedia.cms.editor.sdk.upload.FileWrapper;
 import com.coremedia.ui.data.ValueExpression;
 import com.coremedia.ui.data.ValueExpressionFactory;
 import com.tallence.core.redirects.studio.data.RedirectImportResponse;
-import com.tallence.core.redirects.studio.data.RedirectRepositoryImpl;
 import com.tallence.core.redirects.studio.util.NotificationUtil;
 import com.tallence.core.redirects.studio.util.RedirectsUtil;
 
@@ -57,7 +56,7 @@ public class RedirectUploadProgressDialogBase extends StudioDialog {
   public function RedirectUploadProgressDialogBase(config:RedirectUploadProgressDialog = null) {
     super(config);
     initProgressBar();
-    RedirectRepositoryImpl.getInstance().uploadRedirects(config.selectedSiteIdVE.getValue(), config.fileWrapper, uploadSuccessHandler, uploadErrorHandler);
+    RedirectsUtil.uploadRedirects(config.selectedSiteIdVE.getValue(), config.fileWrapper, uploadSuccessHandler, uploadErrorHandler);
   }
 
   /**

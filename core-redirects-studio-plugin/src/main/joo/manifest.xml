@@ -11,6 +11,6 @@
   <component class="com.tallence.core.redirects.studio.editor.form.RedirectEditWindow"/>
   <component class="com.tallence.core.redirects.studio.util.RedirectProcessNotification"/>
   <component class="com.tallence.core.redirects.studio.data.Redirect"/>
-  <component class="com.tallence.core.redirects.studio.data.RedirectRepository"/>
-  <component class="com.tallence.core.redirects.studio.data.RedirectRepositoryImpl"/>
+  <component class="com.tallence.core.redirects.studio.data.Redirects"/>
+  <component class="com.tallence.core.redirects.studio.data.RedirectsImpl"/>
 </componentPackage>

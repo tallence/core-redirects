@@ -20,11 +20,22 @@
     <!-- Project -->
     <dependency>
       <groupId>${project.groupId}</groupId>
+      <artifactId>contentbeans</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
       <artifactId>core-redirects-common</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <!-- CoreMedia -->
+    <dependency>
+      <groupId>com.coremedia.cms</groupId>
+      <artifactId>coremedia-annotations</artifactId>
+      <scope>provided</scope>
+    </dependency>
     <dependency>
       <groupId>com.coremedia.cms</groupId>
       <artifactId>cap-unified-api</artifactId>
@@ -161,6 +172,14 @@
       <artifactId>logback-classic</artifactId>
       <scope>test</scope>
     </dependency>
+
+    <!-- begin java-11-dependencies -->
+    <dependency>
+      <groupId>jakarta.annotation</groupId>
+      <artifactId>jakarta.annotation-api</artifactId>
+      <version>1.3.5</version>
+    </dependency>
+    <!-- end java-11-dependencies -->
 
   </dependencies>
 

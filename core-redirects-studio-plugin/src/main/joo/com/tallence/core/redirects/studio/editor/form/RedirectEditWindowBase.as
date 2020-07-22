@@ -24,9 +24,9 @@ import com.coremedia.ui.data.beanFactory;
 import com.coremedia.ui.data.error.RemoteError;
 import com.tallence.core.redirects.studio.data.Redirect;
 import com.tallence.core.redirects.studio.data.RedirectImpl;
-import com.tallence.core.redirects.studio.data.RedirectRepositoryImpl;
 import com.tallence.core.redirects.studio.data.ValidationResponse;
 import com.tallence.core.redirects.studio.util.NotificationUtil;
+import com.tallence.core.redirects.studio.util.RedirectsUtil;
 
 import ext.window.Window;
 
@@ -75,7 +75,7 @@ public class RedirectEditWindowBase extends Window {
     var targetLink:Content = getLocalModel().get(RedirectImpl.TARGET_LINK)[0];
     var targetId:String = targetLink ? targetLink.getId() : "";
     var active:Boolean = getLocalModel().get(RedirectImpl.ACTIVE);
-    RedirectRepositoryImpl.getInstance()
+    RedirectsUtil
         .validateRedirect(siteId, redirectId, getLocalModel().get(RedirectImpl.SOURCE), targetId, active)
         .then(handleValidationResponse, validationErrorHandler);
   }
@@ -165,7 +165,7 @@ public class RedirectEditWindowBase extends Window {
     } else {
       var siteId:String = redirect ? redirect.getSiteId() : selectedSiteIdVE.getValue();
       var sourceType:String = model.get(RedirectImpl.SOURCE_TYPE);
-      RedirectRepositoryImpl.getInstance().createRedirect(
+      RedirectsUtil.createRedirect(
           siteId,
           model.get(RedirectImpl.ACTIVE),
           model.get(RedirectImpl.TARGET_LINK)[0],
