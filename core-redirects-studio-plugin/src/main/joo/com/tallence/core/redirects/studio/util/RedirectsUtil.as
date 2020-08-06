@@ -36,6 +36,7 @@ import com.tallence.core.redirects.studio.data.ValidationResponse;
 
 import ext.IPromise;
 import ext.JSON;
+import ext.ObjectUtil;
 import ext.Promise;
 import ext.StringUtil;
 import ext.data.operation.ReadOperation;
@@ -147,19 +148,15 @@ public class RedirectsUtil {
     var sorter:String = sorters && sorters.length > 0 ? (sorters[0] as Sorter).getProperty() : RedirectImpl.SOURCE;
     var sortDirection:String = sorters && sorters.length > 0 ? (sorters[0] as Sorter).getDirection() : "ASC";
 
+    var queryParams:Object = {};
+    queryParams["page"] = page;
+    queryParams["pageSize"] = limit;
+    queryParams["sorter"] = sorter;
+    queryParams["sortDirection"] = sortDirection;
+    queryParams["search"] = searchText;
 
-    var query:String = "?page=" + page;
-    query = appendQueryParam(query, "pageSize", limit);
-    query = appendQueryParam(query, "sorter", sorter);
-    query = appendQueryParam(query, "sortDirection", sortDirection);
-    query = appendQueryParam(query, "search", searchText);
-    return query;
+    return "?" + ObjectUtil.toQueryString(queryParams);
   }
-
-  private static function appendQueryParam(query:String, param:String, value:String):String {
-    return query + "&" + param + "=" + value;
-  }
-
 
   /**
    * Uploads a csv and imports all redirects.
