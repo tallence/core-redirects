@@ -20,8 +20,8 @@ import com.coremedia.ui.data.ValueExpression;
 import com.coremedia.ui.store.BeanRecord;
 import com.tallence.core.redirects.studio.data.Redirect;
 import com.tallence.core.redirects.studio.data.RedirectImpl;
-import com.tallence.core.redirects.studio.data.RedirectRepositoryImpl;
 import com.tallence.core.redirects.studio.data.RedirectsResponse;
+import com.tallence.core.redirects.studio.util.RedirectsUtil;
 
 import ext.IPromise;
 import ext.Promise;
@@ -97,7 +97,7 @@ public class RedirectProxy extends DataProxy {
   protected function loadRedirects(operation:ReadOperation):IPromise {
     var siteId:String = selectedSiteVE.getValue();
     var searchText:String = searchFieldVE.getValue();
-    return RedirectRepositoryImpl.getInstance().getRedirects(siteId, searchText, operation);
+    return RedirectsUtil.getRedirects(siteId, searchText, operation);
   }
 
 }

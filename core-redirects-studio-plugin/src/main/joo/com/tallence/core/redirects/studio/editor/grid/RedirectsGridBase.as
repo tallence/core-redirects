@@ -106,7 +106,7 @@ public class RedirectsGridBase extends GridPanel {
   }
 
   /**
-   * Creates a store with a custom proxy to use the {@link com.tallence.core.redirects.studio.data.RedirectRepository }
+   * Creates a store with a custom proxy to use the {@link com.tallence.core.redirects.studio.data.Redirects }
    * to load the redirects.
    * @return Store
    */

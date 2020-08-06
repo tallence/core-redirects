@@ -21,7 +21,7 @@ import com.coremedia.cap.content.Content;
 import com.tallence.core.redirects.model.RedirectType;
 import com.tallence.core.redirects.model.SourceUrlType;
 import com.tallence.core.redirects.studio.model.Redirect;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Date;
 

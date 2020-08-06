@@ -16,88 +16,74 @@
 
 package com.tallence.core.redirects.studio.rest;
 
-import com.coremedia.rest.linking.AbstractLinkingResource;
 import com.coremedia.rest.linking.LinkResolver;
+import com.coremedia.rest.linking.LinkResolverUtil;
 import com.tallence.core.redirects.studio.model.Redirect;
 import com.tallence.core.redirects.studio.model.RedirectUpdateProperties;
 import com.tallence.core.redirects.studio.repository.RedirectRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.util.Map;
 
 /**
  * A redirect {@link Redirect} object as a RESTful resource.
  */
-@Produces(MediaType.APPLICATION_JSON)
-@Path("redirect/{siteId:[^/]+}/{id:[^/]+}")
-public class RedirectResource extends AbstractLinkingResource {
+@RestController
+@RequestMapping(value = "redirect")
+public class RedirectResource {
 
   private static final Logger LOG = LoggerFactory.getLogger(RedirectResource.class);
 
   private final RedirectRepository redirectRepository;
-
-  private String id;
-
-  private String siteId;
+  private final LinkResolver linkResolver;
 
   @Autowired
   public RedirectResource(RedirectRepository redirectRepository, LinkResolver linkResolver) {
     this.redirectRepository = redirectRepository;
-    this.setLinkResolver(linkResolver);
+    this.linkResolver = linkResolver;
   }
 
-  @GET
-  public RedirectRepresentation getRedirect() {
-    return new RedirectRepresentation(redirectRepository.getRedirect(getId()));
+  @GetMapping("{siteId}/{id}")
+  public RedirectRepresentation getRedirect(@PathVariable String id) {
+    return new RedirectRepresentation(redirectRepository.getRedirect(id));
   }
 
-  @PUT
-  @Consumes({"application/json"})
-  public Response setProperties(Map<String, Object> rawJson) {
-    RedirectUpdateProperties updateProperties = resolveUpdateProperties(rawJson);
+  @PutMapping("{siteId}/{id}")
+  public HttpStatus setProperties(@PathVariable String siteId,
+                                  @PathVariable String id,
+                                  @RequestBody Map<String, Object> rawJson) {
+    RedirectUpdateProperties updateProperties = resolveUpdateProperties(siteId, id, rawJson);
 
     Map<String, String> errors = updateProperties.validate(true);
     if (!errors.isEmpty()) {
       LOG.error("Validation failed for redirectId [{}] with properties [{}] and errors: [{}]. This should not happen, " +
-              "frontend should already take care of invalid values.", getId(), rawJson, errors);
-      return Response.status(Response.Status.BAD_REQUEST).build();
+              "frontend should already take care of invalid values.", id, rawJson, errors);
+      return HttpStatus.BAD_REQUEST;
     }
 
-    redirectRepository.updateRedirect(getId(), updateProperties);
-    return Response.ok().build();
+    redirectRepository.updateRedirect(id, updateProperties);
+    return HttpStatus.OK;
   }
 
-  @DELETE
-  public Response deleteRedirect() {
-    redirectRepository.deleteRedirect(getId());
-    return Response.ok().build();
+  @DeleteMapping("{siteId}/{id}")
+  public HttpStatus deleteRedirect(@PathVariable String id) {
+    redirectRepository.deleteRedirect(id);
+    return HttpStatus.OK;
   }
 
-  @PathParam("id")
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  private String getId() {
-    return id;
-  }
-
-  private String getSiteId() {
-    return siteId;
-  }
-
-  @PathParam("siteId")
-  public void setSiteId(String siteId) {
-    this.siteId = siteId;
-  }
-
-  private RedirectUpdateProperties resolveUpdateProperties(Map<String, Object> rawJson) {
-    return new RedirectUpdateProperties((Map<String, Object>) resolveJson(rawJson), redirectRepository, getSiteId(), getId());
+  private RedirectUpdateProperties resolveUpdateProperties(String siteId, String id, Map<String, Object> rawJson) {
+    Map<String, Object> resolvedJson = (Map) LinkResolverUtil.resolveJson(rawJson, this.linkResolver, true);
+    return new RedirectUpdateProperties(resolvedJson, redirectRepository, siteId, id);
   }
 
 }
