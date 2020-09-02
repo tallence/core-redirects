@@ -15,11 +15,11 @@
  */
 package com.tallence.core.redirects.cae.filter;
 
-import com.coremedia.blueprint.base.multisite.SiteHelper;
 import com.coremedia.blueprint.base.multisite.cae.SiteResolver;
 import com.coremedia.blueprint.common.contentbeans.CMLinkable;
 import com.coremedia.cap.content.Content;
 import com.coremedia.cap.multisite.Site;
+import com.coremedia.cap.multisite.SiteHelper;
 import com.coremedia.objectserver.beans.ContentBean;
 import com.coremedia.objectserver.beans.ContentBeanFactory;
 import com.coremedia.objectserver.web.links.LinkFormatter;

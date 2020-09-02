@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <groupId>com.coremedia.blueprint</groupId>
-    <artifactId>contentfeeder.extensions</artifactId>
+    <artifactId>content-feeder.extensions</artifactId>
     <version>1-SNAPSHOT</version>
     <relativePath>../../../../apps/content-feeder/modules/extensions/pom.xml</relativePath>
   </parent>

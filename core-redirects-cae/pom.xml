@@ -68,15 +68,11 @@
     </dependency>
     <dependency>
       <groupId>com.coremedia.blueprint.base</groupId>
-      <artifactId>bpbase-multisite-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.coremedia.blueprint.base</groupId>
       <artifactId>bpbase-multisite-cae</artifactId>
     </dependency>
     <dependency>
       <groupId>com.coremedia.blueprint.base</groupId>
-      <artifactId>bpbase-multisite-impl</artifactId>
+      <artifactId>bpbase-multisite</artifactId>
       <scope>provided</scope>
     </dependency>
 
@@ -104,8 +100,8 @@
 
     <!-- Other -->
     <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -177,7 +173,6 @@
     <dependency>
       <groupId>jakarta.annotation</groupId>
       <artifactId>jakarta.annotation-api</artifactId>
-      <version>1.3.5</version>
     </dependency>
     <!-- end java-11-dependencies -->
 
