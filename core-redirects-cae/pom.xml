@@ -50,21 +50,11 @@
     </dependency>
     <dependency>
       <groupId>com.coremedia.cms</groupId>
-      <artifactId>cae-contentbeanservices-api</artifactId>
+      <artifactId>cae-contentbeanservices</artifactId>
     </dependency>
     <dependency>
       <groupId>com.coremedia.cms</groupId>
-      <artifactId>cae-contentbeanservices-impl</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.coremedia.cms</groupId>
-      <artifactId>cae-linkservices-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.coremedia.cms</groupId>
-      <artifactId>cae-linkservices-impl</artifactId>
-      <scope>provided</scope>
+      <artifactId>cae-linkservices</artifactId>
     </dependency>
     <dependency>
       <groupId>com.coremedia.blueprint.base</groupId>
