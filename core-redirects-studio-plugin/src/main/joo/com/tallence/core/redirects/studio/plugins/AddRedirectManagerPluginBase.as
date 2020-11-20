@@ -15,7 +15,7 @@
  */
 
 package com.tallence.core.redirects.studio.plugins {
-import com.coremedia.blueprint.base.components.util.UserUtil;
+import com.coremedia.cms.editor.sdk.util.UserUtil;
 import com.coremedia.cms.editor.sdk.editorContext;
 import com.coremedia.ui.plugins.NestedRulesPlugin;
 
