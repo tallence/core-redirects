@@ -16,7 +16,7 @@
 
 package com.tallence.core.redirects.studio.editor {
 import com.coremedia.cms.editor.sdk.editorContext;
-import com.coremedia.cms.editor.sdk.sites.Site;
+import com.coremedia.cms.studio.multisite.models.sites.Site;
 import com.coremedia.ui.data.ValueExpression;
 import com.coremedia.ui.data.ValueExpressionFactory;
 import com.tallence.core.redirects.studio.data.PermissionResponse;
