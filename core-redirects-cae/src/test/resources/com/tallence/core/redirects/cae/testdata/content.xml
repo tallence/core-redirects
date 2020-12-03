@@ -4,18 +4,18 @@
     <folder id="11" name="Sites">
 
       <folder id="111" name="TestA">
+        <document id="100" name="SiteA" type="CMSite">
+          <version number="1">
+            <linkProperty name="root">
+              <link id="1002"/>
+            </linkProperty>
+            <stringProperty name="id" value="siteA"/>
+            <stringProperty name="locale" value="en"/>
+            <stringProperty name="name" value="A"/>
+            <linkProperty name="master"/>
+          </version>
+        </document>
         <folder id="1111" name="Navigation">
-          <document id="100" name="SiteA" type="CMSite">
-            <version number="1">
-              <linkProperty name="root">
-                <link id="1002"/>
-              </linkProperty>
-              <stringProperty name="id" value="siteA"/>
-              <stringProperty name="locale" value="en"/>
-              <stringProperty name="name" value="A"/>
-              <linkProperty name="master"/>
-            </version>
-          </document>
           <document id="1002" name="ChannelA" type="CMChannel">
             <version number="1">
               <stringProperty name="segment" value="ChannelA"/>
