@@ -125,7 +125,13 @@ public class RedirectFilterTest extends AbstractRedirectsTest {
   @Test
   public void testKeepParamsWithSpecialChar() throws Exception {
     MockServletContext servletContext = new MockServletContext();
-    HttpServletRequest request = requestTestHelper.createRequest("/channela/redirect-special-char").param("param1", "testVálüe1").buildRequest(servletContext);
+    //Workaround to use a special char in the path (as in a running CAE):
+    // set the pathInfo in an already created MockHttpServletRequestBuilder to avoid decoding with ISO-8859-1.
+    HttpServletRequest request = requestTestHelper
+            .createRequest("/")
+            .pathInfo("/channela/redirect-speciél-char")
+            .param("param1", "testVálüe1")
+            .buildRequest(servletContext);
     HttpServletResponse response = new MockHttpServletResponse();
     FilterChain filterChain = new MockFilterChain(getOkServlet());
 
