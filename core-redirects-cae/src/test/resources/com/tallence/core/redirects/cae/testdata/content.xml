@@ -100,7 +100,7 @@
               <document id="1115114" name="TestRedirectSpecialChar" type="Redirect">
                 <version number="1">
                   <stringProperty name="sourceUrlType" value="PLAIN"/>
-                  <stringProperty name="source" value="/redirect-special-char"/>
+                  <stringProperty name="source" value="/redirect-speci%C3%A9l-char"/>
                   <linkProperty name="targetLink" Max="1" LinkType="CMLinkable">
                     <link id="10026"/>
                   </linkProperty>
