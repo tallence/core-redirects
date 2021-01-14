@@ -28,8 +28,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 /**
  * Holder class for the redirects of a specific site.
  * Keeps maps of the paths or patterns to their redirects.
@@ -76,7 +74,8 @@ public class SiteRedirects {
     if (redirect.getSourceUrlType() == SourceUrlType.PLAIN) {
       synchronized (plainRedirectsMonitor) {
         plainRedirects.values().remove(redirect);
-        plainRedirects.put(URLDecoder.decode(redirect.getSource(), UTF_8), redirect);
+        //A specific encoding will be used in the master branch
+        plainRedirects.put(URLDecoder.decode(redirect.getSource()), redirect);
       }
 
     } else if (redirect.getSourceUrlType() == SourceUrlType.REGEX) {
