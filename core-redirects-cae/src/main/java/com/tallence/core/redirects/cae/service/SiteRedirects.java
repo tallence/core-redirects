@@ -15,16 +15,20 @@
  */
 package com.tallence.core.redirects.cae.service;
 
+import com.tallence.core.redirects.cae.filter.RedirectFilter;
 import com.tallence.core.redirects.cae.model.Redirect;
 import com.tallence.core.redirects.model.SourceUrlType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URLDecoder;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Holder class for the redirects of a specific site.
@@ -63,12 +67,16 @@ public class SiteRedirects {
 
   /**
    * Adds the given redirect to the cache, if it is valid.
+   *
+   * The url will be decoded because {@link javax.servlet.http.HttpServletRequest#getPathInfo} will
+   * return a decoded pathInfo too. The decoding must not handle params, schemes, ports etc. because the lookup
+   * in the {@link RedirectFilter} matches the source with the Request-PathInfo only
    */
   public void addRedirect(Redirect redirect) {
     if (redirect.getSourceUrlType() == SourceUrlType.PLAIN) {
       synchronized (plainRedirectsMonitor) {
         plainRedirects.values().remove(redirect);
-        plainRedirects.put(redirect.getSource(), redirect);
+        plainRedirects.put(URLDecoder.decode(redirect.getSource(), UTF_8), redirect);
       }
 
     } else if (redirect.getSourceUrlType() == SourceUrlType.REGEX) {
