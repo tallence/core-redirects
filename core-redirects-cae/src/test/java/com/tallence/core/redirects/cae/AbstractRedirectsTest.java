@@ -15,8 +15,6 @@
  */
 package com.tallence.core.redirects.cae;
 
-import com.coremedia.blueprint.cae.handlers.HandlerTestConfiguration;
-import com.coremedia.blueprint.cae.handlers.RequestTestHelper;
 import com.coremedia.blueprint.testing.ContentTestConfiguration;
 import com.coremedia.blueprint.testing.ContentTestHelper;
 import com.coremedia.cap.test.xmlrepo.XmlRepoConfiguration;
@@ -47,7 +45,7 @@ import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_SING
 public abstract class AbstractRedirectsTest {
 
 
-  @Configuration
+  @Configuration(proxyBeanMethods = false)
   @PropertySource("classpath:/test.properties")
   @ImportResource(
           value = {
@@ -57,6 +55,7 @@ public abstract class AbstractRedirectsTest {
                   ID_PROVIDER,
                   LINK_FORMATTER,
                   "classpath*:/META-INF/coremedia/component-core-redirects-cae.xml",
+                  "classpath:/framework/spring/blueprint-handlers.xml",
                   "classpath*:/com/coremedia/blueprint/base/multisite/bpbase-multisite-cae-services.xml"
           },
           reader = ResourceAwareXmlBeanDefinitionReader.class
@@ -65,7 +64,7 @@ public abstract class AbstractRedirectsTest {
           DeliveryConfigurationProperties.class,
           CaeConfigurationProperties.class
   })
-  @Import({XmlRepoConfiguration.class, ContentTestConfiguration.class, HandlerTestConfiguration.class})
+  @Import({XmlRepoConfiguration.class, ContentTestConfiguration.class})
   @Profile(PROFILE)
   public static class LocalConfig {
     public static final String PROFILE = "RedirectContentBeanTestBase";
@@ -81,9 +80,6 @@ public abstract class AbstractRedirectsTest {
 
   @Autowired
   protected ContentTestHelper contentTestHelper;
-
-  @Autowired
-  protected RequestTestHelper requestTestHelper;
 
   protected <T> T getContentBean(int id) {
     return contentTestHelper.getContentBean(id);

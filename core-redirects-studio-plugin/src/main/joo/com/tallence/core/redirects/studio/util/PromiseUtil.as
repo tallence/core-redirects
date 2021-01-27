@@ -70,7 +70,7 @@ public class PromiseUtil {
     rsm.request(
         params,
         function success(rsmr:RemoteServiceMethodResponse):void {
-          var jsonResponse:Object = JSON.decode(rsmr.response.responseText);
+          var jsonResponse:Object = JSON.decode(rsmr.text);
           var constructor:Function = responseClass.bind.apply(responseClass, [null, jsonResponse]);
           deferred.resolve(new constructor());
         },

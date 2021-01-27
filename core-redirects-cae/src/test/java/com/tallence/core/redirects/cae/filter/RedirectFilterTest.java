@@ -22,6 +22,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import javax.servlet.FilterChain;
 import javax.servlet.Servlet;
@@ -44,7 +46,7 @@ public class RedirectFilterTest extends AbstractRedirectsTest {
   @Test
   public void testRedirect() throws Exception {
     MockServletContext servletContext = new MockServletContext();
-    HttpServletRequest request = requestTestHelper.createRequest("/channela/redirect-test").buildRequest(servletContext);
+    HttpServletRequest request = createRequest("/channela/redirect-test").buildRequest(servletContext);
     HttpServletResponse response = new MockHttpServletResponse();
     FilterChain filterChain = new MockFilterChain(getOkServlet());
 
@@ -60,7 +62,7 @@ public class RedirectFilterTest extends AbstractRedirectsTest {
   @Test
   public void testRegexRedirect() throws Exception {
     MockServletContext servletContext = new MockServletContext();
-    HttpServletRequest request = requestTestHelper.createRequest("/channela/redirect-test2/abc").buildRequest(servletContext);
+    HttpServletRequest request = createRequest("/channela/redirect-test2/abc").buildRequest(servletContext);
     HttpServletResponse response = new MockHttpServletResponse();
     // We fake a 404 error from the controller
     FilterChain filterChain = new MockFilterChain(getNotFoundServlet());
@@ -77,7 +79,7 @@ public class RedirectFilterTest extends AbstractRedirectsTest {
   @Test
   public void testRegexNotRedirected() throws Exception {
     MockServletContext servletContext = new MockServletContext();
-    HttpServletRequest request = requestTestHelper.createRequest("/channela/redirect-test2/abc").buildRequest(servletContext);
+    HttpServletRequest request = createRequest("/channela/redirect-test2/abc").buildRequest(servletContext);
     HttpServletResponse response = new MockHttpServletResponse();
     FilterChain filterChain = new MockFilterChain(getOkServlet());
 
@@ -93,7 +95,7 @@ public class RedirectFilterTest extends AbstractRedirectsTest {
   @Test
   public void testServerErrorNotRedirected() throws Exception {
     MockServletContext servletContext = new MockServletContext();
-    HttpServletRequest request = requestTestHelper.createRequest("/channela/redirect-test2/abc").buildRequest(servletContext);
+    HttpServletRequest request = createRequest("/channela/redirect-test2/abc").buildRequest(servletContext);
     HttpServletResponse response = new MockHttpServletResponse();
     FilterChain filterChain = new MockFilterChain(getServerErrorServlet());
 
@@ -109,7 +111,7 @@ public class RedirectFilterTest extends AbstractRedirectsTest {
   @Test
   public void testKeepParams() throws Exception {
     MockServletContext servletContext = new MockServletContext();
-    HttpServletRequest request = requestTestHelper.createRequest("/channela/redirect-test").param("param1", "testValue1").buildRequest(servletContext);
+    HttpServletRequest request = createRequest("/channela/redirect-test").param("param1", "testValue1").buildRequest(servletContext);
     HttpServletResponse response = new MockHttpServletResponse();
     FilterChain filterChain = new MockFilterChain(getOkServlet());
 
@@ -125,13 +127,7 @@ public class RedirectFilterTest extends AbstractRedirectsTest {
   @Test
   public void testKeepParamsWithSpecialChar() throws Exception {
     MockServletContext servletContext = new MockServletContext();
-    //Workaround to use a special char in the path (as in a running CAE):
-    // set the pathInfo in an already created MockHttpServletRequestBuilder to avoid decoding with ISO-8859-1.
-    HttpServletRequest request = requestTestHelper
-            .createRequest("/")
-            .pathInfo("/channela/redirect-speciél-char")
-            .param("param1", "testVálüe1")
-            .buildRequest(servletContext);
+    HttpServletRequest request = createRequest("/channela/redirect-special-char").param("param1", "testVálüe1").buildRequest(servletContext);
     HttpServletResponse response = new MockHttpServletResponse();
     FilterChain filterChain = new MockFilterChain(getOkServlet());
 
@@ -145,6 +141,13 @@ public class RedirectFilterTest extends AbstractRedirectsTest {
     assertThat(response.getHeader(HttpHeaders.LOCATION), anyOf(is("/context/servlet" + expectedUrl), is(expectedUrl)));
   }
 
+  private MockHttpServletRequestBuilder createRequest(String shortUrl) {
+    return MockMvcRequestBuilders
+            .get("/context/servlet" + shortUrl)
+            .contextPath("/context")
+            .servletPath("/servlet")
+            .characterEncoding("UTF-8");
+  }
 
   private Servlet getOkServlet() {
     return new ResponseOnlyServlet(HttpServletResponse.SC_OK);
