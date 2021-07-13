@@ -34,6 +34,8 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
@@ -127,7 +129,7 @@ public class RedirectFilterTest extends AbstractRedirectsTest {
   @Test
   public void testKeepParamsWithSpecialChar() throws Exception {
     MockServletContext servletContext = new MockServletContext();
-    HttpServletRequest request = createRequest("/channela/redirect-special-char").param("param1", "testVálüe1").buildRequest(servletContext);
+    HttpServletRequest request = createRequest("/channela/redirect-speciél-char").param("param1", "testVálüe1").buildRequest(servletContext);
     HttpServletResponse response = new MockHttpServletResponse();
     FilterChain filterChain = new MockFilterChain(getOkServlet());
 
@@ -141,9 +143,9 @@ public class RedirectFilterTest extends AbstractRedirectsTest {
     assertThat(response.getHeader(HttpHeaders.LOCATION), anyOf(is("/context/servlet" + expectedUrl), is(expectedUrl)));
   }
 
-  private MockHttpServletRequestBuilder createRequest(String shortUrl) {
+  private MockHttpServletRequestBuilder createRequest(String shortUrl) throws URISyntaxException {
     return MockMvcRequestBuilders
-            .get("/context/servlet" + shortUrl)
+            .get(new URI("/context/servlet" + shortUrl))
             .contextPath("/context")
             .servletPath("/servlet")
             .characterEncoding("UTF-8");
