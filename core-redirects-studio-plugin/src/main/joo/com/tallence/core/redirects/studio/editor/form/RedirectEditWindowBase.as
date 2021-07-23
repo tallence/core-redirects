@@ -102,6 +102,8 @@ public class RedirectEditWindowBase extends Window {
       model.set(RedirectImpl.SOURCE_TYPE, redirect.getSourceType());
       model.set(RedirectImpl.REDIRECT_TYPE, redirect.getRedirectType());
       model.set(RedirectImpl.CREATION_DATE, redirect.getCreationDate());
+      model.set(RedirectImpl.SOURCE_PARAMETERS, [].concat(redirect.getSourceParameters()));
+      model.set(RedirectImpl.TARGET_PARAMETERS, [].concat(redirect.getTargetParameters()));
     } else {
       //Set default values. The redirect is active by default, if the user has publication rights
       model.set(RedirectImpl.ACTIVE, !mayNotPublishVE.getValue());
@@ -162,6 +164,8 @@ public class RedirectEditWindowBase extends Window {
       redirect.setSource(model.get(RedirectImpl.SOURCE));
       redirect.setSourceType(model.get(RedirectImpl.SOURCE_TYPE));
       redirect.setRedirectType(model.get(RedirectImpl.REDIRECT_TYPE));
+      redirect.setSourceParameters(model.get(RedirectImpl.SOURCE_PARAMETERS));
+      redirect.setTargetParameters(model.get(RedirectImpl.TARGET_PARAMETERS));
     } else {
       var siteId:String = redirect ? redirect.getSiteId() : selectedSiteIdVE.getValue();
       var sourceType:String = model.get(RedirectImpl.SOURCE_TYPE);

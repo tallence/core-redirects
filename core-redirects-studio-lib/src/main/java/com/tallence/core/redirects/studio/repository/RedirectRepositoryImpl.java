@@ -26,6 +26,9 @@ import com.coremedia.cap.multisite.Site;
 import com.coremedia.cap.multisite.SitesService;
 import com.coremedia.rest.cap.content.search.SearchServiceResult;
 import com.coremedia.rest.cap.content.search.solr.SolrSearchService;
+import com.tallence.core.redirects.model.RedirectParameter;
+import com.tallence.core.redirects.model.RedirectSourceParameter;
+import com.tallence.core.redirects.model.RedirectTargetParameter;
 import com.tallence.core.redirects.model.RedirectType;
 import com.tallence.core.redirects.model.SourceUrlType;
 import com.tallence.core.redirects.studio.model.Pageable;
@@ -302,7 +305,16 @@ public class RedirectRepositoryImpl implements RedirectRepository {
         redirectEntry.getLink(TARGET_LINK),
         RedirectType.asRedirectType(redirectEntry.getString(REDIRECT_TYPE)),
         redirectEntry.getString(DESCRIPTION),
-        redirectEntry.getBoolean(IMPORTED)
+        redirectEntry.getBoolean(IMPORTED),
+            List.of(
+                    new RedirectSourceParameter("key1", "value1", RedirectSourceParameter.Operator.EQUALS),
+                    new RedirectSourceParameter("key2", "value2", RedirectSourceParameter.Operator.EQUALS),
+                    new RedirectSourceParameter("key3", "value3", RedirectSourceParameter.Operator.EQUALS)
+            ),
+            List.of(
+                    new RedirectTargetParameter("key1", "value1"),
+                    new RedirectTargetParameter("key2", "value2")
+            )
     );
   }
 

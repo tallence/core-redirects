@@ -21,6 +21,7 @@
   <fx:Script><![CDATA[
     import com.coremedia.ui.data.ValueExpression;
     import com.coremedia.ui.skins.ToolbarSkin;
+    import com.tallence.core.redirects.studio.data.RedirectImpl;
 
     public static const xtype:String = "com.tallence.core.redirects.studio.editor.grid.redirectsGrid";
 
@@ -121,6 +122,10 @@
     <columns:RedirectTargetColumn/>
     <columns:RedirectCreationDateColumn/>
     <columns:RedirectTypeColumn/>
+    <columns:RedirectParametersColumn header="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_sourceParameters')}"
+                                      dataIndex="{RedirectImpl.SOURCE_PARAMETERS}"/>
+    <columns:RedirectParametersColumn header="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_targetParameters')}"
+                                      dataIndex="{RedirectImpl.TARGET_PARAMETERS}"/>
   </local:columns>
   <local:view>
     <GridView stripeRows="true"

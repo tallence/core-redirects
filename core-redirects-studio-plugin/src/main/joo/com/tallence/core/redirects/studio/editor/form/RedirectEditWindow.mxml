@@ -7,13 +7,16 @@ The Windows is not "modal" because the editor might drag a document from the wor
     xmlns="exml:ext.config"
     xmlns:ui="exml:com.coremedia.ui.config"
     xmlns:local="com.tallence.core.redirects.studio.editor.form.*"
-    resizable="false">
+    resizable="false"
+    width="700px">
   <fx:Metadata>
     [ResourceBundle('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin')]
     [ResourceBundle('com.coremedia.cms.editor.Editor')]
   </fx:Metadata>
   <fx:Script><![CDATA[
     import com.coremedia.ui.data.ValueExpression;
+    import com.coremedia.ui.data.ValueExpressionFactory;
+    import com.coremedia.ui.data.beanFactory;
     import com.coremedia.ui.skins.ButtonSkin;
     import com.tallence.core.redirects.studio.data.Redirect;
 

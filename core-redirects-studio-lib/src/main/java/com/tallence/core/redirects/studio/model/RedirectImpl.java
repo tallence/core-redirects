@@ -17,10 +17,13 @@
 package com.tallence.core.redirects.studio.model;
 
 import com.coremedia.cap.content.Content;
+import com.tallence.core.redirects.model.RedirectSourceParameter;
+import com.tallence.core.redirects.model.RedirectTargetParameter;
 import com.tallence.core.redirects.model.RedirectType;
 import com.tallence.core.redirects.model.SourceUrlType;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Default implementation of a {@link Redirect}
@@ -37,12 +40,25 @@ public class RedirectImpl implements Redirect {
   private RedirectType redirectType;
   private String description;
   private boolean isImported;
+  private List<RedirectSourceParameter> sourceParameters;
+  private List<RedirectTargetParameter> targetParameters;
 
   public RedirectImpl(String id) {
     this.id = id;
   }
 
-  public RedirectImpl(String id, String siteId, boolean active, SourceUrlType sourceUrlType, String source, Date creationDate, Content targetLink, RedirectType redirectType, String description, boolean isImported) {
+  public RedirectImpl(String id,
+                      String siteId,
+                      boolean active,
+                      SourceUrlType sourceUrlType,
+                      String source,
+                      Date creationDate,
+                      Content targetLink,
+                      RedirectType redirectType,
+                      String description,
+                      boolean isImported,
+                      List<RedirectSourceParameter> sourceParameters,
+                      List<RedirectTargetParameter> targetParameters) {
     this.id = id;
     this.siteId = siteId;
     this.active = active;
@@ -53,6 +69,8 @@ public class RedirectImpl implements Redirect {
     this.redirectType = redirectType;
     this.description = description;
     this.isImported = isImported;
+    this.sourceParameters = sourceParameters;
+    this.targetParameters = targetParameters;
   }
 
   @Override
@@ -104,4 +122,15 @@ public class RedirectImpl implements Redirect {
   public boolean isImported() {
     return isImported;
   }
+
+  @Override
+  public List<RedirectSourceParameter> getSourceParameters() {
+    return sourceParameters;
+  }
+
+  @Override
+  public List<RedirectTargetParameter> getTargetParameters() {
+    return targetParameters;
+  }
+
 }
