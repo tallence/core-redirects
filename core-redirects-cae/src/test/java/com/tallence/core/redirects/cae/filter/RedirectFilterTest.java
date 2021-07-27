@@ -143,6 +143,26 @@ public class RedirectFilterTest extends AbstractRedirectsTest {
     assertThat(response.getHeader(HttpHeaders.LOCATION), anyOf(is("/context/servlet" + expectedUrl), is(expectedUrl)));
   }
 
+  @Test
+  public void testSourceParams() throws Exception {
+    MockServletContext servletContext = new MockServletContext();
+    HttpServletRequest request = createRequest("/channela/redirect-with-param")
+            .param("importantParam", "testValue1")
+            .param("irrelevantParam", "testValue2")
+            .buildRequest(servletContext);
+    HttpServletResponse response = new MockHttpServletResponse();
+    FilterChain filterChain = new MockFilterChain(getOkServlet());
+
+    testling.doFilter(request, response, filterChain);
+
+    assertEquals(HttpServletResponse.SC_MOVED_PERMANENTLY, response.getStatus());
+    // This assertion is a bit strange, because it depends of the context of the extension: If the testcases in this
+    // extension are running stand-alone, the blueprint link rewriter that removes the /context/servlet part is missing.
+    //The special characters are url-encoded, the decode result looks like: /channela/chánnelง?param1=testVálüe1
+    String expectedUrl = "/channela?irrelevantParam=testValue2&importantParam=rewrittenValue&targetUrlParam=targetValue";
+    assertThat(response.getHeader(HttpHeaders.LOCATION), anyOf(is("/context/servlet" + expectedUrl), is(expectedUrl)));
+  }
+
   private MockHttpServletRequestBuilder createRequest(String shortUrl) throws URISyntaxException {
     return MockMvcRequestBuilders
             .get(new URI("/context/servlet" + shortUrl))

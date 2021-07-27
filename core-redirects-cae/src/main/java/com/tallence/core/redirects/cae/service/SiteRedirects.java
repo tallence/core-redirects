@@ -22,6 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,9 +41,9 @@ public class SiteRedirects {
   private static final Logger LOG = LoggerFactory.getLogger(SiteRedirects.class);
 
   private String siteId;
-  private final ConcurrentHashMap<String, Redirect> plainRedirects = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<String, List<Redirect>> plainRedirects = new ConcurrentHashMap<>();
   private final Object plainRedirectsMonitor = new Object();
-  private final ConcurrentHashMap<Pattern, Redirect> patternRedirects = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<Pattern, List<Redirect>> patternRedirects = new ConcurrentHashMap<>();
   private final Object patternRedirectsMonitor = new Object();
 
   public SiteRedirects() {
@@ -54,14 +56,14 @@ public class SiteRedirects {
   /**
    * Returns the list of plain redirects.
    */
-  public Map<String, Redirect> getPlainRedirects() {
+  public Map<String, List<Redirect>> getPlainRedirects() {
     return plainRedirects;
   }
 
   /**
    * Returns the list of redirects with pattern source urls.
    */
-  public Map<Pattern, Redirect> getPatternRedirects() {
+  public Map<Pattern, List<Redirect>> getPatternRedirects() {
     return patternRedirects;
   }
 
@@ -75,15 +77,25 @@ public class SiteRedirects {
   public void addRedirect(Redirect redirect) {
     if (redirect.getSourceUrlType() == SourceUrlType.PLAIN) {
       synchronized (plainRedirectsMonitor) {
-        plainRedirects.values().remove(redirect);
-        plainRedirects.put(URLDecoder.decode(redirect.getSource(), UTF_8), redirect);
+
+        plainRedirects.values().forEach(redirects -> redirects.remove(redirect));
+
+        final String key = URLDecoder.decode(redirect.getSource(), UTF_8);
+        plainRedirects.putIfAbsent(key, new ArrayList<>());
+        plainRedirects.get(key).add(redirect);
+        plainRedirects.values().removeIf(List::isEmpty);
       }
 
     } else if (redirect.getSourceUrlType() == SourceUrlType.REGEX) {
       try {
         synchronized (patternRedirectsMonitor) {
-          patternRedirects.values().remove(redirect);
-          patternRedirects.put(Pattern.compile(redirect.getSource()), redirect);
+
+          patternRedirects.values().forEach(redirects -> redirects.remove(redirect));
+
+          final Pattern key = Pattern.compile(redirect.getSource());
+          patternRedirects.putIfAbsent(key, new ArrayList<>());
+          patternRedirects.get(key).add(redirect);
+          patternRedirects.values().removeIf(List::isEmpty);
         }
       } catch (PatternSyntaxException e) {
         LOG.error("Unable to compile pattern on redirect {}, ignoring redirect", redirect);
@@ -100,11 +112,15 @@ public class SiteRedirects {
   public void removeRedirect(Redirect redirect) {
     if (redirect.getSourceUrlType() == SourceUrlType.PLAIN) {
       synchronized (plainRedirectsMonitor) {
-        plainRedirects.values().remove(redirect);
+        plainRedirects.entrySet().stream()
+                .filter(e -> e.getValue().remove(redirect))
+                .forEach(e -> plainRedirects.remove(e.getKey()));
       }
     } else if (redirect.getSourceUrlType() == SourceUrlType.REGEX) {
       synchronized (patternRedirectsMonitor) {
-        patternRedirects.values().remove(redirect);
+        patternRedirects.entrySet().stream()
+                .filter(e -> e.getValue().remove(redirect))
+                .forEach(e -> patternRedirects.remove(e.getKey()));
       }
     }
   }
@@ -117,17 +133,14 @@ public class SiteRedirects {
 
     synchronized (plainRedirectsMonitor) {
       plainRedirects.entrySet().stream()
-          .filter(e -> id.equals(e.getValue().getContentId()))
+          .filter(e -> e.getValue().removeIf(r -> id.equals(r.getContentId())))
           .forEach(e -> plainRedirects.remove(e.getKey()));
     }
 
     synchronized (patternRedirectsMonitor) {
-      for (Map.Entry<Pattern, Redirect> entry : patternRedirects.entrySet()) {
-        if (entry.getValue().getContentId().equals(id)) {
-          patternRedirects.remove(entry.getKey());
-          break;
-        }
-      }
+      patternRedirects.entrySet().stream()
+              .filter(e -> e.getValue().removeIf(r -> id.equals(r.getContentId())))
+              .forEach(e -> patternRedirects.remove(e.getKey()));
     }
   }
 
