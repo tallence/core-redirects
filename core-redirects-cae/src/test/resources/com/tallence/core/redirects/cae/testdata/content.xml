@@ -119,6 +119,28 @@
                   <markupProperty name="urlParams" url="urlParams-1115116.xml" grammar="coremedia-struct-2008"/>
                 </version>
               </document>
+              <document id="1115118" name="TestRedirectParamMultiple" type="Redirect">
+                <version number="1">
+                  <stringProperty name="sourceUrlType" value="PLAIN"/>
+                  <stringProperty name="source" value="/redirect-with-param-multiple"/>
+                  <linkProperty name="targetLink" Max="1" LinkType="CMLinkable">
+                    <link id="10026"/>
+                  </linkProperty>
+                  <stringProperty name="redirectType" value="ALWAYS"/>
+                  <markupProperty name="urlParams" url="urlParams-1115118.xml" grammar="coremedia-struct-2008"/>
+                </version>
+              </document>
+              <document id="1115120" name="TestRedirectParamMultiple-2" type="Redirect">
+                <version number="1">
+                  <stringProperty name="sourceUrlType" value="PLAIN"/>
+                  <stringProperty name="source" value="/redirect-with-param-multiple"/>
+                  <linkProperty name="targetLink" Max="1" LinkType="CMLinkable">
+                    <link id="1002"/>
+                  </linkProperty>
+                  <stringProperty name="redirectType" value="ALWAYS"/>
+                  <markupProperty name="urlParams" url="urlParams-1115120.xml" grammar="coremedia-struct-2008"/>
+                </version>
+              </document>
             </folder>
           </folder>
         </folder>

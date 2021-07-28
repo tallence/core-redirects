@@ -22,8 +22,21 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.coremedia.cap.common.IdHelper.parseContentId;
 import static java.util.Map.Entry.comparingByKey;
 
+/**
+ * Default Strategy to select a redirect in the {@link SiteRedirects} which matches the given request.
+ *
+ * It checks:
+ * <ul>
+ *  <li>if the {@link HttpServletRequest#getPathInfo()} matches the {@link Redirect#getSource()}</li>
+ *  <li>if the {@link HttpServletRequest#getParameterMap()} is matches by all {@link Redirect#getSourceParameters()}</li>
+ * </ul>
+ *
+ * If you want to implement a custom strategy: Try to override {@link #determinePreAction} or {@link #checkUrlParams}.
+ * If you need more methods to be "protected" feel free to create an issue in the gitHub repo.
+ */
 @Service
 public class RedirectMatchingStrategyImpl implements RedirectMatchingStrategy {
 
@@ -88,9 +101,9 @@ public class RedirectMatchingStrategyImpl implements RedirectMatchingStrategy {
   }
 
   /**
-   * Determines, if a redirect should be executed now, after handling or never.
+   * Lookup the plain- and patternRedirects in the given redirects for the given request
    */
-  private Result determinePreAction(SiteRedirects redirects, HttpServletRequest request) {
+  protected Result determinePreAction(SiteRedirects redirects, HttpServletRequest request) {
 
     if (request == null || request.getPathInfo() == null) {
       return Result.none();
@@ -101,11 +114,12 @@ public class RedirectMatchingStrategyImpl implements RedirectMatchingStrategy {
       pathInfo = pathInfo.substring(0, pathInfo.length() - 1);
     }
 
-    Redirect redirect = getMatchingRedirect(redirects.getPlainRedirects().get(pathInfo), request);
+    var redirect = Optional.ofNullable(redirects.getPlainRedirects().get(pathInfo))
+            .map(list -> checkUrlParams(list, request)).orElse(null);
     if (redirect == null) {
       for (Map.Entry<Pattern, List<Redirect>> patternRedirect : redirects.getPatternRedirects().entrySet()) {
         if (patternRedirect.getKey().matcher(pathInfo).matches()) {
-          redirect = getMatchingRedirect(patternRedirect.getValue(), request);
+          redirect = checkUrlParams(patternRedirect.getValue(), request);
           break;
         }
       }
@@ -117,32 +131,37 @@ public class RedirectMatchingStrategyImpl implements RedirectMatchingStrategy {
   }
 
   /**
-   * Look into the plain redirects map with the given pathInfo.
+   * Resolve a redirect in the given list.
+   * A redirect is chosen, if all url parameter matches with the given request.
    *
-   * Use the redirect with the highest number of (matching) sourceUrlParams.
+   * If more than redirect match: Use the redirect with the highest number of (matching) sourceUrlParams.
    *
    * @param potentialRedirects redirects which match the request path.
    * @param request the request
    */
-  private Redirect getMatchingRedirect(List<Redirect> potentialRedirects, HttpServletRequest request) {
+  protected Redirect checkUrlParams(@NonNull List<Redirect> potentialRedirects, HttpServletRequest request) {
 
     final var requestParameterMap = request.getParameterMap();
     List<Redirect> redirects = potentialRedirects.stream()
-            .filter(r -> r.getSourceParameters().stream().allMatch(s -> matchesUrlParams(s, requestParameterMap)))
-            .filter(r -> !isTargetInvalid(r.getTarget()))
+            .filter(r -> r.getSourceParameters().stream().allMatch(s -> matchesSourceParam(s, requestParameterMap)))
+            .filter(r -> isTargetValid(r.getTarget()))
             .collect(Collectors.toList());
     if (redirects.size() <= 1) {
       return redirects.size() == 1 ? redirects.get(0) : null;
     }
 
-    final var numberOfParams = redirects.stream().collect(Collectors.toMap(r -> r.getSourceParameters().size(), Function.identity()));
+    //More than one potential redirect left: pick the one, with the highest amount of parameters.
+    //If more than one redirect has the same number of parameters: to be deterministic, pick the one with the lowest contentId
+    final var numberOfParams = redirects.stream()
+            .collect(Collectors.toMap(r -> r.getSourceParameters().size(), Function.identity(),
+                    (o, o2) -> parseContentId(o.getContentId()) < parseContentId(o2.getContentId()) ? o : o2));
     return numberOfParams.entrySet()
             .stream().max(comparingByKey())
             .map(Map.Entry::getValue)
             .orElse(null);
   }
 
-  private boolean matchesUrlParams(RedirectSourceParameter sourceParameter, Map<String, String[]> requestParameterMap) {
+  private boolean matchesSourceParam(RedirectSourceParameter sourceParameter, Map<String, String[]> requestParameterMap) {
     final var values = requestParameterMap.get(sourceParameter.getName());
 
     if (!RedirectSourceParameter.Operator.EQUALS.equals(sourceParameter.getOperator())) {
@@ -155,13 +174,18 @@ public class RedirectMatchingStrategyImpl implements RedirectMatchingStrategy {
             .anyMatch(v -> v.equalsIgnoreCase(sourceParameter.getValue()));
   }
 
-  private boolean isTargetInvalid(Content targetLink) {
+  /**
+   * Cannot use the {@link com.coremedia.blueprint.common.services.validation.ValidationService}
+   * because it does not work with content objects.
+   * @return true, if the target is valid
+   */
+  private boolean isTargetValid(Content targetLink) {
     Calendar now = Calendar.getInstance();
     Calendar validFrom = targetLink.getDate("validFrom");
     if (validFrom != null && validFrom.after(now)) {
-      return true;
+      return false;
     }
     Calendar validTo = targetLink.getDate("validTo");
-    return validTo != null && validTo.before(now);
+    return validTo == null || validTo.after(now);
   }
 }

@@ -3,8 +3,10 @@ package com.tallence.core.redirects.cae.filter;
 import com.tallence.core.redirects.cae.model.Redirect;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Optional;
 
+/**
+ * Strategy to resolve a redirect for the given request.
+ */
 public interface RedirectMatchingStrategy {
 
   Result getMatchingRedirect(HttpServletRequest request);
@@ -17,8 +19,8 @@ public interface RedirectMatchingStrategy {
       NONE, SEND, WRAP
     }
 
-    private Redirect redirect;
-    private Action action;
+    private final Redirect redirect;
+    private final Action action;
 
     private Result(Redirect redirect, Action action) {
       this.redirect = redirect;

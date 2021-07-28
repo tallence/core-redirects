@@ -6,21 +6,22 @@ import com.coremedia.cap.multisite.Site;
 import com.coremedia.cap.multisite.SitesService;
 import com.coremedia.objectserver.beans.ContentBean;
 import com.tallence.core.redirects.cae.AbstractRedirectsTest;
-import org.junit.Ignore;
+import com.tallence.core.redirects.cae.model.Redirect;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
- * Ignored, because the test fails sometimes. Seems to be a raceCondition.
+ * This test might fail because of unknown race conditions. If this happens:
+ * Add @Ignore and feel free to create an issue in the gitHub Repo. Or create a MergeRequest if you can find the cause.
  */
-@Ignore
 public class RedirectContentListenerTest extends AbstractRedirectsTest {
 
   @Autowired
@@ -56,9 +57,11 @@ public class RedirectContentListenerTest extends AbstractRedirectsTest {
     // Since we cant disable the repo listener, we call the redirectUpdateTaskScheduler directly, so we don't have to sleep here.
     redirectUpdateTaskScheduler.runUpdate(redirect);
 
-    assertThat(redirectService.getRedirectsForSite(site).getPlainRedirects().size(), equalTo(plainSizeBefore + 1));
+    final Map<String, List<Redirect>> plainRedirects = redirectService.getRedirectsForSite(site).getPlainRedirects();
+    assertThat(plainRedirects.size(), equalTo(plainSizeBefore + 1));
     assertThat(redirectService.getRedirectsForSite(site).getPatternRedirects().size(), equalTo(patternSizeBefore));
-    assertThat(redirectService.getRedirectsForSite(site).getPlainRedirects().values(), hasItem(hasProperty("source", equalTo("/channela/redirect-test-dynamic"))));
+    assertThat(plainRedirects, hasKey("/channela/redirect-test-dynamic"));
+    assertThat(plainRedirects.get("/channela/redirect-test-dynamic"), hasItem(hasProperty("source", equalTo("/channela/redirect-test-dynamic"))));
 
     // Test deletion
     redirect.delete();

@@ -114,12 +114,14 @@ public class SiteRedirects {
       synchronized (plainRedirectsMonitor) {
         plainRedirects.entrySet().stream()
                 .filter(e -> e.getValue().remove(redirect))
+                .filter(e -> e.getValue().isEmpty())
                 .forEach(e -> plainRedirects.remove(e.getKey()));
       }
     } else if (redirect.getSourceUrlType() == SourceUrlType.REGEX) {
       synchronized (patternRedirectsMonitor) {
         patternRedirects.entrySet().stream()
                 .filter(e -> e.getValue().remove(redirect))
+                .filter(e -> e.getValue().isEmpty())
                 .forEach(e -> patternRedirects.remove(e.getKey()));
       }
     }
@@ -134,12 +136,14 @@ public class SiteRedirects {
     synchronized (plainRedirectsMonitor) {
       plainRedirects.entrySet().stream()
           .filter(e -> e.getValue().removeIf(r -> id.equals(r.getContentId())))
+          .filter(e -> e.getValue().isEmpty())
           .forEach(e -> plainRedirects.remove(e.getKey()));
     }
 
     synchronized (patternRedirectsMonitor) {
       patternRedirects.entrySet().stream()
               .filter(e -> e.getValue().removeIf(r -> id.equals(r.getContentId())))
+              .filter(e -> e.getValue().isEmpty())
               .forEach(e -> patternRedirects.remove(e.getKey()));
     }
   }
