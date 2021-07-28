@@ -30,6 +30,7 @@ import com.tallence.core.redirects.studio.data.PermissionResponse;
 import com.tallence.core.redirects.studio.data.Redirect;
 import com.tallence.core.redirects.studio.data.RedirectImpl;
 import com.tallence.core.redirects.studio.data.RedirectImportResponse;
+import com.tallence.core.redirects.studio.data.RedirectSourceParameter;
 import com.tallence.core.redirects.studio.data.Redirects;
 import com.tallence.core.redirects.studio.data.RedirectsResponse;
 import com.tallence.core.redirects.studio.data.ValidationResponse;
@@ -167,9 +168,9 @@ public class RedirectsUtil {
    * @param error callback function for error
    */
   public static function uploadRedirects(siteId:String,
-                                  fileWrapper:FileWrapper,
-                                  success:Function,
-                                  error:Function):void {
+                                         fileWrapper:FileWrapper,
+                                         success:Function,
+                                         error:Function):void {
 
     var upldr:Uploader = new Uploader(Uploader({
       maxFileSize: DEFAULT_UPLOAD_SIZE,
@@ -216,25 +217,38 @@ public class RedirectsUtil {
    * @return The promise. Resolve method signature: <code>function(response:ValidationResponse):void</code>
    */
   public static function validateRedirect(siteId:String,
-                                   redirectId:String,
-                                   source:String,
-                                   targetId:String,
-                                   active:Boolean):IPromise {
-    var urlTemplate:String = "/{0}/validate/?source={1}&redirectId={2}&targetId={3}&active={4}";
-    var url:String = StringUtil.format(
-            urlTemplate,
-            siteId,
-            encodeURIComponent(source),
-            encodeURIComponent(redirectId),
-            encodeURIComponent(targetId),
-            active);
-    return PromiseUtil.getRequest("redirects" + url, {}, ValidationResponse);
+                                          redirectId:String,
+                                          source:String,
+                                          targetId:String,
+                                          active:Boolean,
+                                          sourceParameters:Array):IPromise {
+    var urlTemplate:String = "/{0}/validate";
+
+    var joined:String = sourceParameters
+            .map(function (parameter:RedirectSourceParameter):Object {
+              return parameter.getParametersAsMap();})
+            .map(function (map:Object):String {
+              return JSON.encodeValue(map);
+            })
+            .map(encodeURIComponent)
+            .join(",");
+
+    var params:Object = {
+      source: encodeURIComponent(source),
+      redirectId: encodeURIComponent(redirectId),
+      targetId: encodeURIComponent(targetId),
+      active: active,
+      sourceParameters: joined
+    };
+
+    var url:String = StringUtil.format(urlTemplate, siteId);
+    return PromiseUtil.getRequest("redirects" + url, params, ValidationResponse);
   }
 
   /**
    * Resolve the permissions for the redirects in the selected site.
    */
-  public static function resolvePermissions(siteId: String): IPromise {
+  public static function resolvePermissions(siteId:String):IPromise {
     if (!siteId || siteId == "") {
       // if no site is selected, nothing may be edited
       return Promise.resolve(new PermissionResponse());

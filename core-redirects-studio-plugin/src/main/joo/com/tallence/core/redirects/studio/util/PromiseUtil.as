@@ -66,7 +66,7 @@ public class PromiseUtil {
   public static function getRequest(path:String, params:Object, responseClass:Class):IPromise {
     var deferred:Deferred = new Deferred();
 
-    var rsm:RemoteServiceMethod = new RemoteServiceMethod(path, "GET", true);
+    var rsm:RemoteServiceMethod = new RemoteServiceMethod(path, "GET");
     rsm.request(
         params,
         function success(rsmr:RemoteServiceMethodResponse):void {

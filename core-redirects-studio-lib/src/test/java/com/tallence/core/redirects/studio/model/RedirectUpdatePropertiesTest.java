@@ -17,19 +17,28 @@ package com.tallence.core.redirects.studio.model;
 
 import com.coremedia.cap.content.Content;
 import com.tallence.core.redirects.studio.repository.RedirectRepository;
-import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.*;
+import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.ACTIVE;
+import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.INVALID_ACTIVE_VALUE;
+import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.INVALID_REDIRECT_TYPE_VALUE;
+import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.INVALID_SOURCE_URL_TYPE_VALUE;
+import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.INVALID_SOURCE_VALUE;
+import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.INVALID_SOURCE_WHITESPACE;
+import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.INVALID_TARGET_LINK;
+import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.MISSING_TARGET_LINK;
+import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.REDIRECT_TYPE;
+import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.SOURCE;
+import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.SOURCE_ALREADY_EXISTS;
+import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.SOURCE_URL_TYPE;
+import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.TARGET_LINK;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -146,7 +155,7 @@ public class RedirectUpdatePropertiesTest {
   @Test
   public void testCreateValidationExistingSource() {
 
-    when(repository.sourceAlreadyExists(any(), ArgumentMatchers.eq("/existing_source"))).thenReturn(true);
+    when(repository.sourceAlreadyExists(any(), ArgumentMatchers.eq("/existing_source"), eq(List.of()))).thenReturn(true);
 
     Map<String, Object> properties = new HashMap<>();
     properties.put(SOURCE, "/existing_source");

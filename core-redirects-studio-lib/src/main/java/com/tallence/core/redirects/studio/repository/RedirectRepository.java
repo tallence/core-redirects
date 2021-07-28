@@ -17,9 +17,12 @@
 package com.tallence.core.redirects.studio.repository;
 
 import com.coremedia.cap.content.Content;
+import com.tallence.core.redirects.model.RedirectSourceParameter;
 import com.tallence.core.redirects.studio.model.Pageable;
 import com.tallence.core.redirects.studio.model.Redirect;
 import com.tallence.core.redirects.studio.model.RedirectUpdateProperties;
+
+import java.util.List;
 
 /**
  * Repository used by the studio to manage redirects.
@@ -41,18 +44,20 @@ public interface RedirectRepository {
    * @param siteId     the site id.
    * @param source     the source.
    * @param redirectId the redirect id.
+   * @param sourceParameters the list of source url parameters.
    * @return boolean.
    */
-  boolean sourceAlreadyExists(String siteId, String redirectId, String source);
+  boolean sourceAlreadyExists(String siteId, String redirectId, String source, List<RedirectSourceParameter> sourceParameters);
 
   /**
    * Checks if the given source already exists.
    *
    * @param siteId the site id.
    * @param source the source.
+   * @param sourceParameters the list of source url parameters.
    * @return boolean.
    */
-  boolean sourceAlreadyExists(String siteId, String source);
+  boolean sourceAlreadyExists(String siteId, String source, List<RedirectSourceParameter> sourceParameters);
 
   /**
    * Checks if the target of the redirect is invalid.

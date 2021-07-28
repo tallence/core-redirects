@@ -26,14 +26,14 @@ public class RedirectSourceParameter extends RedirectTargetParameter {
     this.operator = json[OPERATOR];
   }
 
-  public function setOperator(operator:String):void {
-    this.operator = operator;
-  }
-
   public function getOperator():String {
     return operator;
   }
 
-
+  override public function getParametersAsMap():Object {
+    var map:Object = super.getParametersAsMap();
+    map[OPERATOR] = getOperator();
+    return map;
+  }
 }
 }

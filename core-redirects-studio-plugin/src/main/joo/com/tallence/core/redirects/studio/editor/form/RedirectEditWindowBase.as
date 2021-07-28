@@ -75,8 +75,9 @@ public class RedirectEditWindowBase extends Window {
     var targetLink:Content = getLocalModel().get(RedirectImpl.TARGET_LINK)[0];
     var targetId:String = targetLink ? targetLink.getId() : "";
     var active:Boolean = getLocalModel().get(RedirectImpl.ACTIVE);
+    var sourceParameters:Array = getLocalModel().get(RedirectImpl.SOURCE_PARAMETERS);
     RedirectsUtil
-        .validateRedirect(siteId, redirectId, getLocalModel().get(RedirectImpl.SOURCE), targetId, active)
+        .validateRedirect(siteId, redirectId, getLocalModel().get(RedirectImpl.SOURCE), targetId, active, sourceParameters)
         .then(handleValidationResponse, validationErrorHandler);
   }
 

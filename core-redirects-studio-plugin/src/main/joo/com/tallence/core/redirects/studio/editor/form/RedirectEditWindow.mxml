@@ -43,7 +43,8 @@ The Windows is not "modal" because the editor might drag a document from the wor
     <local:RedirectEditPanel localModel="{getLocalModel()}"
                              mayNotUseRegexVE="{config.mayNotUseRegexVE}"
                              mayNotPublishVE="{config.mayNotPublishVE}"
-                             errorMessagesVE="{getErrorMessagesVE()}"/>
+                             errorMessagesVE="{getErrorMessagesVE()}"
+                             selectedSiteIdVE="{config.selectedSiteIdVE}"/>
   </local:items>
   <local:fbar>
     <Toolbar>

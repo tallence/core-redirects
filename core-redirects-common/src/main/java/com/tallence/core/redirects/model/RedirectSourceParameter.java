@@ -5,7 +5,11 @@ public class RedirectSourceParameter extends RedirectParameter {
   public static final String STRUCT_PROPERTY_SOURCE_PARAMS = "sourceUrlParams";
   public static final String STRUCT_PROPERTY_SOURCE_PARAMS_OPERATOR = "operator";
 
-  private final RedirectSourceParameter.Operator operator;
+  private RedirectSourceParameter.Operator operator;
+
+  public RedirectSourceParameter() {
+    // default constructor required for object mapper
+  }
 
   public RedirectSourceParameter(String name, String value, Operator operator) {
     super(name, value);

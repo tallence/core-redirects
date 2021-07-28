@@ -28,20 +28,19 @@ public class RedirectTargetParameter {
     this.value = json[VALUE];
   }
 
-  public function setName(name:String):void {
-    this.name = name;
-  }
-
   public function getName():String {
     return name;
   }
 
-  public function setValue(value:String):void {
-    this.value = value;
-  }
-
   public function getValue():String {
     return value;
+  }
+
+  public function getParametersAsMap():Object {
+    var map:Object = {};
+    map[NAME] = getName();
+    map[VALUE] = getValue();
+    return map;
   }
 
 }

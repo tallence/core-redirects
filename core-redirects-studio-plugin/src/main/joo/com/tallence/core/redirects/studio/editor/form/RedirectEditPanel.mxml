@@ -6,6 +6,7 @@
     xmlns:editor="exml:com.coremedia.cms.editor.sdk.config"
     xmlns:ui="exml:com.coremedia.ui.config"
     xmlns:rm="com.tallence.core.redirects.studio.plugins.*"
+    xmlns:grid="com.tallence.core.redirects.studio.editor.grid.*"
     xmlns:parameters="com.tallence.core.redirects.studio.editor.parameters.*"
     xmlns:local="com.tallence.core.redirects.studio.editor.form.*">
   <fx:Metadata>
@@ -35,6 +36,10 @@
 
     [Bindable]
     public var mayNotUseRegexVE:ValueExpression;
+
+    [Bindable]
+    public var selectedSiteIdVE:ValueExpression;
+
     ]]>
   </fx:Script>
   <local:items>
@@ -108,6 +113,10 @@
 
         <local:ErrorFieldContainer errorMessagesVE="{config.errorMessagesVE}"
                                    propertyName="{RedirectImpl.SOURCE}"/>
+
+        <grid:IdenticalRedirectsGrid selectedSiteIdVE="{config.selectedSiteIdVE}"
+                                     height="50px"
+                                     searchFieldVE="{getBindTo(config.localModel, RedirectImpl.SOURCE)}"/>
 
         <DisplayField value="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_sourceParameters')}"
                       ui="{DisplayFieldSkin.BOLD.getSkin()}"/>

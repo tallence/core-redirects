@@ -17,6 +17,7 @@
 package com.tallence.core.redirects.studio.model;
 
 import com.coremedia.cap.content.Content;
+import com.tallence.core.redirects.model.RedirectSourceParameter;
 import com.tallence.core.redirects.model.RedirectType;
 import com.tallence.core.redirects.model.SourceUrlType;
 import com.tallence.core.redirects.studio.repository.RedirectRepository;
@@ -94,6 +95,19 @@ public class RedirectUpdateProperties {
     return getProperty(IMPORTED, Boolean.class);
   }
 
+  public List<RedirectSourceParameter> getSourceParameters() {
+    List<RedirectSourceParameter> sourceParameters = new ArrayList<>();
+    List<?> list = Optional.ofNullable(properties.get(RedirectSourceParameter.STRUCT_PROPERTY_SOURCE_PARAMS))
+            .filter(List.class::isInstance)
+            .map(List.class::cast)
+            .orElse(List.of());
+    list.stream()
+            .filter(RedirectSourceParameter.class::isInstance)
+            .map(RedirectSourceParameter.class::cast)
+            .forEach(sourceParameters::add);
+    return sourceParameters;
+  }
+
   @SuppressWarnings("unchecked")
   private <T> T getProperty(String propertyName, Class<T> clazz) {
     if (properties.containsKey(propertyName) && clazz.isInstance(properties.get(propertyName))) {
@@ -145,8 +159,8 @@ public class RedirectUpdateProperties {
         errors.put(SOURCE, INVALID_SOURCE_VALUE);
       } else if (sourceHasWhitespaces(source)) {
         errors.put(SOURCE, INVALID_SOURCE_WHITESPACE);
-      } else if (StringUtils.isNotBlank(redirectId) && repository.sourceAlreadyExists(siteId, redirectId, source) ||
-              StringUtils.isBlank(redirectId) && repository.sourceAlreadyExists(siteId, source)) {
+      } else if (StringUtils.isNotBlank(redirectId) && repository.sourceAlreadyExists(siteId, redirectId, source, getSourceParameters()) ||
+              StringUtils.isBlank(redirectId) && repository.sourceAlreadyExists(siteId, source, getSourceParameters())) {
         errors.put(SOURCE, SOURCE_ALREADY_EXISTS);
       }
     }

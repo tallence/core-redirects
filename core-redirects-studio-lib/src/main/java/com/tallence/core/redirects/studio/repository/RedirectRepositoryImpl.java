@@ -92,7 +92,7 @@ public class RedirectRepositoryImpl implements RedirectRepository {
     }
 
     String source = updateProperties.getSource();
-    if (redirectAlreadyExists(siteId, source)) {
+    if (redirectAlreadyExists(siteId, source, updateProperties.getSourceParameters())) {
       throw new IllegalArgumentException("duplicated source url");
     }
     String uuid = UUID.randomUUID().toString();
@@ -115,13 +115,13 @@ public class RedirectRepositoryImpl implements RedirectRepository {
   }
 
   @Override
-  public boolean sourceAlreadyExists(String siteId, String redirectId, String source) {
-    return redirectAlreadyExists(siteId, redirectId, source);
+  public boolean sourceAlreadyExists(String siteId, String redirectId, String source, List<RedirectSourceParameter> sourceParameters) {
+    return redirectAlreadyExists(siteId, redirectId, source, sourceParameters);
   }
 
   @Override
-  public boolean sourceAlreadyExists(String siteId, String source) {
-    return redirectAlreadyExists(siteId, source);
+  public boolean sourceAlreadyExists(String siteId, String source, List<RedirectSourceParameter> sourceParameters) {
+    return redirectAlreadyExists(siteId, source, sourceParameters);
   }
 
   @Override
@@ -230,7 +230,7 @@ public class RedirectRepositoryImpl implements RedirectRepository {
     return contentRepository.getRoot().getChild(REDIRECT_PATH);
   }
 
-  private boolean redirectAlreadyExists(String siteId, String redirectId, String source) {
+  private boolean redirectAlreadyExists(String siteId, String redirectId, String source, List<RedirectSourceParameter> sourceParameters) {
     if (StringUtils.isEmpty(source)) {
       return false;
     }
@@ -239,7 +239,7 @@ public class RedirectRepositoryImpl implements RedirectRepository {
     return !search(siteId, filterQueries, Collections.emptyList(), 10).getHits().isEmpty();
   }
 
-  private boolean redirectAlreadyExists(String siteId, String source) {
+  private boolean redirectAlreadyExists(String siteId, String source, List<RedirectSourceParameter> sourceParameters) {
     if (StringUtils.isEmpty(source)) {
       return false;
     }

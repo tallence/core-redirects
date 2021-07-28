@@ -20,6 +20,7 @@ import com.coremedia.cap.content.Content;
 import com.coremedia.cap.content.ContentRepository;
 import com.coremedia.rest.linking.LinkResolver;
 import com.coremedia.rest.linking.LinkResolverUtil;
+import com.tallence.core.redirects.model.RedirectSourceParameter;
 import com.tallence.core.redirects.model.RedirectType;
 import com.tallence.core.redirects.model.SourceUrlType;
 import com.tallence.core.redirects.studio.model.Pageable;
@@ -44,6 +45,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -130,12 +132,14 @@ public class RedirectsResource {
                                                    @RequestParam String source,
                                                    @RequestParam String redirectId,
                                                    @RequestParam String targetId,
-                                                   @RequestParam Boolean active) {
+                                                   @RequestParam Boolean active,
+                                                   @RequestParam List<RedirectSourceParameter> sourceParameters) {
     Map<String, Object> properties = new HashMap<>();
 
     properties.put(ACTIVE, active);
     properties.put(TARGET_LINK, StringUtils.isNotBlank(targetId) ? contentRepository.getContent(targetId) : null);
     properties.put(SOURCE, source);
+    properties.put(RedirectSourceParameter.STRUCT_PROPERTY_SOURCE_PARAMS, sourceParameters);
     // Let's assume default values for the types, so that the validation does not fail.
     // These are not sent by the validation request, as they cannot be empty.
     properties.put(REDIRECT_TYPE, RedirectType.AFTER_NOT_FOUND.toString());
