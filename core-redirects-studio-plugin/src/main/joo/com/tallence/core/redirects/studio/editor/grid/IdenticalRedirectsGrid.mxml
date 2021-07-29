@@ -23,7 +23,6 @@
   <local:columns>
     <columns:RedirectStatusColumn/>
     <columns:RedirectTargetColumn/>
-    <columns:RedirectTypeColumn/>
     <columns:RedirectParametersColumn
             header="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_sourceParameters')}"
             dataIndex="{RedirectImpl.SOURCE_PARAMETERS}"/>

@@ -162,15 +162,15 @@ public class RedirectMatchingStrategyImpl implements RedirectMatchingStrategy {
   }
 
   private boolean matchesSourceParam(RedirectSourceParameter sourceParameter, Map<String, String[]> requestParameterMap) {
-    final var values = requestParameterMap.get(sourceParameter.getName());
 
     if (!RedirectSourceParameter.Operator.EQUALS.equals(sourceParameter.getOperator())) {
       LOG.error("No other operator than EQUALS is currently supported");
       return false;
     }
 
-    return Arrays.stream(values)
-            .filter(Objects::nonNull)
+    return Optional.ofNullable(requestParameterMap.get(sourceParameter.getName()))
+            .stream()
+            .flatMap(Arrays::stream)
             .anyMatch(v -> v.equalsIgnoreCase(sourceParameter.getValue()));
   }
 
