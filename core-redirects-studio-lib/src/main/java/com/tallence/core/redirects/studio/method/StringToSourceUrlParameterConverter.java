@@ -2,6 +2,7 @@ package com.tallence.core.redirects.studio.method;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tallence.core.redirects.helper.RedirectHelper;
 import com.tallence.core.redirects.model.RedirectSourceParameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,17 +30,8 @@ public class StringToSourceUrlParameterConverter implements Converter<String, Re
   public RedirectSourceParameter convert(String redirectSourceParameter) {
     return Optional.of(redirectSourceParameter)
             .map(this::decode)
-            .map(this::readValue)
+            .map(RedirectHelper::parseRedirectSourceParameter)
             .orElse(null);
-  }
-
-  private RedirectSourceParameter readValue(String value) {
-    try {
-      return objectMapper.readValue(value, RedirectSourceParameter.class);
-    } catch (JsonProcessingException e) {
-      LOG.error("Could not parse redirect source parameter for input string: {}", value);
-      return null;
-    }
   }
 
   private String decode(String value) {

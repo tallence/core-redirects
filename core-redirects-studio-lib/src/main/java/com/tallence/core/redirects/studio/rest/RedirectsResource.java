@@ -52,6 +52,7 @@ import java.util.stream.Collectors;
 import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.ACTIVE;
 import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.REDIRECT_TYPE;
 import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.SOURCE;
+import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.SOURCE_PARAMETERS;
 import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.SOURCE_URL_TYPE;
 import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.TARGET_LINK;
 
@@ -90,9 +91,10 @@ public class RedirectsResource {
           @RequestParam int pageSize,
           @RequestParam String sorter,
           @RequestParam String sortDirection,
-          @RequestParam String search) {
+          @RequestParam String search,
+          @RequestParam boolean exactMatch) {
     Map<String, Object> response = new HashMap<>();
-    Pageable redirects = redirectRepository.getRedirects(siteId, search, sorter, sortDirection, pageSize, page);
+    Pageable redirects = redirectRepository.getRedirects(siteId, search, sorter, sortDirection, pageSize, page, exactMatch);
     response.put("items", redirects.getRedirects().stream().map(RedirectReference::new).collect(Collectors.toList()));
     response.put("total", redirects.getTotal());
     return response;
@@ -139,7 +141,7 @@ public class RedirectsResource {
     properties.put(ACTIVE, active);
     properties.put(TARGET_LINK, StringUtils.isNotBlank(targetId) ? contentRepository.getContent(targetId) : null);
     properties.put(SOURCE, source);
-    properties.put(RedirectSourceParameter.STRUCT_PROPERTY_SOURCE_PARAMS, sourceParameters);
+    properties.put(SOURCE_PARAMETERS, sourceParameters);
     // Let's assume default values for the types, so that the validation does not fail.
     // These are not sent by the validation request, as they cannot be empty.
     properties.put(REDIRECT_TYPE, RedirectType.AFTER_NOT_FOUND.toString());

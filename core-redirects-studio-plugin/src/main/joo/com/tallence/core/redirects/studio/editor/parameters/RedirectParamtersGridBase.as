@@ -31,6 +31,12 @@ public class RedirectParamtersGridBase extends GridPanel {
 
   public function RedirectParamtersGridBase(config:RedirectParametersGrid = null) {
     super(config);
+    if (config.validateRedirectHandler) {
+      // If the data in the grid changes, a validation of the redirect must be triggered if the grid is used for the
+      // source parameters. This cannot be solved with a change listener in the edit window, since a change listener
+      // does not trigger when values change within an object of a list.
+      getStore().addListener("datachanged", config.validateRedirectHandler);
+    }
   }
 
   protected static function isEmptySelection(selection:Array):Boolean {

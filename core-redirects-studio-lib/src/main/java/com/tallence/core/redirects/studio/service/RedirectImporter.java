@@ -19,6 +19,9 @@ package com.tallence.core.redirects.studio.service;
 import com.coremedia.cap.common.IdHelper;
 import com.coremedia.cap.content.Content;
 import com.coremedia.cap.content.ContentRepository;
+import com.tallence.core.redirects.helper.RedirectHelper;
+import com.tallence.core.redirects.model.RedirectSourceParameter;
+import com.tallence.core.redirects.model.RedirectTargetParameter;
 import com.tallence.core.redirects.studio.model.Redirect;
 import com.tallence.core.redirects.studio.model.RedirectUpdateProperties;
 import com.tallence.core.redirects.studio.repository.RedirectRepository;
@@ -34,6 +37,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -75,7 +79,7 @@ public class RedirectImporter {
       Map<String, RedirectUpdateProperties> imports = new HashMap<>();
       for (CSVRecord record : records) {
         String csvEntry = getCsvEntry(record);
-        if (record.size() < 6) {
+        if (record.size() < 7) {
           redirectImportResponse.addErrorMessage(csvEntry, INVALID_CSV_ENTRY);
         } else {
           addIfNoDuplicate(siteId, redirectImportResponse, imports, record, csvEntry);
@@ -84,7 +88,7 @@ public class RedirectImporter {
       }
 
       imports.forEach((csvEntry, properties) -> createRedirect(siteId, csvEntry, properties, redirectImportResponse));
-    } catch (IOException e) {
+    } catch (IOException | IllegalArgumentException e) {
       redirectImportResponse.addErrorMessage("", CREATION_FAILURE);
       LOG.error("Error while processing uploaded file", e);
     }
@@ -130,6 +134,13 @@ public class RedirectImporter {
     properties.put(RedirectUpdateProperties.REDIRECT_TYPE, redirectType);
 
     properties.put(RedirectUpdateProperties.DESCRIPTION, record.get(5));
+
+    List<RedirectSourceParameter> sourceParameters = RedirectHelper.parseRedirectSourceParameters(record.get(6));
+    properties.put(RedirectUpdateProperties.SOURCE_PARAMETERS, sourceParameters);
+
+    List<RedirectTargetParameter> targetParameters = RedirectHelper.parseRedirectTargetParameters(record.get(7));
+    properties.put(RedirectUpdateProperties.TARGET_PARAMETERS, targetParameters);
+
     properties.put(RedirectUpdateProperties.IMPORTED, true);
 
     return new RedirectUpdateProperties(properties, redirectRepository, siteId, null);

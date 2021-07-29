@@ -17,7 +17,9 @@
 package com.tallence.core.redirects.studio.model;
 
 import com.coremedia.cap.content.Content;
+import com.tallence.core.redirects.model.RedirectParameter;
 import com.tallence.core.redirects.model.RedirectSourceParameter;
+import com.tallence.core.redirects.model.RedirectTargetParameter;
 import com.tallence.core.redirects.model.RedirectType;
 import com.tallence.core.redirects.model.SourceUrlType;
 import com.tallence.core.redirects.studio.repository.RedirectRepository;
@@ -41,6 +43,8 @@ public class RedirectUpdateProperties {
   public static final String REDIRECT_TYPE = "redirectType";
   public static final String DESCRIPTION = "description";
   public static final String IMPORTED = "imported";
+  public static final String SOURCE_PARAMETERS = "sourceParameters";
+  public static final String TARGET_PARAMETERS = "targetParameters";
 
   static final String INVALID_ACTIVE_VALUE = "active_invalid";
   static final String INVALID_SOURCE_URL_TYPE_VALUE = "sourceUrlType_invalid";
@@ -95,17 +99,55 @@ public class RedirectUpdateProperties {
     return getProperty(IMPORTED, Boolean.class);
   }
 
+  public boolean urlParametersChanged() {
+    return sourceParametersChanged() || targetParametersChanged();
+  }
+
+  public boolean targetParametersChanged() {
+    return properties.containsKey(TARGET_PARAMETERS);
+  }
+
+  public boolean sourceParametersChanged() {
+    return properties.containsKey(SOURCE_PARAMETERS);
+  }
+
   public List<RedirectSourceParameter> getSourceParameters() {
     List<RedirectSourceParameter> sourceParameters = new ArrayList<>();
-    List<?> list = Optional.ofNullable(properties.get(RedirectSourceParameter.STRUCT_PROPERTY_SOURCE_PARAMS))
-            .filter(List.class::isInstance)
-            .map(List.class::cast)
-            .orElse(List.of());
-    list.stream()
-            .filter(RedirectSourceParameter.class::isInstance)
-            .map(RedirectSourceParameter.class::cast)
-            .forEach(sourceParameters::add);
+    List<?> list = getListProperty(SOURCE_PARAMETERS);
+
+    for (Object item : list) {
+      if (item instanceof RedirectSourceParameter) {
+        sourceParameters.add((RedirectSourceParameter) item);
+      } else if (item instanceof Map) {
+        Map<String, String> properties = (Map<String, String>) item;
+        sourceParameters.add(new RedirectSourceParameter(
+                properties.get(RedirectParameter.STRUCT_PROPERTY_PARAMS_NAME),
+                properties.get(RedirectParameter.STRUCT_PROPERTY_PARAMS_VALUE),
+                RedirectSourceParameter.Operator.valueOf(properties.get(RedirectSourceParameter.STRUCT_PROPERTY_SOURCE_PARAMS_OPERATOR))
+        ));
+      }
+    }
+
     return sourceParameters;
+  }
+
+  public List<RedirectTargetParameter> getTargetParameters() {
+    List<RedirectTargetParameter> targetParameters = new ArrayList<>();
+    List<?> list = getListProperty(TARGET_PARAMETERS);
+
+    for (Object item : list) {
+      if (item instanceof RedirectSourceParameter) {
+        targetParameters.add((RedirectTargetParameter) item);
+      } else if (item instanceof Map) {
+        Map<String, String> properties = (Map<String, String>) item;
+        targetParameters.add(new RedirectTargetParameter(
+                properties.get(RedirectParameter.STRUCT_PROPERTY_PARAMS_NAME),
+                properties.get(RedirectParameter.STRUCT_PROPERTY_PARAMS_VALUE))
+        );
+      }
+    }
+
+    return targetParameters;
   }
 
   @SuppressWarnings("unchecked")
@@ -114,6 +156,13 @@ public class RedirectUpdateProperties {
       return (T) properties.get(propertyName);
     }
     return null;
+  }
+
+  private List<?> getListProperty(String propertyName) {
+    return Optional.ofNullable(properties.get(propertyName))
+            .filter(List.class::isInstance)
+            .map(List.class::cast)
+            .orElse(List.of());
   }
 
   /**

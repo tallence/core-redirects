@@ -17,6 +17,7 @@
     import com.coremedia.ui.data.Bean;
     import com.coremedia.ui.data.ValueExpression;
     import com.coremedia.ui.skins.DisplayFieldSkin;
+    import com.tallence.core.redirects.studio.data.Redirect;
     import com.tallence.core.redirects.studio.data.RedirectImpl;
 
     public static const xtype:String = "com.tallence.core.redirects.studio.editor.form.redirectEditPanel";
@@ -39,6 +40,12 @@
 
     [Bindable]
     public var selectedSiteIdVE:ValueExpression;
+
+    [Bindable]
+    public var validateRedirectHandler:Function;
+
+    [Bindable]
+    public var redirect:Redirect;
 
     ]]>
   </fx:Script>
@@ -115,12 +122,16 @@
                                    propertyName="{RedirectImpl.SOURCE}"/>
 
         <grid:IdenticalRedirectsGrid selectedSiteIdVE="{config.selectedSiteIdVE}"
-                                     height="50px"
+                                     height="25px"
+                                     selectedRedirect="{config.redirect}"
+                                     exactMatch="true"
+                                     emptyText="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_list_nothing_found_match')}"
                                      searchFieldVE="{getBindTo(config.localModel, RedirectImpl.SOURCE)}"/>
 
         <DisplayField value="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_sourceParameters')}"
                       ui="{DisplayFieldSkin.BOLD.getSkin()}"/>
-        <parameters:RedirectParametersGrid bindTo="{getBindTo(config.localModel, RedirectImpl.SOURCE_PARAMETERS)}"/>
+        <parameters:RedirectParametersGrid bindTo="{getBindTo(config.localModel, RedirectImpl.SOURCE_PARAMETERS)}"
+                                           validateRedirectHandler="{config.validateRedirectHandler}"/>
 
         <local:ErrorFieldContainer errorMessagesVE="{config.errorMessagesVE}"
                                    propertyName="{RedirectImpl.SOURCE_PARAMETERS}"/>

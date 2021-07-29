@@ -41,9 +41,9 @@ public interface RedirectRepository {
   /**
    * Checks if the given source already exists.
    *
-   * @param siteId     the site id.
-   * @param source     the source.
-   * @param redirectId the redirect id.
+   * @param siteId           the site id.
+   * @param source           the source.
+   * @param redirectId       the redirect id.
    * @param sourceParameters the list of source url parameters.
    * @return boolean.
    */
@@ -52,8 +52,8 @@ public interface RedirectRepository {
   /**
    * Checks if the given source already exists.
    *
-   * @param siteId the site id.
-   * @param source the source.
+   * @param siteId           the site id.
+   * @param source           the source.
    * @param sourceParameters the list of source url parameters.
    * @return boolean.
    */
@@ -99,9 +99,10 @@ public interface RedirectRepository {
    * @param sortDirection The sort direction.
    * @param pageSize      The page size of the grid
    * @param page          The selected page
+   * @param exactMatch    true if the path of the redirect for the search should match exactly
    * @return A pageable element with the redirects and a total size.
    */
-  Pageable getRedirects(String siteId, String search, String sorter, String sortDirection, int pageSize, int page);
+  Pageable getRedirects(String siteId, String search, String sorter, String sortDirection, int pageSize, int page, boolean exactMatch);
 
   /**
    * Returns redirects root folder for the given site. If no site is found, the root folder is used as fallback folder.

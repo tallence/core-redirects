@@ -15,25 +15,29 @@
  */
 
 package com.tallence.core.redirects.studio.data {
-public class RedirectTargetParameter {
+
+/**
+ *
+ * We extend the javascript object and store the data directly in the object as properties. We can't use private
+ * variables because they are automatically changed by the compiler (for example, name to name$123). The changed names
+ * are then automatically used for serializing, so parsing in the BE would not be possible.
+ */
+public class RedirectTargetParameter extends Object {
 
   public static const NAME:String = "name";
   public static const VALUE:String = "value";
 
-  private var name:String;
-  private var value:String;
-
   public function RedirectTargetParameter(json:Object) {
-    this.name = json[NAME];
-    this.value = json[VALUE];
+    this[NAME] = json[NAME];
+    this[VALUE] = json[VALUE];
   }
 
   public function getName():String {
-    return name;
+    return this[NAME];
   }
 
   public function getValue():String {
-    return value;
+    return this[VALUE];
   }
 
   public function getParametersAsMap():Object {

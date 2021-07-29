@@ -18,6 +18,7 @@
   </fx:Metadata>
   <fx:Script><![CDATA[
     import com.coremedia.ui.data.ValueExpression;
+    import com.tallence.core.redirects.studio.data.Redirect;
 
     public static const xtype:String = "com.tallence.core.redirects.studio.editor.grid.redirectsGrid";
 
@@ -28,6 +29,13 @@
 
     [Bindable]
     public var searchFieldVE:ValueExpression;
+
+    [Bindable]
+    public var selectedRedirect:Redirect;
+
+    [Bindable]
+    public var exactMatch:Boolean;
+
 
     /**
      * The base class for the grid used in two different places. The {@link RedirectsOverviewGrid} is used in the
@@ -45,9 +53,9 @@
               trackOver="true"
               loadMask="true"
               deferEmptyText="false"
-              minHeight="60"
+              minHeight="25"
               loadingText="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_list_loading')}"
-              emptyText="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_list_nothing_found')}"/>
+              emptyText="{config.emptyText ? config.emptyText : resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_list_nothing_found')}"/>
   </local:view>
 
 </local:RedirectsGridBase>

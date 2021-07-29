@@ -19,15 +19,13 @@ public class RedirectSourceParameter extends RedirectTargetParameter {
 
   public static const OPERATOR:String = "operator";
 
-  private var operator:String;
-
   public function RedirectSourceParameter(json:Object) {
     super(json);
-    this.operator = json[OPERATOR];
+    this[OPERATOR] = json[OPERATOR];
   }
 
   public function getOperator():String {
-    return operator;
+    return this[OPERATOR];
   }
 
   override public function getParametersAsMap():Object {

@@ -69,7 +69,7 @@ public class RedirectEditWindowBase extends Window {
     validateRedirect();
   }
 
-  private function validateRedirect():void {
+  protected function validateRedirect():void {
     var siteId:String = redirect ? redirect.getSiteId() : selectedSiteIdVE.getValue();
     var redirectId:String = redirect ? redirect.getUriPath().replace("redirect/", "").replace(siteId + "/", "") : "";
     var targetLink:Content = getLocalModel().get(RedirectImpl.TARGET_LINK)[0];
@@ -108,9 +108,12 @@ public class RedirectEditWindowBase extends Window {
     } else {
       //Set default values. The redirect is active by default, if the user has publication rights
       model.set(RedirectImpl.ACTIVE, !mayNotPublishVE.getValue());
+      model.set(RedirectImpl.SOURCE, "/");
       model.set(RedirectImpl.SOURCE_TYPE, SOURCE_TYPE_DEFAULT);
       model.set(RedirectImpl.REDIRECT_TYPE, RedirectImpl.REDIRECT_TYPE_404);
       model.set(RedirectImpl.CREATION_DATE, new Date());
+      model.set(RedirectImpl.SOURCE_PARAMETERS, []);
+      model.set(RedirectImpl.TARGET_PARAMETERS, []);
     }
   }
 
@@ -178,7 +181,9 @@ public class RedirectEditWindowBase extends Window {
           model.get(RedirectImpl.SOURCE),
           //Default value, if the input field is hidden (because of missing permissions)
           sourceType ? sourceType : SOURCE_TYPE_DEFAULT,
-          model.get(RedirectImpl.REDIRECT_TYPE)
+          model.get(RedirectImpl.REDIRECT_TYPE),
+          model.get(RedirectImpl.SOURCE_PARAMETERS),
+          model.get(RedirectImpl.TARGET_PARAMETERS)
       );
     }
     close();

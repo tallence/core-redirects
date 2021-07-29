@@ -6,7 +6,7 @@
         xmlns:ui="exml:com.coremedia.ui.config"
         xmlns:local="com.tallence.core.redirects.studio.editor.parameters.*"
         maxHeight="150"
-        minHeight="100"
+        minHeight="25"
         margin="0 0 0 130"
         width="500px"
         height="100px">
@@ -27,6 +27,9 @@
 
     [Bindable]
     public var errorMessagesVE:ValueExpression;
+
+    [Bindable]
+    public var validateRedirectHandler:Function;
     ]]>
   </fx:Script>
 

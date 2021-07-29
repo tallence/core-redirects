@@ -72,7 +72,8 @@ public class RedirectsGridBase extends GridPanel {
    * @return Store
    */
   protected function getRedirectsStore(config:RedirectsGrid):Store {
-    var proxy:RedirectProxy = new RedirectProxy(getSelectedSiteVE(config), getSearchFieldVE(config));
+    var exactMatch:Boolean = config.exactMatch != undefined ? config.exactMatch : false;
+    var proxy:RedirectProxy = new RedirectProxy(getSelectedSiteVE(config), getSearchFieldVE(config), config.selectedRedirect, exactMatch);
 
     var store:Store = new Store(Store({
       pageSize: 20,

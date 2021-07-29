@@ -1,5 +1,7 @@
 package com.tallence.core.redirects.model;
 
+import java.util.Objects;
+
 public class RedirectSourceParameter extends RedirectParameter {
 
   public static final String STRUCT_PROPERTY_SOURCE_PARAMS = "sourceUrlParams";
@@ -28,4 +30,19 @@ public class RedirectSourceParameter extends RedirectParameter {
   public enum Operator {
     EQUALS
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    if (!super.equals(o)) return false;
+    RedirectSourceParameter that = (RedirectSourceParameter) o;
+    return operator == that.operator;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), operator);
+  }
+
 }

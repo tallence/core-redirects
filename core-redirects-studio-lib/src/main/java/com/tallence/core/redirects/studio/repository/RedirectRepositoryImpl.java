@@ -24,8 +24,11 @@ import com.coremedia.cap.content.publication.PublicationHelper;
 import com.coremedia.cap.content.publication.PublicationService;
 import com.coremedia.cap.multisite.Site;
 import com.coremedia.cap.multisite.SitesService;
+import com.coremedia.cap.struct.Struct;
+import com.coremedia.cap.struct.StructBuilder;
 import com.coremedia.rest.cap.content.search.SearchServiceResult;
 import com.coremedia.rest.cap.content.search.solr.SolrSearchService;
+import com.tallence.core.redirects.helper.RedirectHelper;
 import com.tallence.core.redirects.model.RedirectParameter;
 import com.tallence.core.redirects.model.RedirectSourceParameter;
 import com.tallence.core.redirects.model.RedirectTargetParameter;
@@ -42,7 +45,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -183,13 +192,13 @@ public class RedirectRepositoryImpl implements RedirectRepository {
   }
 
   @Override
-  public Pageable getRedirects(String siteId, String search, String sorter, String sortDirection, int pageSize, int page) {
+  public Pageable getRedirects(String siteId, String search, String sorter, String sortDirection, int pageSize, int page, boolean exactMatch) {
 
     if (!redirectPermissionService.mayRead(getRedirectsRootFolder(siteId))) {
       return new Pageable(Collections.emptyList(), 0);
     }
 
-    String query = StringUtils.isEmpty(StringUtils.trim(search)) ? "source:*" : "source:*" + ClientUtils.escapeQueryChars(StringUtils.trim(search)) + "*";
+    String query = StringUtils.isEmpty(StringUtils.trim(search)) ? "source:*" : getSourceQuery(search, exactMatch);
 
     List<String> sortCriteria;
     if (StringUtils.isNotEmpty(sorter) && StringUtils.isNotEmpty(sortDirection)) {
@@ -235,8 +244,7 @@ public class RedirectRepositoryImpl implements RedirectRepository {
       return false;
     }
     List<String> filterQueries = Arrays.asList("isdeleted:false", "source:" + ClientUtils.escapeQueryChars(source), "-numericid:" + redirectId);
-    //using limit 10 instead of 1 in case some of the results are deleted but the solr is not up to date.
-    return !search(siteId, filterQueries, Collections.emptyList(), 10).getHits().isEmpty();
+    return redirectAlreadyExists(siteId, filterQueries, sourceParameters);
   }
 
   private boolean redirectAlreadyExists(String siteId, String source, List<RedirectSourceParameter> sourceParameters) {
@@ -244,8 +252,15 @@ public class RedirectRepositoryImpl implements RedirectRepository {
       return false;
     }
     List<String> filterQueries = Arrays.asList("isdeleted:false", "source:" + ClientUtils.escapeQueryChars(source));
-    //using limit 10 instead of 1 in case some of the results are deleted but the solr is not up to date.
-    return !search(siteId, filterQueries, Collections.emptyList(), 10).getHits().isEmpty();
+    return redirectAlreadyExists(siteId, filterQueries, sourceParameters);
+  }
+
+  private boolean redirectAlreadyExists(String siteId, List<String> filterQueries,List<RedirectSourceParameter> sourceParameters) {
+    List<Content> hits = search(siteId, filterQueries, Collections.emptyList(), -1).getHits();
+    // multiple redirects may exist for the same source as long as the source parameters are different
+    return hits.stream()
+            .map(RedirectHelper::getSourceParameters)
+            .anyMatch(parameters -> parameters.equals(sourceParameters));
   }
 
   /**
@@ -306,15 +321,8 @@ public class RedirectRepositoryImpl implements RedirectRepository {
         RedirectType.asRedirectType(redirectEntry.getString(REDIRECT_TYPE)),
         redirectEntry.getString(DESCRIPTION),
         redirectEntry.getBoolean(IMPORTED),
-            List.of(
-                    new RedirectSourceParameter("key1", "value1", RedirectSourceParameter.Operator.EQUALS),
-                    new RedirectSourceParameter("key2", "value2", RedirectSourceParameter.Operator.EQUALS),
-                    new RedirectSourceParameter("key3", "value3", RedirectSourceParameter.Operator.EQUALS)
-            ),
-            List.of(
-                    new RedirectTargetParameter("key1", "value1"),
-                    new RedirectTargetParameter("key2", "value2")
-            )
+        RedirectHelper.getSourceParameters(redirectEntry),
+        RedirectHelper.getTargetParameters(redirectEntry)
     );
   }
 
@@ -333,6 +341,26 @@ public class RedirectRepositoryImpl implements RedirectRepository {
     updateEnumProperty(updateProperties::getRedirectType, REDIRECT_TYPE, redirect);
     updateEnumProperty(updateProperties::getSourceUrlType, SOURCE_URL_TYPE, redirect);
 
+    if (updateProperties.urlParametersChanged()) {
+      StructBuilder structBuilder = Optional.ofNullable(redirect.getStruct(RedirectParameter.PROPERTY_URL_PARAMS))
+              .map(Struct::builder)
+              .orElseGet(this::createStructBuilder);
+
+      if (updateProperties.sourceParametersChanged()) {
+        structBuilder.remove(RedirectSourceParameter.STRUCT_PROPERTY_SOURCE_PARAMS);
+        List<Struct> sourceParams = convertToStructs(updateProperties.getSourceParameters());
+        structBuilder.declareStructs(RedirectSourceParameter.STRUCT_PROPERTY_SOURCE_PARAMS, sourceParams);
+      }
+
+      if (updateProperties.targetParametersChanged()) {
+        structBuilder.remove(RedirectTargetParameter.STRUCT_PROPERTY_TARGET_PARAMS);
+        List<Struct> targetParams = convertToStructs(updateProperties.getTargetParameters());
+        structBuilder.declareStructs(RedirectTargetParameter.STRUCT_PROPERTY_TARGET_PARAMS, targetParams);
+      }
+
+      redirect.set(RedirectParameter.PROPERTY_URL_PARAMS, structBuilder.build());
+    }
+
     Boolean active = updateProperties.getActive();
     if (active != null) {
       // if active is set to false, the redirect must be withdrawn
@@ -340,6 +368,24 @@ public class RedirectRepositoryImpl implements RedirectRepository {
     } else if (wasPublished) {
       publicationHelper.publish(redirect);
     }
+  }
+
+  private StructBuilder createStructBuilder() {
+    return contentRepository.getConnection().getStructService().createStructBuilder();
+  }
+
+  private List<Struct> convertToStructs(List<? extends RedirectParameter> parameters) {
+    return parameters.stream().map(this::convertToStruct).collect(Collectors.toList());
+  }
+
+  private Struct convertToStruct(RedirectParameter parameter) {
+    StructBuilder structBuilder = createStructBuilder();
+    structBuilder.declareString(RedirectParameter.STRUCT_PROPERTY_PARAMS_NAME, Integer.MAX_VALUE, parameter.getName());
+    structBuilder.declareString(RedirectParameter.STRUCT_PROPERTY_PARAMS_VALUE, Integer.MAX_VALUE, parameter.getValue());
+    if (parameter instanceof RedirectSourceParameter) {
+      structBuilder.declareString(RedirectSourceParameter.STRUCT_PROPERTY_SOURCE_PARAMS_OPERATOR, Integer.MAX_VALUE, ((RedirectSourceParameter) parameter).getOperator().name());
+    }
+    return structBuilder.build();
   }
 
   private void updateProperty(Supplier<Object> supplier, String property, Content redirect) {
@@ -368,6 +414,11 @@ public class RedirectRepositoryImpl implements RedirectRepository {
     if (value != null) {
       redirect.set(propertyName, Boolean.TRUE.equals(value) ? 1 : 0);
     }
+  }
+
+  private String getSourceQuery(String search, boolean exactMatch) {
+    String escaped = ClientUtils.escapeQueryChars(StringUtils.trim(search));
+    return exactMatch ? "source:" + escaped : "source:*" + escaped + "*";
   }
 
 }
