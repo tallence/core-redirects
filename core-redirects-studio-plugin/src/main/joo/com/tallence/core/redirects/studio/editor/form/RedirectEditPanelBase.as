@@ -15,12 +15,10 @@
  */
 
 package com.tallence.core.redirects.studio.editor.form {
-import com.coremedia.cms.editor.sdk.util.MessageBoxUtil;
 import com.coremedia.ui.data.Bean;
 import com.coremedia.ui.data.ValueExpression;
 import com.coremedia.ui.data.ValueExpressionFactory;
 
-import ext.Ext;
 import ext.container.Container;
 
 
@@ -32,18 +30,6 @@ public class RedirectEditPanelBase extends Container {
 
   public function RedirectEditPanelBase(config:RedirectEditPanel = null) {
     super(config);
-  }
-
-  /**
-   * Opens a dialog with descriptions for the source field.
-   */
-  public function showInfoDialog():void {
-    MessageBoxUtil.showInfo(
-        resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_help_source_title'),
-        resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_help_source_text'),
-        Ext.emptyFn,
-        false
-    );
   }
 
   protected static function getBindTo(localModel:Bean, propertyName:String):ValueExpression {

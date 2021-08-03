@@ -79,22 +79,17 @@ public class RedirectHelper {
     }
   }
 
-  public static List<RedirectSourceParameter> parseRedirectSourceParameters(String value) {
+  public static List<RedirectSourceParameter> parseRedirectSourceParameters(String value) throws JsonProcessingException {
     return parseRedirectParameters(value, new TypeReference<List<RedirectSourceParameter>>(){});
   }
 
-  public static List<RedirectTargetParameter> parseRedirectTargetParameters(String value) {
+  public static List<RedirectTargetParameter> parseRedirectTargetParameters(String value) throws JsonProcessingException {
     return parseRedirectParameters(value, new TypeReference<List<RedirectTargetParameter>>() {
     });
   }
 
-  private static <T extends RedirectParameter> List<T> parseRedirectParameters(String value, TypeReference<List<T>> typeReference) {
-    try {
-      return new ObjectMapper().readValue(value, typeReference);
-    } catch (JsonProcessingException e) {
-      LOG.error("Could not parse redirect parameters for input string: {}", value);
-      return null;
-    }
+  private static <T extends RedirectParameter> List<T> parseRedirectParameters(String value, TypeReference<List<T>> typeReference) throws JsonProcessingException {
+    return new ObjectMapper().readValue(value, typeReference);
   }
 
   private static RedirectTargetParameter buildTargetParam(Struct targetParam, String contentId) {

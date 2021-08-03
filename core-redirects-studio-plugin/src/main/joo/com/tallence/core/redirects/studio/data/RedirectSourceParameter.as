@@ -18,6 +18,7 @@ package com.tallence.core.redirects.studio.data {
 public class RedirectSourceParameter extends RedirectTargetParameter {
 
   public static const OPERATOR:String = "operator";
+  public static const OPERATOR_EQUALS:String = "EQUALS";
 
   public function RedirectSourceParameter(json:Object) {
     super(json);

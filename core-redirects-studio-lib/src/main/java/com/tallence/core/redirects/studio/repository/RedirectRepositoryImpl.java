@@ -260,7 +260,7 @@ public class RedirectRepositoryImpl implements RedirectRepository {
     // multiple redirects may exist for the same source as long as the source parameters are different
     return hits.stream()
             .map(RedirectHelper::getSourceParameters)
-            .anyMatch(parameters -> parameters.equals(sourceParameters));
+            .anyMatch(parameters -> parameters.size() == sourceParameters.size() && parameters.containsAll(sourceParameters));
   }
 
   /**

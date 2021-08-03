@@ -97,26 +97,9 @@
 
         <editor:FormSpacerElement height="10px"/>
 
-        <FieldContainer
-            fieldLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_source')}">
-          <items>
-            <ui:StatefulTextField width="490"
-                                  checkChangeBuffer="400">
-              <ui:plugins exml:mode="append">
-                <rm:BindValidationStatePlugin bindTo="{config.errorMessagesVE}"
-                                              propertyName="{RedirectImpl.SOURCE}"/>
-                <ui:BindPropertyPlugin bidirectional="true"
-                                       bindTo="{getBindTo(config.localModel, RedirectImpl.SOURCE)}"/>
-              </ui:plugins>
-            </ui:StatefulTextField>
-            <ui:IconButton iconCls="{resourceManager.getString('com.coremedia.icons.CoreIcons', 'help')}"
-                           tooltip="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_help_tooltip')}"
-                           handler="{showInfoDialog}"/>
-          </items>
-          <layout>
-            <layout_HBox/>
-          </layout>
-        </FieldContainer>
+        <local:RedirectSourceFieldContainer errorMessagesVE="{config.errorMessagesVE}"
+                                            sourceUrlVE="{getBindTo(config.localModel, RedirectImpl.SOURCE)}"
+                                            sourceUrlParametersVE="{getBindTo(config.localModel, RedirectImpl.SOURCE_PARAMETERS)}"/>
 
         <local:ErrorFieldContainer errorMessagesVE="{config.errorMessagesVE}"
                                    propertyName="{RedirectImpl.SOURCE}"/>

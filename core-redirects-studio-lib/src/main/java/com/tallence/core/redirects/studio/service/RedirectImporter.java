@@ -19,9 +19,9 @@ package com.tallence.core.redirects.studio.service;
 import com.coremedia.cap.common.IdHelper;
 import com.coremedia.cap.content.Content;
 import com.coremedia.cap.content.ContentRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.tallence.core.redirects.helper.RedirectHelper;
 import com.tallence.core.redirects.model.RedirectSourceParameter;
-import com.tallence.core.redirects.model.RedirectTargetParameter;
 import com.tallence.core.redirects.studio.model.Redirect;
 import com.tallence.core.redirects.studio.model.RedirectUpdateProperties;
 import com.tallence.core.redirects.studio.repository.RedirectRepository;
@@ -51,6 +51,7 @@ public class RedirectImporter {
   private static final String INVALID_CSV_ENTRY = "length_invalid";
   private static final String DUPLICATE_SOURCE = "duplicate_source";
   private static final String CREATION_FAILURE = "creation_failure";
+  private static final String PARSING_FAILURE = "parsing_failure";
 
   private final RedirectRepository redirectRepository;
   private final ContentRepository contentRepository;
@@ -98,12 +99,20 @@ public class RedirectImporter {
 
   private void addIfNoDuplicate(String siteId, RedirectImportResponse redirectImportResponse, Map<String, RedirectUpdateProperties> imports, CSVRecord record, String csvEntry) {
     //Add to map, if no duplicate sourceUrl
-    RedirectUpdateProperties properties = mapToProperties(siteId, record);
-    if (imports.values().stream().noneMatch(p -> sourcesMatch(properties, p))) {
-      imports.put(csvEntry, properties);
-    } else {
-      redirectImportResponse.addErrorMessage(csvEntry, DUPLICATE_SOURCE);
+    try {
+      RedirectUpdateProperties properties = mapToProperties(siteId, record);
+      if (imports.values().stream().noneMatch(p -> sourcesMatch(properties, p))) {
+        imports.put(csvEntry, properties);
+      } else {
+        redirectImportResponse.addErrorMessage(csvEntry, DUPLICATE_SOURCE);
+      }
+    } catch (JsonProcessingException e) {
+      // could not parse source or target paramters
+      redirectImportResponse.addErrorMessage(csvEntry, PARSING_FAILURE);
     }
+
+
+
   }
 
   private boolean sourcesMatch(RedirectUpdateProperties value, RedirectUpdateProperties p) {
@@ -111,10 +120,16 @@ public class RedirectImporter {
     String source1 = Optional.ofNullable(p.getSource()).map(String::trim).orElse(null);
     String source2 = Optional.ofNullable(value.getSource()).map(String::trim).orElse(null);
 
-    return source1 != null && source1.equalsIgnoreCase(source2);
+
+    if (source1 != null && source1.equalsIgnoreCase(source2)) {
+      List<RedirectSourceParameter> sourceParameters1 = value.getSourceParameters();
+      List<RedirectSourceParameter> sourceParameters2 = p.getSourceParameters();
+      return sourceParameters1.size() == sourceParameters2.size() && sourceParameters2.containsAll(sourceParameters1);
+    }
+    return false;
   }
 
-  private RedirectUpdateProperties mapToProperties(String siteId, CSVRecord record) {
+  private RedirectUpdateProperties mapToProperties(String siteId, CSVRecord record) throws JsonProcessingException {
 
     Map<String, Object> properties = new HashMap<>();
 
@@ -135,11 +150,15 @@ public class RedirectImporter {
 
     properties.put(RedirectUpdateProperties.DESCRIPTION, record.get(5));
 
-    List<RedirectSourceParameter> sourceParameters = RedirectHelper.parseRedirectSourceParameters(record.get(6));
-    properties.put(RedirectUpdateProperties.SOURCE_PARAMETERS, sourceParameters);
+    Optional<String> sourceParams = Optional.ofNullable(record.get(6));
+    if (sourceParams.isPresent()) {
+      properties.put(RedirectUpdateProperties.SOURCE_PARAMETERS, RedirectHelper.parseRedirectSourceParameters(sourceParams.get()));
+    }
 
-    List<RedirectTargetParameter> targetParameters = RedirectHelper.parseRedirectTargetParameters(record.get(7));
-    properties.put(RedirectUpdateProperties.TARGET_PARAMETERS, targetParameters);
+    Optional<String> targetParams = Optional.ofNullable(record.get(7));
+    if (targetParams.isPresent()) {
+      properties.put(RedirectUpdateProperties.TARGET_PARAMETERS, RedirectHelper.parseRedirectTargetParameters(targetParams.get()));
+    }
 
     properties.put(RedirectUpdateProperties.IMPORTED, true);
 

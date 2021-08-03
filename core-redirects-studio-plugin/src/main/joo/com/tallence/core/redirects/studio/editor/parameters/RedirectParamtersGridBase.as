@@ -47,7 +47,7 @@ public class RedirectParamtersGridBase extends GridPanel {
     var init:Object = {};
     init[RedirectTargetParameter.NAME] = "parameter";
     init[RedirectTargetParameter.VALUE] = "value";
-    init[RedirectSourceParameter.OPERATOR] = "EQUALS";
+    init[RedirectSourceParameter.OPERATOR] = RedirectSourceParameter.OPERATOR_EQUALS;
     var redirectParameterImpl:RedirectSourceParameter = new RedirectSourceParameter(init);
     var parameters:Array = [].concat(bindTo.getValue());
     parameters.push(redirectParameterImpl);
