@@ -144,7 +144,7 @@ public class RedirectMatchingStrategyImpl implements RedirectMatchingStrategy {
     final var requestParameterMap = request.getParameterMap();
     List<Redirect> redirects = potentialRedirects.stream()
             .filter(r -> r.getSourceParameters().stream().allMatch(s -> matchesSourceParam(s, requestParameterMap)))
-            .filter(r -> isTargetValid(r.getTarget()))
+            .filter(r -> r.getTarget() == null || isTargetValid(r.getTarget()))
             .collect(Collectors.toList());
     if (redirects.size() <= 1) {
       return redirects.size() == 1 ? redirects.get(0) : null;

@@ -37,6 +37,7 @@ public class RedirectRepresentation {
   private final String source;
   private final Date creationDate;
   private final Content targetLink;
+  private final String targetUrl;
   private final RedirectType redirectType;
   private final String siteId;
   private final String description;
@@ -49,6 +50,7 @@ public class RedirectRepresentation {
     this.source = redirect.getSource();
     this.creationDate = redirect.getCreationDate();
     this.targetLink = redirect.getTargetLink();
+    this.targetUrl = redirect.getTargetUrl();
     this.redirectType = redirect.getRedirectType();
     this.siteId = redirect.getSiteId();
     this.description = redirect.getDescription();
@@ -74,6 +76,10 @@ public class RedirectRepresentation {
 
   public Content getTargetLink() {
     return targetLink;
+  }
+
+  public String getTargetUrl() {
+    return targetUrl;
   }
 
   public RedirectType getRedirectType() {

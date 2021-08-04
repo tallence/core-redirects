@@ -44,6 +44,8 @@ public class RedirectReference extends RedirectRepresentation {
     this.reference = "redirect/" + redirect.getSiteId() + "/" + redirect.getId();
     if (redirect.getTargetLink() != null) {
       this.targetLinkName = redirect.getTargetLink().getName();
+    } else if (redirect.getTargetUrl() != null) {
+      this.targetLinkName = this.getTargetUrl();
     }
     this.imported = redirect.isImported();
   }

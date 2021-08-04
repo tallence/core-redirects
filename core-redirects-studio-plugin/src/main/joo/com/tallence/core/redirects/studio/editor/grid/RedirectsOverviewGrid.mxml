@@ -30,6 +30,9 @@
     public var mayNotUseRegexVE:ValueExpression;
 
     [Bindable]
+    public var mayNotUseTargetUrlsVE:ValueExpression;
+
+    [Bindable]
     public var siteIsNotSelectedVE:ValueExpression;
 
     public native function RedirectsOverviewGrid(config:RedirectsOverviewGrid = null);

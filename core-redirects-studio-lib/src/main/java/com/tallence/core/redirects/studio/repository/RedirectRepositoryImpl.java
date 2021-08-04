@@ -55,6 +55,8 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.TARGET_URL;
+
 /**
  * Default implementation of a {@link RedirectRepository}.
  * This implementation stores the redirects as content objects in a settings folder.
@@ -318,6 +320,7 @@ public class RedirectRepositoryImpl implements RedirectRepository {
         redirectEntry.getString(SOURCE),
         redirectEntry.getCreationDate().getTime(),
         redirectEntry.getLink(TARGET_LINK),
+        redirectEntry.getString(TARGET_URL),
         RedirectType.asRedirectType(redirectEntry.getString(REDIRECT_TYPE)),
         redirectEntry.getString(DESCRIPTION),
         redirectEntry.getBoolean(IMPORTED),
@@ -337,9 +340,16 @@ public class RedirectRepositoryImpl implements RedirectRepository {
     updateProperty(updateProperties::getDescription, DESCRIPTION, redirect);
     updateBooleanProperty(updateProperties::getImported, IMPORTED, redirect);
     updateProperty(updateProperties::getSource, SOURCE, redirect);
-    updateLinkProperty(updateProperties::getTargetLink, TARGET_LINK, redirect);
     updateEnumProperty(updateProperties::getRedirectType, REDIRECT_TYPE, redirect);
     updateEnumProperty(updateProperties::getSourceUrlType, SOURCE_URL_TYPE, redirect);
+
+    if (updateProperties.getTargetLink() != null) {
+      updateLinkProperty(updateProperties::getTargetLink, TARGET_LINK, redirect);
+      redirect.set(TARGET_URL, null);
+    } else if (StringUtils.isNotEmpty(updateProperties.getTargetUrl())) {
+      updateProperty(updateProperties::getTargetUrl, TARGET_URL, redirect);
+      redirect.set(TARGET_LINK, null);
+    }
 
     if (updateProperties.urlParametersChanged()) {
       StructBuilder structBuilder = Optional.ofNullable(redirect.getStruct(RedirectParameter.PROPERTY_URL_PARAMS))

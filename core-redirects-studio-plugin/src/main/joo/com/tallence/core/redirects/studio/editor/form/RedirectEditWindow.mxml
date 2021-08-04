@@ -35,11 +35,15 @@ The Windows is not "modal" because the editor might drag a document from the wor
 
     [Bindable]
     public var mayNotUseRegexVE:ValueExpression;
+
+    [Bindable]
+    public var mayNotUseTargetUrlsVE:ValueExpression;
     ]]>
   </fx:Script>
   <local:items>
     <local:RedirectEditPanel localModel="{getLocalModel()}"
                              mayNotUseRegexVE="{config.mayNotUseRegexVE}"
+                             mayNotUseTargetUrlsVE="{config.mayNotUseTargetUrlsVE}"
                              mayNotPublishVE="{config.mayNotPublishVE}"
                              errorMessagesVE="{getErrorMessagesVE()}"
                              selectedSiteIdVE="{config.selectedSiteIdVE}"

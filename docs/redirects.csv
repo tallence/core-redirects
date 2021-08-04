@@ -1,0 +1,4 @@
+Active;Source URL Type;Source URL;Target Link;Target Url;Redirect Type;Description;Source Parameters;Target Parameters
+TRUE;REGEX;/sourceUrl2;204732;;AFTER_NOT_FOUND;description;[{"name": "parameterName", "value": "value", "operator": "EQUALS"},{"name": "parameterName", "value": "value", "operator": "EQUALS"}];[{"name": "parameterName", "value": "value"}]
+TRUE;REGEX;/sourceUrl2;/Sites/Chef Corp./United Kingdom/English/Navigation/Consumers/Aurora B2C/Aurora B2C Page;;AFTER_NOT_FOUND;description;[{"name": "parameterName2", "value": "value", "operator": "EQUALS"}];[]
+TRUE;PLAIN;/sourceUrl2;;https://my-domain.com/page-which-might-return-a-404-in-the-future.html;ALWAYS;description;[];[]

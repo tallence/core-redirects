@@ -21,6 +21,7 @@ import com.tallence.core.redirects.model.RedirectSourceParameter;
 import com.tallence.core.redirects.model.RedirectTargetParameter;
 import com.tallence.core.redirects.model.RedirectType;
 import com.tallence.core.redirects.model.SourceUrlType;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +38,7 @@ public class Redirect {
 
   public static final String NAME = "Redirect";
   public static final String TARGET_LINK = "targetLink";
+  public static final String TARGET_URL = "targetUrl";
   public static final String SOURCE_URL = "source";
 
   private static final String SOURCE_URL_TYPE = "sourceUrlType";
@@ -47,6 +49,7 @@ public class Redirect {
   private final String source;
   private final RedirectType redirectType;
   private final Content target;
+  private final String targetUrl;
   private final List<RedirectSourceParameter> sourceParameters;
   private final List<RedirectTargetParameter> targetParameters;
 
@@ -56,6 +59,7 @@ public class Redirect {
     source = rootSegment + redirect.getString(SOURCE_URL);
     redirectType = RedirectType.asRedirectType(redirect.getString(REDIRECT_TYPE));
     target = redirect.getLink(TARGET_LINK);
+    targetUrl = redirect.getString(TARGET_URL);
 
     sourceParameters = RedirectHelper.getSourceParameters(redirect);
     targetParameters = RedirectHelper.getTargetParameters(redirect);
@@ -85,8 +89,17 @@ public class Redirect {
   /**
    * Returns a {@link Content} to which the redirect links.
    */
+  @Nullable
   public Content getTarget() {
     return target;
+  }
+
+  /**
+   * @return the redirects targetUrl. It should be empty, when the {@link #target} is not null
+   */
+  @Nullable
+  public String getTargetUrl() {
+    return targetUrl;
   }
 
   /**

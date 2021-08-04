@@ -49,12 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.ACTIVE;
-import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.REDIRECT_TYPE;
-import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.SOURCE;
-import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.SOURCE_PARAMETERS;
-import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.SOURCE_URL_TYPE;
-import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.TARGET_LINK;
+import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.*;
 
 /**
  * The resource handles requests to load, create, validate and upload redirects.
@@ -134,12 +129,14 @@ public class RedirectsResource {
                                                    @RequestParam String source,
                                                    @RequestParam String redirectId,
                                                    @RequestParam String targetId,
+                                                   @RequestParam(required = false) String targetUrl, //it might be not available
                                                    @RequestParam Boolean active,
                                                    @RequestParam List<RedirectSourceParameter> sourceParameters) {
     Map<String, Object> properties = new HashMap<>();
 
     properties.put(ACTIVE, active);
     properties.put(TARGET_LINK, StringUtils.isNotBlank(targetId) ? contentRepository.getContent(targetId) : null);
+    properties.put(TARGET_URL, targetUrl);
     properties.put(SOURCE, source);
     properties.put(SOURCE_PARAMETERS, sourceParameters);
     // Let's assume default values for the types, so that the validation does not fail.

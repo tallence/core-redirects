@@ -177,6 +177,20 @@ public class RedirectFilterTest extends AbstractRedirectsTest {
     assertThat(response.getHeader(HttpHeaders.LOCATION), anyOf(is("/context/servlet" + expectedUrl), is(expectedUrl)));
   }
 
+  @Test
+  public void testTargetUrl() throws Exception {
+    MockServletContext servletContext = new MockServletContext();
+    HttpServletRequest request = createRequest("/channela/redirect-without-document-target")
+            .buildRequest(servletContext);
+    HttpServletResponse response = new MockHttpServletResponse();
+    FilterChain filterChain = new MockFilterChain(getOkServlet());
+
+    testling.doFilter(request, response, filterChain);
+
+    assertEquals(HttpServletResponse.SC_MOVED_PERMANENTLY, response.getStatus());
+    assertThat(response.getHeader(HttpHeaders.LOCATION), is("https://github.com/tallence/core-redirects"));
+  }
+
   private MockHttpServletRequestBuilder createRequest(String shortUrl) throws URISyntaxException {
     return MockMvcRequestBuilders
             .get(new URI("/context/servlet" + shortUrl))

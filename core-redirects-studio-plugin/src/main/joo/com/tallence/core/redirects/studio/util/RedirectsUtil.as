@@ -76,11 +76,14 @@ public class RedirectsUtil {
   /**
    * Creates a new {@link Redirect} with the given properties
    */
-  public static function createRedirect(siteId:String, active:Boolean, targetLink:Content, description:String, source:String, sourceType:String, redirectType:String, sourceParameters:Array, targetParameters:Array):void {
+  public static function createRedirect(siteId:String, active:Boolean, targetLink:Content, targetUrl: String,
+                                        description:String, source:String, sourceType:String, redirectType:String,
+                                        sourceParameters:Array, targetParameters:Array):void {
     var rsm:RemoteServiceMethod = new RemoteServiceMethod("redirects/" + siteId + "/" + CREATE_URI_SEGMENT, "POST", true);
     rsm.request({
               active: active,
               targetLink: targetLink,
+              targetUrl: targetUrl,
               description: description,
               source: source,
               sourceUrlType: sourceType,
@@ -208,7 +211,9 @@ public class RedirectsUtil {
    * @param redirectId the redirect id.
    * @param source the source.
    * @param targetId the id of the target
+   * @param targetUrl the targetUrl
    * @param active true, if the redirect is published
+   * @param sourceParameters a list of SourceUrlParameters
    *
    * @return The promise. Resolve method signature: <code>function(response:ValidationResponse):void</code>
    */
@@ -216,6 +221,7 @@ public class RedirectsUtil {
                                           redirectId:String,
                                           source:String,
                                           targetId:String,
+                                          targetUrl:String,
                                           active:Boolean,
                                           sourceParameters:Array):IPromise {
     var urlTemplate:String = "/{0}/validate";
@@ -233,6 +239,7 @@ public class RedirectsUtil {
       source: source,
       redirectId: redirectId,
       targetId: targetId,
+      targetUrl: targetUrl,
       active: active,
       sourceParameters: joined
     };

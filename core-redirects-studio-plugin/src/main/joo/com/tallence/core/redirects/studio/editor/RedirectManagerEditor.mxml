@@ -45,6 +45,7 @@
                                             mayNotWriteVE="{getMayNotWriteVE()}"
                                             mayNotPublishVE="{getMayNotPublishVE()}"
                                             mayNotUseRegexVE="{getMayNotUseRegexVE()}"
+                                            mayNotUseTargetUrlsVE="{getMayNotUseTargetUrlsVE()}"
                                             siteIsNotSelectedVE="{getSiteIsNotSelectedVE()}"/>
               </editor:items>
             </editor:CollapsibleFormPanel>

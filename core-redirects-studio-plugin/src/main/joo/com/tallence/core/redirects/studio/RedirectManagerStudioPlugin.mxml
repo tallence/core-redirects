@@ -33,7 +33,7 @@
 
     <editor:ExtensionsMenu>
       <editor:plugins>
-        <rm:AddRedirectManagerPlugin requiredGroups="administratoren"/>
+        <rm:AddRedirectManagerPlugin/> <!--Use requiredGroups if the usage of this extension is not free for every editor. You can configure access rights to features like the usage of regex-Redirects in the studio-backend -->
       </editor:plugins>
     </editor:ExtensionsMenu>
 

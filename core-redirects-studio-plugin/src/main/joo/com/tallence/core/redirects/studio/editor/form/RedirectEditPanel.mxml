@@ -39,6 +39,9 @@
     public var mayNotUseRegexVE:ValueExpression;
 
     [Bindable]
+    public var mayNotUseTargetUrlsVE:ValueExpression;
+
+    [Bindable]
     public var selectedSiteIdVE:ValueExpression;
 
     [Bindable]
@@ -103,6 +106,10 @@
 
         <local:ErrorFieldContainer errorMessagesVE="{config.errorMessagesVE}"
                                    propertyName="{RedirectImpl.SOURCE}"/>
+
+        <DisplayField value="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_same_source_title')}"
+                      ui="{DisplayFieldSkin.BOLD.getSkin()}"
+                      margin="10 0 0 0"/>
 
         <grid:IdenticalRedirectsGrid selectedSiteIdVE="{config.selectedSiteIdVE}"
                                      height="25px"
@@ -169,6 +176,24 @@
 
         <local:ErrorFieldContainer errorMessagesVE="{config.errorMessagesVE}"
                                    propertyName="{RedirectImpl.TARGET_PARAMETERS}"/>
+
+        <editor:FormSpacerElement height="10px">
+          <editor:plugins exml:mode="append">
+            <ui:BindPropertyPlugin componentProperty="hidden"
+                                   bindTo="{config.mayNotUseTargetUrlsVE}"/>
+          </editor:plugins>
+        </editor:FormSpacerElement>
+
+        <local:RedirectTargetUrlFieldContainer errorMessagesVE="{config.errorMessagesVE}"
+                                               targetUrlVE="{getBindTo(config.localModel, RedirectImpl.TARGET_URL)}">
+          <local:plugins exml:mode="append">
+            <ui:BindPropertyPlugin componentProperty="hidden"
+                                   bindTo="{config.mayNotUseTargetUrlsVE}"/>
+          </local:plugins>
+        </local:RedirectTargetUrlFieldContainer>
+
+        <local:ErrorFieldContainer errorMessagesVE="{config.errorMessagesVE}"
+                                   propertyName="{RedirectImpl.TARGET_URL}"/>
 
         <editor:FormSpacerElement height="10px"/>
 

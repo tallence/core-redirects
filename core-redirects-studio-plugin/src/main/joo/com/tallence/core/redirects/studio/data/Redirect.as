@@ -33,7 +33,11 @@ public interface Redirect extends RemoteBean {
 
   function getTargetLink():Content;
 
+  function getTargetUrl():String;
+
   function setTargetLink(content:Content):void;
+
+  function setTargetUrl(targetUrl: String):void;
 
   function getTargetLinkName():String;
 

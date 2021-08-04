@@ -51,16 +51,20 @@ public class RedirectPermissionServiceImpl implements RedirectPermissionService 
   private final ContentRepository contentRepository;
   private final UserRepository userRepository;
   private final String regexGroupName;
+  private final String targetUrlGroupName;
   private Group regexGroup;
+  private Group targetUrlGroup;
   private ContentType redirectContentType;
 
   @Autowired
   public RedirectPermissionServiceImpl(ContentRepository contentRepository, UserRepository userRepository,
+                                       @Value("${core.redirects.permissions.targetUrlGroup:}") String targetUrlGroupName,
                                        @Value("${core.redirects.permissions.regexGroup:}") String regexGroupName) {
     this.contentRepository = contentRepository;
     this.userRepository = userRepository;
     this.redirectContentType = contentRepository.getContentType("Redirect");
     this.regexGroupName = regexGroupName;
+    this.targetUrlGroupName = targetUrlGroupName;
   }
 
   @Override
@@ -80,6 +84,7 @@ public class RedirectPermissionServiceImpl implements RedirectPermissionService 
 
     return mayPerformWrite(rootFolder) &&
             (!toBePublished || mayPerformPublish(rootFolder)) &&
+            isAllowedForTargetUrl(updateProperties.getTargetUrl()) &&
             isAllowedForRegex(isUserAllowedForRegex(), updateProperties.getSourceUrlType());
   }
 
@@ -107,17 +112,22 @@ public class RedirectPermissionServiceImpl implements RedirectPermissionService 
 
     return mayPerformWrite(redirect) &&
             (!requirePublicationRights || mayPerformPublish(redirect)) &&
+            isAllowedForTargetUrl(updateProperties.getTargetUrl()) &&
             isAllowedForRegex(administrator, updateProperties.getSourceUrlType()) &&
             isAllowedForRegex(administrator, SourceUrlType.asSourceUrlType(redirect.getString(SOURCE_URL_TYPE)));
   }
 
   @Override
   public RedirectRights resolveRights(Content rootFolder) {
-    return new RedirectRights(mayPerformWrite(rootFolder), mayPerformPublish(rootFolder), isUserAllowedForRegex());
+    return new RedirectRights(mayPerformWrite(rootFolder), mayPerformPublish(rootFolder), isUserAllowedForRegex(), isUserAllowedForTargetUrlUsage());
   }
 
   private boolean isAllowedForRegex(boolean mayUseRegex, SourceUrlType sourceType) {
     return mayUseRegex || !SourceUrlType.REGEX.equals(sourceType);
+  }
+
+  private boolean isAllowedForTargetUrl(String targetUrl) {
+    return isUserAllowedForTargetUrlUsage() || StringUtils.isEmpty(targetUrl);
   }
 
   private boolean mayPerformWrite(Content content) {
@@ -148,6 +158,19 @@ public class RedirectPermissionServiceImpl implements RedirectPermissionService 
     }
   }
 
+  private boolean isUserAllowedForTargetUrlUsage() {
+    User user = userRepository.getUser(getUserId());
+    if (user == null) {
+      throw new IllegalStateException("No user could be found");
+    }
+
+    if (targetUrlGroup != null) {
+      return user.isMemberOf(targetUrlGroup) || user.isAdministrative();
+    } else {
+      return "*".equalsIgnoreCase(targetUrlGroupName);
+    }
+  }
+
   private String getUserId() {
     Object user = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     if (user instanceof CapUserDetails) {
@@ -163,6 +186,13 @@ public class RedirectPermissionServiceImpl implements RedirectPermissionService 
       regexGroup = userRepository.getGroupByName(regexGroupName);
       if (regexGroup == null) {
         LOG.error("Configured regexGroup [{}] not found in CMS!", regexGroupName);
+      }
+    }
+
+    if (StringUtils.isNotBlank(targetUrlGroupName)) {
+      targetUrlGroup = userRepository.getGroupByName(targetUrlGroupName);
+      if (targetUrlGroup == null) {
+        LOG.error("Configured targetUrlGroup [{}] not found in CMS!", targetUrlGroupName);
       }
     }
   }

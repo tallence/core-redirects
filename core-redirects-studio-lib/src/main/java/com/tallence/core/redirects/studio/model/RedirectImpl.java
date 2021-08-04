@@ -37,6 +37,7 @@ public class RedirectImpl implements Redirect {
   private String source;
   private Date creationDate;
   private Content targetLink;
+  private String targetUrl;
   private RedirectType redirectType;
   private String description;
   private boolean isImported;
@@ -54,6 +55,7 @@ public class RedirectImpl implements Redirect {
                       String source,
                       Date creationDate,
                       Content targetLink,
+                      String targetUrl,
                       RedirectType redirectType,
                       String description,
                       boolean isImported,
@@ -66,6 +68,7 @@ public class RedirectImpl implements Redirect {
     this.source = source;
     this.creationDate = creationDate;
     this.targetLink = targetLink;
+    this.targetUrl = targetUrl;
     this.redirectType = redirectType;
     this.description = description;
     this.isImported = isImported;
@@ -106,6 +109,11 @@ public class RedirectImpl implements Redirect {
   @Override
   public Content getTargetLink() {
     return targetLink;
+  }
+
+  @Override
+  public String getTargetUrl() {
+    return targetUrl;
   }
 
   @Override

@@ -16,7 +16,6 @@
 package com.tallence.core.redirects.cae.filter;
 
 import com.coremedia.blueprint.common.contentbeans.CMLinkable;
-import com.coremedia.objectserver.beans.ContentBean;
 import com.coremedia.objectserver.beans.ContentBeanFactory;
 import com.coremedia.objectserver.web.links.LinkFormatter;
 import com.tallence.core.redirects.cae.filter.RedirectMatchingStrategy.Result;
@@ -29,7 +28,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.springframework.web.util.UriUtils;
+import software.amazon.awssdk.utils.StringUtils;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -126,7 +125,7 @@ public class RedirectFilter implements Filter {
    * TODO Currently, this code always does a 301 with instant expiry. This should be made configurable.
    */
   private void sendPermanentRedirect(HttpServletRequest request, HttpServletResponse response, Redirect target) {
-    if (target.getTarget() == null) {
+    if (target.getTarget() == null && StringUtils.isBlank(target.getTargetUrl())) {
       LOG.error("Unable to redirect to empty string for redirect {}", target);
       return;
     }
@@ -140,9 +139,11 @@ public class RedirectFilter implements Filter {
     response.setHeader(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate");
     response.setHeader(HttpHeaders.PRAGMA, "no-cache");
     response.setDateHeader(HttpHeaders.EXPIRES, 0);
-    ContentBean targetBean = contentBeanFactory.createBeanFor(target.getTarget(), CMLinkable.class);
 
-    String targetLink = linkFormatter.formatLink(targetBean, null, request, response, true);
+    String targetLink = Optional.ofNullable(target.getTarget())
+            .map(t -> contentBeanFactory.createBeanFor(t, CMLinkable.class))
+            .map(t -> linkFormatter.formatLink(t, null, request, response, true))
+            .orElse(target.getTargetUrl());
 
     try {
       targetLink = handleParameters(request, targetLink, target.getTargetParameters());

@@ -41,6 +41,7 @@ public class RedirectsOverviewGridBase extends RedirectsGrid {
   protected static const TOOLBAR_ID:String = "pagingToolbar";
 
   private var mayNotUseRegexVE:ValueExpression;
+  private var mayNotUseTargetUrlsVE:ValueExpression;
   private var mayNotPublishVE:ValueExpression;
 
   public function RedirectsOverviewGridBase(config:RedirectsOverviewGrid = null) {
@@ -48,6 +49,7 @@ public class RedirectsOverviewGridBase extends RedirectsGrid {
     addListener('rowDblclick', openEditWindow);
 
     this.mayNotUseRegexVE = config.mayNotUseRegexVE;
+    this.mayNotUseTargetUrlsVE = config.mayNotUseTargetUrlsVE;
     this.mayNotPublishVE = config.mayNotPublishVE;
   }
 
@@ -80,6 +82,7 @@ public class RedirectsOverviewGridBase extends RedirectsGrid {
       redirect: getSelectedRedirect(),
       mayNotPublishVE: this.mayNotPublishVE,
       mayNotUseRegexVE: this.mayNotUseRegexVE,
+      mayNotUseTargetUrlsVE: this.mayNotUseTargetUrlsVE,
       selectedSiteIdVE: this.selectedSiteIdVE
     }));
     window.show()

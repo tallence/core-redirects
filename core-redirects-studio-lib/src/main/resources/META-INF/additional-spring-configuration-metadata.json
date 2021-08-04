@@ -1,0 +1,16 @@
+{
+  "properties": [
+    {
+      "name": "core.redirects.permissions.regexGroup",
+      "type": "java.lang.String",
+      "sourceType": "com.tallence.core.redirects.studio.service.RedirectPermissionServiceImpl",
+      "description": "The group which allows members to use the sourceType \"regexp\". Should be used with care."
+    },
+    {
+      "name": "core.redirects.permissions.targetUrlGroup",
+      "type": "java.lang.String",
+      "sourceType": "com.tallence.core.redirects.studio.service.RedirectPermissionServiceImpl",
+      "description": "The group which allows members to describe a redirect target with an url instead of a document. Should be used with care. Use \"*\" to allow this for editor."
+    }
+  ]
+}

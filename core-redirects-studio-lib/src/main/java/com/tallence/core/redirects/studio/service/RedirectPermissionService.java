@@ -67,11 +67,13 @@ public interface RedirectPermissionService {
         final boolean mayWrite;
         final boolean mayPublish;
         final boolean mayUseRegex;
+        final boolean mayUseTargetUrls;
 
-        RedirectRights(boolean mayWrite, boolean mayPublish, boolean mayUseRegex) {
+        RedirectRights(boolean mayWrite, boolean mayPublish, boolean mayUseRegex, boolean mayUseTargetUrls) {
           this.mayWrite = mayWrite;
           this.mayPublish = mayPublish;
           this.mayUseRegex = mayUseRegex;
+          this.mayUseTargetUrls = mayUseTargetUrls;
         }
 
         public boolean isMayWrite() {
@@ -81,6 +83,10 @@ public interface RedirectPermissionService {
         public boolean isMayUseRegex() {
             return mayUseRegex;
         }
+
+      public boolean isMayUseTargetUrls() {
+        return mayUseTargetUrls;
+      }
 
       public boolean isMayPublish() {
         return mayPublish;

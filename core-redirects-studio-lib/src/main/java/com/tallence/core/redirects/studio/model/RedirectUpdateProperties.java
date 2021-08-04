@@ -24,8 +24,12 @@ import com.tallence.core.redirects.model.RedirectType;
 import com.tallence.core.redirects.model.SourceUrlType;
 import com.tallence.core.redirects.studio.repository.RedirectRepository;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.*;
+
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 /**
  * This class is used to create new redirects, import redirects or edit existing redirects.
@@ -40,6 +44,7 @@ public class RedirectUpdateProperties {
   public static final String SOURCE_URL_TYPE = "sourceUrlType";
   public static final String SOURCE = "source";
   public static final String TARGET_LINK = "targetLink";
+  public static final String TARGET_URL = "targetUrl";
   public static final String REDIRECT_TYPE = "redirectType";
   public static final String DESCRIPTION = "description";
   public static final String IMPORTED = "imported";
@@ -54,7 +59,9 @@ public class RedirectUpdateProperties {
   static final String INVALID_REDIRECT_TYPE_VALUE = "redirectType_invalid";
   static final String INVALID_DESCRIPTION_VALUE = "description_invalid";
   static final String MISSING_TARGET_LINK = "target_missing";
+  static final String BOTH_TARGET = "target_both";
   static final String INVALID_TARGET_LINK = "target_invalid";
+  static final String INVALID_TARGET_URL = "target_url_invalid";
 
 
   private final Map<String, Object> properties;
@@ -80,11 +87,17 @@ public class RedirectUpdateProperties {
   public String getSource() {
     return Optional.ofNullable(getProperty(SOURCE, String.class))
             .map(s -> s.endsWith("/") ? s.substring(0, s.length() - 1) : s)
+            .map(String::trim)
             .orElse(null);
   }
 
   public Content getTargetLink() {
     return getProperty(TARGET_LINK, Content.class);
+  }
+
+  public String getTargetUrl() {
+    return Optional.ofNullable(getProperty(TARGET_URL, String.class))
+            .map(String::trim).orElse(null);
   }
 
   public RedirectType getRedirectType() {
@@ -203,27 +216,41 @@ public class RedirectUpdateProperties {
     if (!update && StringUtils.isEmpty(source)) {
       errors.put(SOURCE, INVALID_SOURCE_VALUE);
     }
-    if (StringUtils.isNotEmpty(source)) {
+    if (isNotEmpty(source)) {
       if (!sourceIsValid(source)) {
         errors.put(SOURCE, INVALID_SOURCE_VALUE);
       } else if (sourceHasWhitespaces(source)) {
         errors.put(SOURCE, INVALID_SOURCE_WHITESPACE);
       } else if (StringUtils.isNotBlank(redirectId) && repository.sourceAlreadyExists(siteId, redirectId, source, getSourceParameters()) ||
-              StringUtils.isBlank(redirectId) && repository.sourceAlreadyExists(siteId, source, getSourceParameters())) {
+              isBlank(redirectId) && repository.sourceAlreadyExists(siteId, source, getSourceParameters())) {
         errors.put(SOURCE, SOURCE_ALREADY_EXISTS);
       }
     }
 
 
     Content targetLink = getTargetLink();
+    final String targetUrl = getTargetUrl();
     //If the properties are used to create a new redirect, the targetLink is required
-    if (!update && targetLink == null) {
-      errors.put(TARGET_LINK, MISSING_TARGET_LINK);
-    } else if (targetLink != null && Boolean.TRUE.equals(getActive()) && repository.targetIsInvalid(targetLink)) {
+    if (!update) {
+      if (targetLink == null && isBlank(targetUrl)) {
+        errors.put(TARGET_LINK, MISSING_TARGET_LINK);
+      } else if (targetLink != null && isNotEmpty(targetUrl)) {
+        errors.put(TARGET_URL, BOTH_TARGET);
+      }
+    }
+    if (targetLink != null && Boolean.TRUE.equals(getActive()) && repository.targetIsInvalid(targetLink)) {
       errors.put(TARGET_LINK, INVALID_TARGET_LINK);
     }
-
-
+    if (isNotEmpty(targetUrl)) {
+      try {
+        final var uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
+        if (isBlank(uriComponents.getScheme()) || isBlank(uriComponents.getHost())) {
+          throw new IllegalArgumentException();
+        }
+      } catch (Exception e) {
+        errors.put(TARGET_URL, INVALID_TARGET_URL);
+      }
+    }
 
     //If the properties are used to create a new redirect, RedirectType is required
     if (!update && getRedirectType() == null) {
@@ -241,11 +268,11 @@ public class RedirectUpdateProperties {
   }
 
   private static boolean sourceIsValid(String source) {
-    return StringUtils.isNotEmpty(source) && source.startsWith("/") && source.length() < 512;
+    return isNotEmpty(source) && source.startsWith("/") && source.length() < 512;
   }
 
   private static boolean sourceHasWhitespaces(String source) {
-    return StringUtils.isNotEmpty(source) && !source.matches("\\S+"); //only non-whitespace characters
+    return isNotEmpty(source) && !source.matches("\\S+"); //only non-whitespace characters
   }
 
 }

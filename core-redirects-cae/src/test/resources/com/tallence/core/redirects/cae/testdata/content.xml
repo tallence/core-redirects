@@ -141,6 +141,14 @@
                   <markupProperty name="urlParams" url="urlParams-1115120.xml" grammar="coremedia-struct-2008"/>
                 </version>
               </document>
+              <document id="1115122" name="TestRedirectWithoutDocumentTarget" type="Redirect">
+                <version number="1">
+                  <stringProperty name="sourceUrlType" value="PLAIN"/>
+                  <stringProperty name="source" value="/redirect-without-document-target"/>
+                  <stringProperty name="targetUrl" value="https://github.com/tallence/core-redirects"/>
+                  <stringProperty name="redirectType" value="ALWAYS"/>
+                </version>
+              </document>
             </folder>
           </folder>
         </folder>

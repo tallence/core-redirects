@@ -145,17 +145,20 @@ public class RedirectImporter {
     Content targetLink = getTargetLink(record);
     properties.put(RedirectUpdateProperties.TARGET_LINK, targetLink);
 
-    String redirectType = record.get(4);
+    String targetUrl = record.get(4);
+    properties.put(RedirectUpdateProperties.TARGET_URL, targetUrl);
+
+    String redirectType = record.get(5);
     properties.put(RedirectUpdateProperties.REDIRECT_TYPE, redirectType);
 
-    properties.put(RedirectUpdateProperties.DESCRIPTION, record.get(5));
+    properties.put(RedirectUpdateProperties.DESCRIPTION, record.get(6));
 
-    Optional<String> sourceParams = Optional.ofNullable(record.get(6));
+    Optional<String> sourceParams = Optional.ofNullable(record.get(7));
     if (sourceParams.isPresent()) {
       properties.put(RedirectUpdateProperties.SOURCE_PARAMETERS, RedirectHelper.parseRedirectSourceParameters(sourceParams.get()));
     }
 
-    Optional<String> targetParams = Optional.ofNullable(record.get(7));
+    Optional<String> targetParams = Optional.ofNullable(record.get(8));
     if (targetParams.isPresent()) {
       properties.put(RedirectUpdateProperties.TARGET_PARAMETERS, RedirectHelper.parseRedirectTargetParameters(targetParams.get()));
     }

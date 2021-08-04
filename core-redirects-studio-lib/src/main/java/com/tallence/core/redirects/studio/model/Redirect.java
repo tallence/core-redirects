@@ -70,6 +70,11 @@ public interface Redirect {
   Content getTargetLink();
 
   /**
+   * Returns the target url of the redirect.
+   */
+  String getTargetUrl();
+
+  /**
    * Returns the {@link RedirectType} of the redirect.
    */
   RedirectType getRedirectType();
