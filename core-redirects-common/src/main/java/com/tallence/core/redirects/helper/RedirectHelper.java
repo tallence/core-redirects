@@ -1,3 +1,18 @@
+/*
+ * Copyright 2019 Tallence AG
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.tallence.core.redirects.helper;
 
 import com.coremedia.cap.content.Content;
@@ -27,6 +42,10 @@ import static com.tallence.core.redirects.model.RedirectSourceParameter.STRUCT_P
 import static com.tallence.core.redirects.model.RedirectTargetParameter.STRUCT_PROPERTY_TARGET_PARAMS;
 import static org.springframework.util.StringUtils.isEmpty;
 
+/**
+ * This helper class provides methods to read source and target parameters from the struct of the redirect. Additionally,
+ * methods are provided for the studio to parse source and target parameters from a JSON string.
+ */
 public class RedirectHelper {
 
   private static final Logger LOG = LoggerFactory.getLogger(RedirectHelper.class);
@@ -35,6 +54,10 @@ public class RedirectHelper {
     // util class
   }
 
+  /**
+   * Returns a list of {@link RedirectSourceParameter} parameters for the given redirect, or an empty list if no
+   * parameters are stored in the struct.
+   */
   public static List<RedirectSourceParameter> getSourceParameters(Content redirect) {
     return Optional.ofNullable(redirect.getStruct(PROPERTY_URL_PARAMS))
             .map(u -> getSubstructs(u, STRUCT_PROPERTY_SOURCE_PARAMS))
@@ -42,6 +65,10 @@ public class RedirectHelper {
             .orElse(Collections.emptyList());
   }
 
+  /**
+   * Returns a list of {@link RedirectTargetParameter} parameters for the given redirect, or an empty list if no
+   * parameters are stored in the struct.
+   */
   public static List<RedirectTargetParameter> getTargetParameters(Content redirect) {
     return Optional.ofNullable(redirect.getStruct(PROPERTY_URL_PARAMS))
             .map(u -> getSubstructs(u, STRUCT_PROPERTY_TARGET_PARAMS))
@@ -66,6 +93,10 @@ public class RedirectHelper {
     }
   }
 
+  /**
+   * This method tries to parse a {@link RedirectSourceParameter} from a json representation of a source parameter. If
+   * this is not possible, null is returned and an error is logged.
+   */
   public static RedirectSourceParameter parseRedirectSourceParameter(String value) {
     return parseRedirectParameter(value, RedirectSourceParameter.class);
   }
@@ -79,10 +110,21 @@ public class RedirectHelper {
     }
   }
 
+  /**
+   * This method tries to parse a list of {@link RedirectSourceParameter} parameters from a json representation. If the
+   * json is invalid or null an exception is thrown and must be handled. Currently this method is only invoked by the
+   * importer and the importer handles this exception to return an error message to the studio client.
+   */
   public static List<RedirectSourceParameter> parseRedirectSourceParameters(String value) throws JsonProcessingException {
-    return parseRedirectParameters(value, new TypeReference<List<RedirectSourceParameter>>(){});
+    return parseRedirectParameters(value, new TypeReference<List<RedirectSourceParameter>>() {
+    });
   }
 
+  /**
+   * This method tries to parse a list of {@link RedirectTargetParameter} parameters from a json representation. If the
+   * json is invalid or null an exception is thrown and must be handled. Currently this method is only invoked by the
+   * importer and the importer handles this exception to return an error message to the studio client.
+   */
   public static List<RedirectTargetParameter> parseRedirectTargetParameters(String value) throws JsonProcessingException {
     return parseRedirectParameters(value, new TypeReference<List<RedirectTargetParameter>>() {
     });

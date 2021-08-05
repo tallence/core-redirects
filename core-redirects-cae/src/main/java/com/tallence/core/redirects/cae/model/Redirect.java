@@ -22,19 +22,17 @@ import com.tallence.core.redirects.model.RedirectTargetParameter;
 import com.tallence.core.redirects.model.RedirectType;
 import com.tallence.core.redirects.model.SourceUrlType;
 import edu.umd.cs.findbugs.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Objects;
+
+import static software.amazon.awssdk.utils.StringUtils.isBlank;
 
 /**
  * Model for a Redirect (used instead of a ContentBean in order to keep the overhead low).
  * Keeps only the properties required by the CAE.
  */
 public class Redirect {
-
-  private static final Logger LOG = LoggerFactory.getLogger(Redirect.class);
 
   public static final String NAME = "Redirect";
   public static final String TARGET_LINK = "targetLink";
@@ -63,6 +61,13 @@ public class Redirect {
 
     sourceParameters = RedirectHelper.getSourceParameters(redirect);
     targetParameters = RedirectHelper.getTargetParameters(redirect);
+  }
+
+  /**
+   * @return true, if the redirect has no targetLink or targetUrl
+   */
+  public boolean hasNoTarget() {
+    return getTarget() == null && isBlank(getTargetUrl());
   }
 
   /**

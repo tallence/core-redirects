@@ -16,18 +16,13 @@
 
 package com.tallence.core.redirects.studio.editor.form {
 import com.coremedia.cms.editor.sdk.util.MessageBoxUtil;
-import com.coremedia.ui.data.Bean;
 import com.coremedia.ui.data.ValueExpression;
-import com.coremedia.ui.data.ValueExpressionFactory;
-import com.coremedia.ui.util.ObjectUtils;
 import com.tallence.core.redirects.studio.data.RedirectSourceParameter;
 import com.tallence.core.redirects.studio.data.RedirectTargetParameter;
 
 import ext.Ext;
 import ext.ObjectUtil;
-import ext.container.Container;
 import ext.form.FieldContainer;
-
 
 /**
  * A form for editing redirects. Changes are bind to the localModel.

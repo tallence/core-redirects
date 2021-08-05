@@ -1,3 +1,19 @@
+/*
+ * Copyright 2019 Tallence AG
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.tallence.core.redirects.studio.util {
 import com.coremedia.ui.data.RemoteBean;
 import com.coremedia.ui.data.impl.RemoteServiceMethod;
@@ -12,18 +28,6 @@ import ext.Promise;
  * Utility class for creating promises.
  */
 public class PromiseUtil {
-
-  /**
-   * Creates a promise that loads a list of remote beans.
-   *
-   * @param remoteBeans The beans to be loaded
-   * @return The promise. Resolve method signature: <code>function(loaded:Array):void</code>
-   */
-  public static function loadRemoteBeans(remoteBeans:Array):IPromise {
-    return Promise.all(remoteBeans.map(function (content:RemoteBean):IPromise {
-      return loadRemoteBean(content);
-    }));
-  }
 
   /**
    * Creates a promise that invalidates the given remote bean.

@@ -83,7 +83,6 @@ public class SiteRedirects {
         final String key = URLDecoder.decode(redirect.getSource(), UTF_8);
         plainRedirects.putIfAbsent(key, new ArrayList<>());
         plainRedirects.get(key).add(redirect);
-        plainRedirects.values().removeIf(List::isEmpty);
       }
 
     } else if (redirect.getSourceUrlType() == SourceUrlType.REGEX) {
@@ -95,7 +94,6 @@ public class SiteRedirects {
           final Pattern key = Pattern.compile(redirect.getSource());
           patternRedirects.putIfAbsent(key, new ArrayList<>());
           patternRedirects.get(key).add(redirect);
-          patternRedirects.values().removeIf(List::isEmpty);
         }
       } catch (PatternSyntaxException e) {
         LOG.error("Unable to compile pattern on redirect {}, ignoring redirect", redirect);
@@ -110,6 +108,8 @@ public class SiteRedirects {
    * Removes the given redirect from the correct list.
    */
   public void removeRedirect(Redirect redirect) {
+
+    // Removes the whole map entry afterwards, if the list is empty as a result of the operation.
     if (redirect.getSourceUrlType() == SourceUrlType.PLAIN) {
       synchronized (plainRedirectsMonitor) {
         plainRedirects.entrySet().stream()

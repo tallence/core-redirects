@@ -28,8 +28,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.*;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.*;
 
 /**
  * This class is used to create new redirects, import redirects or edit existing redirects.
@@ -213,7 +212,7 @@ public class RedirectUpdateProperties {
 
     String source = getSource();
     //If the properties are used to create a new redirect, source is required
-    if (!update && StringUtils.isEmpty(source)) {
+    if (!update && isEmpty(source)) {
       errors.put(SOURCE, INVALID_SOURCE_VALUE);
     }
     if (isNotEmpty(source)) {
@@ -221,7 +220,7 @@ public class RedirectUpdateProperties {
         errors.put(SOURCE, INVALID_SOURCE_VALUE);
       } else if (sourceHasWhitespaces(source)) {
         errors.put(SOURCE, INVALID_SOURCE_WHITESPACE);
-      } else if (StringUtils.isNotBlank(redirectId) && repository.sourceAlreadyExists(siteId, redirectId, source, getSourceParameters()) ||
+      } else if (isNotBlank(redirectId) && repository.sourceAlreadyExists(siteId, redirectId, source, getSourceParameters()) ||
               isBlank(redirectId) && repository.sourceAlreadyExists(siteId, source, getSourceParameters())) {
         errors.put(SOURCE, SOURCE_ALREADY_EXISTS);
       }

@@ -1,7 +1,26 @@
+/*
+ * Copyright 2019 Tallence AG
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.tallence.core.redirects.model;
 
 import java.util.Objects;
 
+/**
+ * The abstract class for both {@link RedirectSourceParameter} and {@link RedirectTargetParameter} classes. The class
+ * contains the getter for the common variables and the constants to read the parameters from the struct.
+ */
 public abstract class RedirectParameter {
 
   public static final String PROPERTY_URL_PARAMS = "urlParams";

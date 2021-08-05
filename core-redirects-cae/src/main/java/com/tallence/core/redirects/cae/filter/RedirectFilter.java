@@ -18,7 +18,7 @@ package com.tallence.core.redirects.cae.filter;
 import com.coremedia.blueprint.common.contentbeans.CMLinkable;
 import com.coremedia.objectserver.beans.ContentBeanFactory;
 import com.coremedia.objectserver.web.links.LinkFormatter;
-import com.tallence.core.redirects.cae.filter.RedirectMatchingStrategy.Result;
+import com.tallence.core.redirects.cae.filter.RedirectMatchingService.Result;
 import com.tallence.core.redirects.cae.model.Redirect;
 import com.tallence.core.redirects.model.RedirectTargetParameter;
 import org.slf4j.Logger;
@@ -51,18 +51,18 @@ public class RedirectFilter implements Filter {
 
   private final ContentBeanFactory contentBeanFactory;
   private final LinkFormatter linkFormatter;
-  private final RedirectMatchingStrategy redirectMatchingStrategy;
+  private final RedirectMatchingService redirectMatchingService;
   private final boolean keepSourceUrlParams;
 
   @Autowired
   public RedirectFilter(ContentBeanFactory contentBeanFactory,
                         @Value("${core.redirects.filter.keepParams:false}")
                         boolean keepSourceUrlParams,
-                        RedirectMatchingStrategy redirectMatchingStrategy,
+                        RedirectMatchingService redirectMatchingService,
                         LinkFormatter linkFormatter) {
     this.contentBeanFactory = contentBeanFactory;
     this.linkFormatter = linkFormatter;
-    this.redirectMatchingStrategy = redirectMatchingStrategy;
+    this.redirectMatchingService = redirectMatchingService;
     this.keepSourceUrlParams = keepSourceUrlParams;
   }
 
@@ -78,7 +78,7 @@ public class RedirectFilter implements Filter {
     RedirectHttpServletResponseWrapper wrapper = null;
 
     // Pre-handle
-    final Result result = redirectMatchingStrategy.getMatchingRedirect(request);
+    final Result result = redirectMatchingService.getMatchingRedirect(request);
     if (result.getAction() == Result.Action.SEND) {
       sendPermanentRedirect(request, response, result.getRedirect());
       return;
@@ -125,7 +125,7 @@ public class RedirectFilter implements Filter {
    * TODO Currently, this code always does a 301 with instant expiry. This should be made configurable.
    */
   private void sendPermanentRedirect(HttpServletRequest request, HttpServletResponse response, Redirect target) {
-    if (target.getTarget() == null && StringUtils.isBlank(target.getTargetUrl())) {
+    if (target.hasNoTarget()) {
       LOG.error("Unable to redirect to empty string for redirect {}", target);
       return;
     }

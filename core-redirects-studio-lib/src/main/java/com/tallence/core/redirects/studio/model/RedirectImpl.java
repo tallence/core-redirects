@@ -48,6 +48,11 @@ public class RedirectImpl implements Redirect {
     this.id = id;
   }
 
+  /**
+   * Creates a redirect with all properties that are displayed in the overview in the studio and can be edited by the
+   * editor in the edit panel. This model class contains more properties than the redirect in CAE, because in Studio
+   * additional properties like "isImported" are displayed, which are not needed in CAE.
+   */
   public RedirectImpl(String id,
                       String siteId,
                       boolean active,

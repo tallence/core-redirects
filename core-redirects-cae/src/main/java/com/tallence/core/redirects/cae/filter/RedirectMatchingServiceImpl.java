@@ -1,3 +1,18 @@
+/*
+ * Copyright 2019 Tallence AG
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.tallence.core.redirects.cae.filter;
 
 import com.coremedia.blueprint.base.multisite.cae.SiteResolver;
@@ -38,14 +53,14 @@ import static java.util.Map.Entry.comparingByKey;
  * If you need more methods to be "protected" feel free to create an issue in the gitHub repo.
  */
 @Service
-public class RedirectMatchingStrategyImpl implements RedirectMatchingStrategy {
+public class RedirectMatchingServiceImpl implements RedirectMatchingService {
 
-  private static final Logger LOG = LoggerFactory.getLogger(RedirectMatchingStrategyImpl.class);
+  private static final Logger LOG = LoggerFactory.getLogger(RedirectMatchingServiceImpl.class);
 
   private final RedirectService redirectService;
   private final SiteResolver siteResolver;
 
-  public RedirectMatchingStrategyImpl(RedirectService redirectService, SiteResolver siteResolver) {
+  public RedirectMatchingServiceImpl(RedirectService redirectService, SiteResolver siteResolver) {
     this.redirectService = redirectService;
     this.siteResolver = siteResolver;
   }
