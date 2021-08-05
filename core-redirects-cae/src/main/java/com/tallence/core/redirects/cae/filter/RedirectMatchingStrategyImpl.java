@@ -88,7 +88,7 @@ public class RedirectMatchingStrategyImpl implements RedirectMatchingStrategy {
       String pathInfo = request.getPathInfo();
       try {
         if (!StringUtils.hasLength(pathInfo) || "/".equals(pathInfo)) {
-          LOG.debug("Could not determine a site without a path info in request {}", request);
+          LOG.debug("Could not determine a site without a site name in the path info, request: {}", request);
         } else {
           site = siteResolver.findSiteByPath(pathInfo);
         }
@@ -132,9 +132,9 @@ public class RedirectMatchingStrategyImpl implements RedirectMatchingStrategy {
 
   /**
    * Resolve a redirect in the given list.
-   * A redirect is chosen, if all url parameter matches with the given request.
+   * A redirect is chosen, if all of its url parameters match the given request.
    *
-   * If more than redirect match: Use the redirect with the highest number of (matching) sourceUrlParams.
+   * If more than one redirect match: Use the redirect with the highest number of (matching) sourceUrlParams.
    *
    * @param potentialRedirects redirects which match the request path.
    * @param request the request

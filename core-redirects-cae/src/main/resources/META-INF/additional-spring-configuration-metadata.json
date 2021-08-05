@@ -11,7 +11,7 @@
       "type": "java.lang.String",
       "sourceType": "com.tallence.core.redirects.cae.service.RedirectUpdateTaskScheduler",
       "defaultValue": "Options/Settings/Redirects",
-      "description": "The path where the Redirect documents are stored in the selected site."
+      "description": "The path where the Redirect documents are stored relative the selected site."
     },
     {
       "name": "core.redirects.cache.parallel.site.recompute.threads",
