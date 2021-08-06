@@ -1,0 +1,14 @@
+<Struct xmlns="http://www.coremedia.com/2008/struct" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <StructListProperty Name="sourceUrlParams">
+    <Struct>
+      <StringProperty Name="name">importantParam</StringProperty>
+      <StringProperty Name="operator">EQUALS</StringProperty>
+      <StringProperty Name="value">testValue1</StringProperty>
+    </Struct>
+    <Struct>
+      <StringProperty Name="name">importantParam2</StringProperty>
+      <StringProperty Name="operator">EQUALS</StringProperty>
+      <StringProperty Name="value">testValue2</StringProperty>
+    </Struct>
+  </StructListProperty>
+</Struct>

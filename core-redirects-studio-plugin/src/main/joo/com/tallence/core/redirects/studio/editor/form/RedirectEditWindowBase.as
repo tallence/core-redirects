@@ -64,19 +64,22 @@ public class RedirectEditWindowBase extends Window {
     getLocalModel().addPropertyChangeListener(RedirectImpl.ACTIVE, validateRedirect);
     getLocalModel().addPropertyChangeListener(RedirectImpl.SOURCE, validateRedirect);
     getLocalModel().addPropertyChangeListener(RedirectImpl.TARGET_LINK, validateRedirect);
+    getLocalModel().addPropertyChangeListener(RedirectImpl.TARGET_URL, validateRedirect);
     var lifecycleStatusVE:ValueExpression = ValueExpressionFactory.create(RedirectImpl.TARGET_LINK, getLocalModel()).extendBy("0", "lifecycleStatus");
     lifecycleStatusVE.addChangeListener(validateRedirect);
     validateRedirect();
   }
 
-  private function validateRedirect():void {
+  protected function validateRedirect():void {
     var siteId:String = redirect ? redirect.getSiteId() : selectedSiteIdVE.getValue();
     var redirectId:String = redirect ? redirect.getUriPath().replace("redirect/", "").replace(siteId + "/", "") : "";
     var targetLink:Content = getLocalModel().get(RedirectImpl.TARGET_LINK)[0];
     var targetId:String = targetLink ? targetLink.getId() : "";
+    var targetUrl:String = getLocalModel().get(RedirectImpl.TARGET_URL);
     var active:Boolean = getLocalModel().get(RedirectImpl.ACTIVE);
+    var sourceParameters:Array = getLocalModel().get(RedirectImpl.SOURCE_PARAMETERS);
     RedirectsUtil
-        .validateRedirect(siteId, redirectId, getLocalModel().get(RedirectImpl.SOURCE), targetId, active)
+        .validateRedirect(siteId, redirectId, getLocalModel().get(RedirectImpl.SOURCE), targetId, targetUrl, active, sourceParameters)
         .then(handleValidationResponse, validationErrorHandler);
   }
 
@@ -99,15 +102,21 @@ public class RedirectEditWindowBase extends Window {
       model.set(RedirectImpl.TARGET_LINK, redirect.getTargetLink() ? [redirect.getTargetLink()] : []);
       model.set(RedirectImpl.DESCRIPTION, redirect.getDescription());
       model.set(RedirectImpl.SOURCE, redirect.getSource());
+      model.set(RedirectImpl.TARGET_URL, redirect.getTargetUrl());
       model.set(RedirectImpl.SOURCE_TYPE, redirect.getSourceType());
       model.set(RedirectImpl.REDIRECT_TYPE, redirect.getRedirectType());
       model.set(RedirectImpl.CREATION_DATE, redirect.getCreationDate());
+      model.set(RedirectImpl.SOURCE_PARAMETERS, [].concat(redirect.getSourceParameters()));
+      model.set(RedirectImpl.TARGET_PARAMETERS, [].concat(redirect.getTargetParameters()));
     } else {
       //Set default values. The redirect is active by default, if the user has publication rights
       model.set(RedirectImpl.ACTIVE, !mayNotPublishVE.getValue());
+      model.set(RedirectImpl.SOURCE, "/");
       model.set(RedirectImpl.SOURCE_TYPE, SOURCE_TYPE_DEFAULT);
       model.set(RedirectImpl.REDIRECT_TYPE, RedirectImpl.REDIRECT_TYPE_404);
       model.set(RedirectImpl.CREATION_DATE, new Date());
+      model.set(RedirectImpl.SOURCE_PARAMETERS, []);
+      model.set(RedirectImpl.TARGET_PARAMETERS, []);
     }
   }
 
@@ -158,10 +167,13 @@ public class RedirectEditWindowBase extends Window {
     if (redirect) {
       redirect.setActive(model.get(RedirectImpl.ACTIVE));
       redirect.setTargetLink(model.get(RedirectImpl.TARGET_LINK)[0]);
+      redirect.setTargetUrl(model.get(RedirectImpl.TARGET_URL));
       redirect.setDescription(model.get(RedirectImpl.DESCRIPTION));
       redirect.setSource(model.get(RedirectImpl.SOURCE));
       redirect.setSourceType(model.get(RedirectImpl.SOURCE_TYPE));
       redirect.setRedirectType(model.get(RedirectImpl.REDIRECT_TYPE));
+      redirect.setSourceParameters(model.get(RedirectImpl.SOURCE_PARAMETERS));
+      redirect.setTargetParameters(model.get(RedirectImpl.TARGET_PARAMETERS));
     } else {
       var siteId:String = redirect ? redirect.getSiteId() : selectedSiteIdVE.getValue();
       var sourceType:String = model.get(RedirectImpl.SOURCE_TYPE);
@@ -169,11 +181,14 @@ public class RedirectEditWindowBase extends Window {
           siteId,
           model.get(RedirectImpl.ACTIVE),
           model.get(RedirectImpl.TARGET_LINK)[0],
+          model.get(RedirectImpl.TARGET_URL),
           model.get(RedirectImpl.DESCRIPTION),
           model.get(RedirectImpl.SOURCE),
           //Default value, if the input field is hidden (because of missing permissions)
           sourceType ? sourceType : SOURCE_TYPE_DEFAULT,
-          model.get(RedirectImpl.REDIRECT_TYPE)
+          model.get(RedirectImpl.REDIRECT_TYPE),
+          model.get(RedirectImpl.SOURCE_PARAMETERS),
+          model.get(RedirectImpl.TARGET_PARAMETERS)
       );
     }
     close();
@@ -192,11 +207,7 @@ public class RedirectEditWindowBase extends Window {
       var active:Boolean = model.get(RedirectImpl.ACTIVE);
       var invalidPublishAttempt: Boolean = active && mayNotPublishVE.getValue();
 
-      var source:* = model.get(RedirectImpl.SOURCE);
-      var targetLink:* = model.get(RedirectImpl.TARGET_LINK);
-      return invalidPublishAttempt ||
-              !isValid ||
-              (!source || !targetLink || (targetLink as Array).length == 0);
+      return invalidPublishAttempt || !isValid;
     })
   }
 

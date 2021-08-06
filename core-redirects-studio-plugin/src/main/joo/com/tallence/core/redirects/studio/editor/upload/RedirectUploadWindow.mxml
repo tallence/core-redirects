@@ -9,10 +9,10 @@
     xmlns:html5="com.coremedia.cms.editor.sdk.components.html5.*"
     xmlns:dialog="com.coremedia.cms.editor.sdk.upload.dialog.*"
     title="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_csvupload_dropin_title')}"
-    width="430"
-    minWidth="430"
-    height="453"
-    minHeight="453"
+    width="800"
+    minWidth="800"
+    height="500"
+    minHeight="500"
     resizable="false"
     modal="true"
     constrainHeader="true"
@@ -32,8 +32,6 @@
 
     public static const xtype:String = "com.tallence.core.redirects.studio.editor.upload.redirectUploadWindow";
 
-    private var config:RedirectUploadWindow;
-
     [Bindable]
     public var selectedSiteIdVE:ValueExpression;
 
@@ -44,6 +42,51 @@
     <ui:VerticalSpacingPlugin modifier="{SpacingBEMEntities.VERTICAL_SPACING_MODIFIER_200}"/>
   </local:plugins>
   <local:items>
+    <ui:CollapsiblePanel title="Example"
+                         itemId="test"
+                         collapsible="false">
+      <ui:items>
+        <DisplayField value="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_csvupload_example_header')}"
+                      ui="{DisplayFieldSkin.BOLD.getSkin()}"/>
+        <DisplayField value="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_csvupload_example')}"
+                      ui="{DisplayFieldSkin.EMBEDDED.getSkin()}"/>
+        <Container margin="10 0 0 0">
+          <items>
+            <Container>
+              <items>
+                <local:RedirectCsvHeaderDescriptionContainer title="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_csvupload_example_header_active_title')}"
+                                                             text="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_csvupload_example_header_active_text')}"/>
+                <local:RedirectCsvHeaderDescriptionContainer title="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_csvupload_example_header_sourceUrlType_title')}"
+                                                             text="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_csvupload_example_header_sourceUrlType_text')}"/>
+              </items>
+            </Container>
+            <Container margin="0 0 0 10">
+              <items>
+                <local:RedirectCsvHeaderDescriptionContainer title="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_csvupload_example_header_sourceUrl_title')}"
+                                                             text="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_csvupload_example_header_sourceUrl_text')}"/>
+                <local:RedirectCsvHeaderDescriptionContainer title="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_csvupload_example_header_targetLink_title')}"
+                                                             text="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_csvupload_example_header_targetLink_text')}"/>
+              </items>
+            </Container>
+            <Container margin="0 0 0 10">
+              <items>
+                <local:RedirectCsvHeaderDescriptionContainer title="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_csvupload_example_header_redirectType_title')}"
+                                                             text="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_csvupload_example_header_redirectType_text')}"/>
+                <local:RedirectCsvHeaderDescriptionContainer title="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_csvupload_example_header_description_title')}"
+                                                             text="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_csvupload_example_header_description_text')}"/>
+              </items>
+            </Container>
+          </items>
+          <layout>
+            <layout_HBox/>
+          </layout>
+        </Container>
+        <local:RedirectCsvHeaderDescriptionContainer title="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_csvupload_example_header_sourceParameters_title')}"
+                                                     text="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_csvupload_example_header_sourceParameters_text')}"/>
+        <local:RedirectCsvHeaderDescriptionContainer title="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_csvupload_example_header_targetParameters_title')}"
+                                                     text="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_csvupload_example_header_targetParameters_text')}"/>
+      </ui:items>
+    </ui:CollapsiblePanel>
     <Container flex="1"
                minHeight="80"
                ui="{ContainerSkin.FRAME_GRID_200.getSkin()}">

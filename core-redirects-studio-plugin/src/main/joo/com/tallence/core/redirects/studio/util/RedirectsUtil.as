@@ -30,6 +30,7 @@ import com.tallence.core.redirects.studio.data.PermissionResponse;
 import com.tallence.core.redirects.studio.data.Redirect;
 import com.tallence.core.redirects.studio.data.RedirectImpl;
 import com.tallence.core.redirects.studio.data.RedirectImportResponse;
+import com.tallence.core.redirects.studio.data.RedirectSourceParameter;
 import com.tallence.core.redirects.studio.data.Redirects;
 import com.tallence.core.redirects.studio.data.RedirectsResponse;
 import com.tallence.core.redirects.studio.data.ValidationResponse;
@@ -60,7 +61,7 @@ public class RedirectsUtil {
    * @return Boolean
    */
   public static function redirectIsAccessible(redirect:Redirect):Boolean {
-    if (!RemoteBeanUtil.isAccessible(redirect)) {
+    if (!redirect.isLoaded() && !RemoteBeanUtil.isAccessible(redirect)) {
       return false;
     }
 
@@ -74,24 +75,21 @@ public class RedirectsUtil {
 
   /**
    * Creates a new {@link Redirect} with the given properties
-   *
-   * @param siteId
-   * @param active
-   * @param targetLink
-   * @param description
-   * @param source
-   * @param sourceType
-   * @param redirectType
    */
-  public static function createRedirect(siteId:String, active:Boolean, targetLink:Content, description:String, source:String, sourceType:String, redirectType:String):void {
+  public static function createRedirect(siteId:String, active:Boolean, targetLink:Content, targetUrl: String,
+                                        description:String, source:String, sourceType:String, redirectType:String,
+                                        sourceParameters:Array, targetParameters:Array):void {
     var rsm:RemoteServiceMethod = new RemoteServiceMethod("redirects/" + siteId + "/" + CREATE_URI_SEGMENT, "POST", true);
     rsm.request({
               active: active,
               targetLink: targetLink,
+              targetUrl: targetUrl,
               description: description,
               source: source,
               sourceUrlType: sourceType,
-              redirectType: redirectType
+              redirectType: redirectType,
+              sourceParameters: sourceParameters,
+              targetParameters: targetParameters
             },
             function success(rsmr:RemoteServiceMethodResponse):void {
               NotificationUtil.showInfo(ResourceManager.getInstance().getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_new_success_text'));
@@ -110,14 +108,15 @@ public class RedirectsUtil {
    * @param siteId the site id.
    * @param searchText the search text.
    * @param operation the read operation.
+   * @param exactMatch true if the path of the redirect for the search should match exactly
    * @return The promise. Resolve method signature: <code>function(response:RedirectsResponse):void</code>
    */
-  public static function getRedirects(siteId:String, searchText:String, operation:ReadOperation):IPromise {
+  public static function getRedirects(siteId:String, searchText:String, operation:ReadOperation, exactMatch:Boolean):IPromise {
     if (!siteId || 0 === siteId.length) {
       return Promise.resolve(new RedirectsResponse([], 0));
     }
 
-    var bean:RemoteBean = beanFactory.getRemoteBean("redirects/" + siteId + getQueryParams(searchText, operation));
+    var bean:RemoteBean = beanFactory.getRemoteBean("redirects/" + siteId + getQueryParams(searchText, operation, exactMatch));
 
     // A RemoteBean is used to load the redirects. Once a RemoteBean has been loaded, property data is cached. However,
     // a new request should be sent to the server when the reload button of the grid is activated or after a redirect is
@@ -141,7 +140,7 @@ public class RedirectsUtil {
   }
 
 
-  private static function getQueryParams(searchText:String, operation:ReadOperation):String {
+  private static function getQueryParams(searchText:String, operation:ReadOperation, exactMatch:Boolean):String {
     var limit:String = operation.getLimit().toString();
     var page:String = operation.getPage().toString();
     var sorters:Array = operation.getSorters();
@@ -154,6 +153,7 @@ public class RedirectsUtil {
     queryParams["sorter"] = sorter;
     queryParams["sortDirection"] = sortDirection;
     queryParams["search"] = searchText;
+    queryParams["exactMatch"] = exactMatch;
 
     return "?" + ObjectUtil.toQueryString(queryParams);
   }
@@ -167,14 +167,14 @@ public class RedirectsUtil {
    * @param error callback function for error
    */
   public static function uploadRedirects(siteId:String,
-                                  fileWrapper:FileWrapper,
-                                  success:Function,
-                                  error:Function):void {
+                                         fileWrapper:FileWrapper,
+                                         success:Function,
+                                         error:Function):void {
 
     var upldr:Uploader = new Uploader(Uploader({
       maxFileSize: DEFAULT_UPLOAD_SIZE,
       timeout: 20000,
-      url: RemoteService.calculateRequestURI("/api/redirects/" + siteId + "/upload"),
+      url: RemoteService.calculateRequestURI("/rest/api/redirects/" + siteId + "/upload"),
       method: 'POST'
     }));
 
@@ -211,30 +211,47 @@ public class RedirectsUtil {
    * @param redirectId the redirect id.
    * @param source the source.
    * @param targetId the id of the target
+   * @param targetUrl the targetUrl
    * @param active true, if the redirect is published
+   * @param sourceParameters a list of SourceUrlParameters
    *
    * @return The promise. Resolve method signature: <code>function(response:ValidationResponse):void</code>
    */
   public static function validateRedirect(siteId:String,
-                                   redirectId:String,
-                                   source:String,
-                                   targetId:String,
-                                   active:Boolean):IPromise {
-    var urlTemplate:String = "/{0}/validate/?source={1}&redirectId={2}&targetId={3}&active={4}";
-    var url:String = StringUtil.format(
-            urlTemplate,
-            siteId,
-            encodeURIComponent(source),
-            encodeURIComponent(redirectId),
-            encodeURIComponent(targetId),
-            active);
-    return PromiseUtil.getRequest("redirects" + url, {}, ValidationResponse);
+                                          redirectId:String,
+                                          source:String,
+                                          targetId:String,
+                                          targetUrl:String,
+                                          active:Boolean,
+                                          sourceParameters:Array):IPromise {
+    var urlTemplate:String = "/{0}/validate";
+
+    var joined:String = sourceParameters
+            .map(function (parameter:RedirectSourceParameter):Object {
+              return parameter.getParametersAsMap();})
+            .map(function (map:Object):String {
+              return JSON.encodeValue(map);
+            })
+            .map(encodeURIComponent)
+            .join(",");
+
+    var params:Object = {
+      source: source,
+      redirectId: redirectId,
+      targetId: targetId,
+      targetUrl: targetUrl,
+      active: active,
+      sourceParameters: joined
+    };
+
+    var url:String = StringUtil.format(urlTemplate, siteId);
+    return PromiseUtil.getRequest("redirects" + url, params, ValidationResponse);
   }
 
   /**
    * Resolve the permissions for the redirects in the selected site.
    */
-  public static function resolvePermissions(siteId: String): IPromise {
+  public static function resolvePermissions(siteId:String):IPromise {
     if (!siteId || siteId == "") {
       // if no site is selected, nothing may be edited
       return Promise.resolve(new PermissionResponse());

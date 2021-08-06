@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<editor:StudioPlugin
+<local:RedirectManagerStudioPluginBase
         xmlns:fx="http://ns.adobe.com/mxml/2009"
         xmlns:editor="exml:com.coremedia.cms.editor.sdk.config"
         xmlns:exml="http://www.jangaroo.net/exml/0.8"
         xmlns="exml:ext.config"
         xmlns:rm="com.tallence.core.redirects.studio.plugins.*"
-        xmlns:redirect="com.tallence.core.redirects.studio.studioform.*">
+        xmlns:redirect="com.tallence.core.redirects.studio.studioform.*"
+        xmlns:local="com.tallence.core.redirects.studio.*">
   <fx:Metadata>
   </fx:Metadata>
   <fx:Script><![CDATA[
@@ -18,7 +19,7 @@
     ]]>
   </fx:Script>
 
-  <editor:rules>
+  <local:rules>
 
     <editor:TabbedDocumentFormDispatcher>
       <editor:plugins>
@@ -32,13 +33,13 @@
 
     <editor:ExtensionsMenu>
       <editor:plugins>
-        <rm:AddRedirectManagerPlugin requiredGroups="administratoren"/>
+        <rm:AddRedirectManagerPlugin/> <!--Use requiredGroups if the usage of this extension is not free for every editor. You can configure access rights to features like the usage of regex-Redirects in the studio-backend -->
       </editor:plugins>
     </editor:ExtensionsMenu>
 
-  </editor:rules>
+  </local:rules>
 
-  <editor:configuration>
+  <local:configuration>
 
     <editor:RegisterRestResource beanClass="{RedirectsImpl}"/>
     <editor:RegisterRestResource beanClass="{RedirectImpl}"/>
@@ -47,6 +48,6 @@
             destination="{ResourceManager.getInstance().getResourceBundle(null, 'com.coremedia.cms.editor.ContentTypes')}"
             source="{ResourceManager.getInstance().getResourceBundle(null, 'com.tallence.core.redirects.studio.bundles.RedirectContentTypes')}"/>
 
-  </editor:configuration>
+  </local:configuration>
 
-</editor:StudioPlugin>
+</local:RedirectManagerStudioPluginBase>

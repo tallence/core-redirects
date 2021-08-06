@@ -7,7 +7,8 @@ The Windows is not "modal" because the editor might drag a document from the wor
     xmlns="exml:ext.config"
     xmlns:ui="exml:com.coremedia.ui.config"
     xmlns:local="com.tallence.core.redirects.studio.editor.form.*"
-    resizable="false">
+    autoScroll="true"
+    width="700px">
   <fx:Metadata>
     [ResourceBundle('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin')]
     [ResourceBundle('com.coremedia.cms.editor.Editor')]
@@ -34,13 +35,20 @@ The Windows is not "modal" because the editor might drag a document from the wor
 
     [Bindable]
     public var mayNotUseRegexVE:ValueExpression;
+
+    [Bindable]
+    public var mayNotUseTargetUrlsVE:ValueExpression;
     ]]>
   </fx:Script>
   <local:items>
     <local:RedirectEditPanel localModel="{getLocalModel()}"
                              mayNotUseRegexVE="{config.mayNotUseRegexVE}"
+                             mayNotUseTargetUrlsVE="{config.mayNotUseTargetUrlsVE}"
                              mayNotPublishVE="{config.mayNotPublishVE}"
-                             errorMessagesVE="{getErrorMessagesVE()}"/>
+                             errorMessagesVE="{getErrorMessagesVE()}"
+                             selectedSiteIdVE="{config.selectedSiteIdVE}"
+                             validateRedirectHandler="{validateRedirect}"
+                             redirect="{config.redirect}"/>
   </local:items>
   <local:fbar>
     <Toolbar>

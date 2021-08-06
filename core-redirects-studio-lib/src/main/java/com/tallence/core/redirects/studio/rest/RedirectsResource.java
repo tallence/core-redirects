@@ -20,6 +20,7 @@ import com.coremedia.cap.content.Content;
 import com.coremedia.cap.content.ContentRepository;
 import com.coremedia.rest.linking.LinkResolver;
 import com.coremedia.rest.linking.LinkResolverUtil;
+import com.tallence.core.redirects.model.RedirectSourceParameter;
 import com.tallence.core.redirects.model.RedirectType;
 import com.tallence.core.redirects.model.SourceUrlType;
 import com.tallence.core.redirects.studio.model.Pageable;
@@ -44,14 +45,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.ACTIVE;
-import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.REDIRECT_TYPE;
-import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.SOURCE;
-import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.SOURCE_URL_TYPE;
-import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.TARGET_LINK;
+import static com.tallence.core.redirects.studio.model.RedirectUpdateProperties.*;
 
 /**
  * The resource handles requests to load, create, validate and upload redirects.
@@ -88,9 +86,10 @@ public class RedirectsResource {
           @RequestParam int pageSize,
           @RequestParam String sorter,
           @RequestParam String sortDirection,
-          @RequestParam String search) {
+          @RequestParam String search,
+          @RequestParam boolean exactMatch) {
     Map<String, Object> response = new HashMap<>();
-    Pageable redirects = redirectRepository.getRedirects(siteId, search, sorter, sortDirection, pageSize, page);
+    Pageable redirects = redirectRepository.getRedirects(siteId, search, sorter, sortDirection, pageSize, page, exactMatch);
     response.put("items", redirects.getRedirects().stream().map(RedirectReference::new).collect(Collectors.toList()));
     response.put("total", redirects.getTotal());
     return response;
@@ -130,12 +129,16 @@ public class RedirectsResource {
                                                    @RequestParam String source,
                                                    @RequestParam String redirectId,
                                                    @RequestParam String targetId,
-                                                   @RequestParam Boolean active) {
+                                                   @RequestParam(required = false) String targetUrl, //it might be not available
+                                                   @RequestParam Boolean active,
+                                                   @RequestParam List<RedirectSourceParameter> sourceParameters) {
     Map<String, Object> properties = new HashMap<>();
 
     properties.put(ACTIVE, active);
     properties.put(TARGET_LINK, StringUtils.isNotBlank(targetId) ? contentRepository.getContent(targetId) : null);
+    properties.put(TARGET_URL, targetUrl);
     properties.put(SOURCE, source);
+    properties.put(SOURCE_PARAMETERS, sourceParameters);
     // Let's assume default values for the types, so that the validation does not fail.
     // These are not sent by the validation request, as they cannot be empty.
     properties.put(REDIRECT_TYPE, RedirectType.AFTER_NOT_FOUND.toString());

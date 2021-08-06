@@ -15,21 +15,13 @@
  */
 
 package com.tallence.core.redirects.studio.editor.grid {
-import com.coremedia.cap.undoc.content.Content;
 import com.coremedia.cms.editor.sdk.editorContext;
-import com.coremedia.cms.studio.multisite.models.sites.Site;
 import com.coremedia.ui.data.ValueExpression;
 import com.coremedia.ui.data.ValueExpressionFactory;
-import com.coremedia.ui.store.BeanRecord;
-import com.coremedia.ui.util.EncodingUtil;
-import com.tallence.core.redirects.studio.data.Redirect;
 import com.tallence.core.redirects.studio.data.RedirectImpl;
-import com.tallence.core.redirects.studio.editor.form.RedirectEditWindow;
 
 import ext.data.Store;
 import ext.grid.GridPanel;
-import ext.selection.RowSelectionModel;
-import ext.util.Format;
 
 use namespace editorContext;
 
@@ -41,42 +33,11 @@ use namespace editorContext;
 [ResourceBundle('com.coremedia.cms.editor.Editor')]
 public class RedirectsGridBase extends GridPanel {
 
-  protected static const TOOLBAR_ID:String = "pagingToolbar";
-
   private var selectedSiteVE:ValueExpression;
   private var searchFieldVE:ValueExpression;
-  private var mayNotUseRegexVE:ValueExpression;
-  private var mayNotPublishVE:ValueExpression;
 
   public function RedirectsGridBase(config:RedirectsGrid = null) {
     super(config);
-    addListener('rowDblclick', openEditWindow);
-
-    this.mayNotUseRegexVE = config.mayNotUseRegexVE;
-    this.mayNotPublishVE = config.mayNotPublishVE;
-  }
-
-  /**
-   * Creates a ValueExpression with an array of all registered sites.
-   * @return
-   */
-  protected function getSitesStoreVE():ValueExpression {
-    return ValueExpressionFactory.createFromFunction(function ():Array {
-      var sitesStore:Array = [];
-      var sites:Array = editorContext.getSitesService().getSites();
-      if (sites) {
-        for (var i:int = 0; i < sites.length; i++) {
-          var site:Site = sites[i];
-          var pattern:String = resourceManager.getString('com.coremedia.cms.editor.Editor', 'HeaderToolbar_siteSelector_displayName_pattern');
-          var calculatedSiteName:String = Format.format(pattern,
-              EncodingUtil.encodeForHTML(site.getName()),
-              site.getLocale().getLanguageTag(),
-              site.getLocale().getDisplayName());
-          sitesStore.push({id: site.getId(), name: calculatedSiteName});
-        }
-      }
-      return sitesStore;
-    });
   }
 
   /**
@@ -97,9 +58,9 @@ public class RedirectsGridBase extends GridPanel {
    * the value changes, the actual selected page must be reset to 1.
    * @return ValueExpression
    */
-  protected function getSearchFieldVE():ValueExpression {
+  protected function getSearchFieldVE(config:RedirectsGrid):ValueExpression {
     if (!searchFieldVE) {
-      searchFieldVE = ValueExpressionFactory.createFromValue("");
+      searchFieldVE = config.searchFieldVE ? config.searchFieldVE : ValueExpressionFactory.createFromValue("");
       searchFieldVE.addChangeListener(resetPage);
     }
     return searchFieldVE;
@@ -111,7 +72,8 @@ public class RedirectsGridBase extends GridPanel {
    * @return Store
    */
   protected function getRedirectsStore(config:RedirectsGrid):Store {
-    var proxy:RedirectProxy = new RedirectProxy(getSelectedSiteVE(config), getSearchFieldVE());
+    var exactMatch:Boolean = config.exactMatch != undefined ? config.exactMatch : false;
+    var proxy:RedirectProxy = new RedirectProxy(getSelectedSiteVE(config), getSearchFieldVE(config), config.selectedRedirect, exactMatch);
 
     var store:Store = new Store(Store({
       pageSize: 20,
@@ -128,37 +90,7 @@ public class RedirectsGridBase extends GridPanel {
     return store;
   }
 
-  protected function openEditWindow():void {
-    var window:RedirectEditWindow = new RedirectEditWindow(RedirectEditWindow({
-      title: resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_edit_text'),
-      redirect: getSelectedRedirect(),
-      mayNotPublishVE: this.mayNotPublishVE,
-      mayNotUseRegexVE: this.mayNotUseRegexVE
-    }));
-    window.show()
-  }
-
-  protected function deleteRedirect():void {
-    getSelectedRedirect().deleteMe(resetPage);
-  }
-
-  protected function openRedirectTarget():void {
-    var targetLink:Content = getSelectedRedirect().getTargetLink();
-    editorContext.getContentTabManager().openDocument(targetLink);
-  }
-
-  /**
-   * Returns the selected redirect. The selection model always consists of one element,
-   * because multiple selection is disabled.
-   * @return Redirect
-   */
-  private function getSelectedRedirect():Redirect {
-    var selections:Array = (getSelectionModel() as RowSelectionModel).getSelection();
-    var selection:BeanRecord = selections && selections.length > 0 && selections[0];
-    return selection ? selection.getBean() as Redirect : null;
-  }
-
-  private function resetPage():void {
+  protected function resetPage():void {
     getStore().loadPage(1);
   }
 

@@ -17,25 +17,32 @@
 package com.tallence.core.redirects.studio.rest;
 
 import com.coremedia.cap.content.Content;
+import com.tallence.core.redirects.model.RedirectParameter;
 import com.tallence.core.redirects.model.RedirectType;
 import com.tallence.core.redirects.model.SourceUrlType;
 import com.tallence.core.redirects.studio.model.Redirect;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * A redirect representation used by the studio to display redirects.
  */
 public class RedirectRepresentation {
 
-  private boolean active;
-  private SourceUrlType sourceUrlType;
-  private String source;
-  private Date creationDate;
-  private Content targetLink;
-  private RedirectType redirectType;
-  private String siteId;
-  private String description;
+  private final boolean active;
+  private final SourceUrlType sourceUrlType;
+  private final String source;
+  private final Date creationDate;
+  private final Content targetLink;
+  private final String targetUrl;
+  private final RedirectType redirectType;
+  private final String siteId;
+  private final String description;
+  private final List<RedirectParameterRepresentation> sourceParameters;
+  private final List<RedirectParameterRepresentation> targetParameters;
 
   RedirectRepresentation(Redirect redirect) {
     this.active = redirect.isActive();
@@ -43,9 +50,12 @@ public class RedirectRepresentation {
     this.source = redirect.getSource();
     this.creationDate = redirect.getCreationDate();
     this.targetLink = redirect.getTargetLink();
+    this.targetUrl = redirect.getTargetUrl();
     this.redirectType = redirect.getRedirectType();
     this.siteId = redirect.getSiteId();
     this.description = redirect.getDescription();
+    this.sourceParameters = convertParamers(redirect.getSourceParameters());
+    this.targetParameters = convertParamers(redirect.getTargetParameters());
   }
 
   public boolean isActive() {
@@ -68,6 +78,10 @@ public class RedirectRepresentation {
     return targetLink;
   }
 
+  public String getTargetUrl() {
+    return targetUrl;
+  }
+
   public RedirectType getRedirectType() {
     return redirectType;
   }
@@ -78,5 +92,21 @@ public class RedirectRepresentation {
 
   public String getDescription() {
     return description;
+  }
+
+  public List<RedirectParameterRepresentation> getSourceParameters() {
+    return sourceParameters;
+  }
+
+  public List<RedirectParameterRepresentation> getTargetParameters() {
+    return targetParameters;
+  }
+
+  private List<RedirectParameterRepresentation> convertParamers(List<? extends RedirectParameter> parameters) {
+    return Optional.ofNullable(parameters)
+            .orElse(List.of())
+            .stream()
+            .map(RedirectParameterRepresentation::new)
+            .collect(Collectors.toList());
   }
 }

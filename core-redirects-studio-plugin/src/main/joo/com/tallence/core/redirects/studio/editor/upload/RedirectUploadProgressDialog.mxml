@@ -64,8 +64,10 @@
               <ui:fields>
                 <ui:DataField name="{RedirectImpl.ACTIVE}"/>
                 <ui:DataField name="{RedirectImpl.SOURCE}"/>
-                <ui:DataField name="{RedirectImpl.TARGET_LINK}"/>
+                <ui:DataField name="{RedirectImpl.TARGET_LINK_NAME}"/>
                 <ui:DataField name="{RedirectImpl.REDIRECT_TYPE}"/>
+                <ui:DataField name="{RedirectImpl.SOURCE_PARAMETERS}"/>
+                <ui:DataField name="{RedirectImpl.TARGET_PARAMETERS}"/>
               </ui:fields>
             </ui:BindListPlugin>
           </plugins>
@@ -74,6 +76,10 @@
             <columns:RedirectSourceColumn/>
             <columns:RedirectTargetColumn/>
             <columns:RedirectTypeColumn/>
+            <columns:RedirectParametersColumn header="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_sourceParameters')}"
+                                              dataIndex="{RedirectImpl.SOURCE_PARAMETERS}"/>
+            <columns:RedirectParametersColumn header="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_targetParameters')}"
+                                              dataIndex="{RedirectImpl.TARGET_PARAMETERS}"/>
           </columns>
           <view>
             <GridView stripeRows="true"

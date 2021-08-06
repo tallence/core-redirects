@@ -4,9 +4,11 @@
     <property name="sourceUrlType" type="string" length="128"/>
     <property name="source" type="string" length="1024"/>
     <property name="targetLink" type="link" linkType="CMLinkable"/>
+    <property name="targetUrl" type="string" length="512"/>
     <property name="redirectType" type="string" length="128"/>
     <property name="description" type="string" length="1024"/>
     <property name="imported" type="int"/>
+    <property name="urlParams" type="markup" grammar="coremedia-struct-2008"/>
   </type>
 
   <type name="CMAbstractCategory" abstract="true" parent="CMChannel">

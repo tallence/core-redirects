@@ -15,29 +15,20 @@
  */
 package com.tallence.core.redirects.cae.filter;
 
-import com.coremedia.blueprint.base.multisite.cae.SiteResolver;
 import com.coremedia.blueprint.common.contentbeans.CMLinkable;
-import com.coremedia.cap.content.Content;
-import com.coremedia.cap.multisite.Site;
-import com.coremedia.cap.multisite.SiteHelper;
-import com.coremedia.objectserver.beans.ContentBean;
 import com.coremedia.objectserver.beans.ContentBeanFactory;
 import com.coremedia.objectserver.web.links.LinkFormatter;
+import com.tallence.core.redirects.cae.filter.RedirectMatchingService.Result;
 import com.tallence.core.redirects.cae.model.Redirect;
-import com.tallence.core.redirects.cae.service.RedirectService;
-import com.tallence.core.redirects.cae.service.SiteRedirects;
-import com.tallence.core.redirects.model.RedirectType;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
+import com.tallence.core.redirects.model.RedirectTargetParameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.springframework.web.util.UriUtils;
+import software.amazon.awssdk.utils.StringUtils;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -45,10 +36,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Map;
-import java.util.regex.Pattern;
+import java.util.*;
+
+import static org.springframework.web.util.UriUtils.encodeQueryParam;
 
 /**
  * Filter for the handling of redirects.
@@ -60,22 +50,19 @@ public class RedirectFilter implements Filter {
   private static final Charset UTF8 = StandardCharsets.UTF_8;
 
   private final ContentBeanFactory contentBeanFactory;
-  private final SiteResolver siteResolver;
-  private final RedirectService redirectService;
   private final LinkFormatter linkFormatter;
+  private final RedirectMatchingService redirectMatchingService;
   private final boolean keepSourceUrlParams;
 
   @Autowired
   public RedirectFilter(ContentBeanFactory contentBeanFactory,
                         @Value("${core.redirects.filter.keepParams:false}")
                         boolean keepSourceUrlParams,
-                        SiteResolver siteResolver,
-                        RedirectService redirectService,
+                        RedirectMatchingService redirectMatchingService,
                         LinkFormatter linkFormatter) {
     this.contentBeanFactory = contentBeanFactory;
-    this.siteResolver = siteResolver;
-    this.redirectService = redirectService;
     this.linkFormatter = linkFormatter;
+    this.redirectMatchingService = redirectMatchingService;
     this.keepSourceUrlParams = keepSourceUrlParams;
   }
 
@@ -90,18 +77,15 @@ public class RedirectFilter implements Filter {
     HttpServletResponse response = (HttpServletResponse) sresponse;
     RedirectHttpServletResponseWrapper wrapper = null;
 
-    // Fetch redirects
-    SiteRedirects redirects = getSiteRedirects(request);
-
     // Pre-handle
-    Result result = determinePreAction(redirects, request.getPathInfo());
-    if (result.action == Result.Action.SEND) {
-      sendPermanentRedirect(request, response, result.redirect);
+    final Result result = redirectMatchingService.getMatchingRedirect(request);
+    if (result.getAction() == Result.Action.SEND) {
+      sendPermanentRedirect(request, response, result.getRedirect());
       return;
-    } else if (result.action == Result.Action.WRAP) {
+    } else if (result.getAction() == Result.Action.WRAP) {
       // Because we might have to modify the response, we need to wrap it in order to prevent tomcat from starting
       // to write to the wire before we have inspected it.
-      wrapper = new RedirectHttpServletResponseWrapper(response, result.redirect);
+      wrapper = new RedirectHttpServletResponseWrapper(response, result.getRedirect());
     }
 
     // Let the actual controller do its thing (with the wrapper, if one is set)
@@ -137,97 +121,11 @@ public class RedirectFilter implements Filter {
   // HELPER METHODS
 
   /**
-   * Fetch redirects for the given site.
-   *
-   * @param request current request
-   * @return a result holder
-   */
-  @NonNull
-  private SiteRedirects getSiteRedirects(HttpServletRequest request) {
-    // Determine site (in order to fetch the redirects for it)
-    Site site = getSiteFromRequest(request);
-
-    // Fetch redirect holder for site
-    return redirectService.getRedirectsForSite(site);
-  }
-
-  /**
-   * Because the {@code SiteFilter} might have run or not (depending on the setup), we can either simply take
-   * the current site from the request or we have to parse it outselves.
-   */
-  @Nullable
-  private Site getSiteFromRequest(HttpServletRequest request) {
-    // Check first, if someone has already made the lookup
-    Site site = SiteHelper.getSiteFromRequest(request);
-
-    if (site == null) {
-      // If site is not in request, it means that the SiteFilter has not run yet. So we fetch the site ourselves.
-      // This code is shamelessly copied from SiteFilter.java in cae-base-lib
-      String pathInfo = request.getPathInfo();
-      try {
-        if (!StringUtils.hasLength(pathInfo) || "/".equals(pathInfo)) {
-          LOG.debug("Could not determine a site without a path info in request {}", request);
-        } else {
-          site = siteResolver.findSiteByPath(pathInfo);
-        }
-      } catch (Exception e) {
-        LOG.warn("Could not determine the site for the request", e);
-      }
-
-    }
-    return site;
-  }
-
-  /**
-   * Determines, if a redirect should be executed now, after handling or never.
-   */
-  private Result determinePreAction(SiteRedirects redirects, String pathInfo) {
-
-    if (pathInfo == null) {
-      return Result.none();
-    }
-
-    Redirect redirect = getMatchingRedirect(redirects, pathInfo);
-    if (redirect != null) {
-      return redirect.getRedirectType() == RedirectType.ALWAYS ? Result.send(redirect) : Result.wrap(redirect);
-    } else {
-      for (Map.Entry<Pattern, Redirect> patternRedirect : redirects.getPatternRedirects().entrySet()) {
-        if (patternRedirect.getKey().matcher(pathInfo).matches()) {
-          redirect = patternRedirect.getValue();
-          return redirect.getRedirectType() == RedirectType.ALWAYS ? Result.send(redirect) : Result.wrap(redirect);
-        }
-      }
-    }
-    return Result.none();
-  }
-
-  /**
-   * Look into the plain redirects map with the given pathInfo.
-   *
-   * @param pathInfo the requestUrl. A trailing slash will be cut off.
-   * @param redirects the lookup will happen in this dataStructure.
-   */
-  private Redirect getMatchingRedirect(SiteRedirects redirects, String pathInfo) {
-
-    if (pathInfo.endsWith("/")) {
-      pathInfo = pathInfo.substring(0, pathInfo.length() - 1);
-    }
-
-    Redirect redirect = redirects.getPlainRedirects().get(pathInfo);
-
-    if (redirect != null && isTargetInvalid(redirect.getTarget())) {
-      return null;
-    }
-
-    return redirect;
-  }
-
-  /**
    * Executes the actual redirect.
    * TODO Currently, this code always does a 301 with instant expiry. This should be made configurable.
    */
   private void sendPermanentRedirect(HttpServletRequest request, HttpServletResponse response, Redirect target) {
-    if (target.getTarget() == null) {
+    if (target.hasNoTarget()) {
       LOG.error("Unable to redirect to empty string for redirect {}", target);
       return;
     }
@@ -241,12 +139,14 @@ public class RedirectFilter implements Filter {
     response.setHeader(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate");
     response.setHeader(HttpHeaders.PRAGMA, "no-cache");
     response.setDateHeader(HttpHeaders.EXPIRES, 0);
-    ContentBean targetBean = contentBeanFactory.createBeanFor(target.getTarget(), CMLinkable.class);
 
-    String targetLink = linkFormatter.formatLink(targetBean, null, request, response, true);
+    String targetLink = Optional.ofNullable(target.getTarget())
+            .map(t -> contentBeanFactory.createBeanFor(t, CMLinkable.class))
+            .map(t -> linkFormatter.formatLink(t, null, request, response, true))
+            .orElse(target.getTargetUrl());
 
     try {
-      targetLink = handleSourceParams(request, targetLink);
+      targetLink = handleParameters(request, targetLink, target.getTargetParameters());
     } catch (RuntimeException e) {
       LOG.warn("Error during handling query params [{}] of source url [{}]: [{}]. The query params will be ignored.",
               Arrays.toString(request.getParameterMap().entrySet().toArray()), request.getPathInfo(), e.getMessage());
@@ -255,53 +155,24 @@ public class RedirectFilter implements Filter {
     response.setHeader(HttpHeaders.LOCATION, targetLink);
   }
 
-  private String handleSourceParams(HttpServletRequest request, String targetLink) {
-    Map<String, String[]> parameterMap = request.getParameterMap();
-    if (keepSourceUrlParams && parameterMap != null && !parameterMap.isEmpty()) {
-      UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(targetLink);
-      parameterMap.forEach((key, value) -> Arrays.stream(value).map(v -> UriUtils.encodeQueryParam(v, UTF8)).forEach(v -> uriBuilder.queryParam(key, v)));
+  private String handleParameters(HttpServletRequest request, String targetLink, List<RedirectTargetParameter> targetParameters) {
+    Map<String, String[]> parameterMap = Optional.ofNullable(request.getParameterMap()).orElse(Collections.emptyMap());
+    UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(targetLink);
 
-      targetLink = uriBuilder.build(true).toString();
+    if (keepSourceUrlParams && !parameterMap.isEmpty()) {
+      //Keep the request params if they are not already used by the targetParams of the redirect
+      parameterMap.entrySet().stream()
+              .filter(e -> targetParameters.stream().noneMatch(t -> t.getName().equalsIgnoreCase(e.getKey())))
+              .forEach(e -> mapUrlParam(uriBuilder, e));
     }
-    return targetLink;
+    targetParameters.forEach(t -> uriBuilder.queryParam(t.getName(), encodeQueryParam(t.getValue(), UTF8)));
+
+    return uriBuilder.build(true).toString();
   }
 
-  private boolean isTargetInvalid(Content targetLink) {
-    Calendar now = Calendar.getInstance();
-    Calendar validFrom = targetLink.getDate("validFrom");
-    if (validFrom != null && validFrom.after(now)) {
-      return true;
-    }
-    Calendar validTo = targetLink.getDate("validTo");
-    return validTo != null && validTo.before(now);
-  }
-
-  /**
-   * Simple wrapper class for the pre-handle redirect result.
-   */
-  private static class Result {
-    private enum Action {
-      NONE, SEND, WRAP
-    }
-
-    private Redirect redirect;
-    private Action action;
-
-    private Result(Redirect redirect, Action action) {
-      this.redirect = redirect;
-      this.action = action;
-    }
-
-    static Result send(Redirect redirect) {
-      return new Result(redirect, Action.SEND);
-    }
-
-    static Result wrap(Redirect redirect) {
-      return new Result(redirect, Action.WRAP);
-    }
-
-    static Result none() {
-      return new Result(null, Action.NONE);
-    }
+  private void mapUrlParam(UriComponentsBuilder uriBuilder, Map.Entry<String, String[]> entry) {
+    Arrays.stream(entry.getValue())
+            .map(v -> encodeQueryParam(v, UTF8))
+            .forEach(v -> uriBuilder.queryParam(entry.getKey(), v));
   }
 }

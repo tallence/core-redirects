@@ -37,9 +37,12 @@ public class RedirectImpl extends RemoteBeanImpl implements Redirect {
   public static const SOURCE_TYPE_REGEX:String = "REGEX";
   public static const TARGET_LINK:String = "targetLink";
   public static const TARGET_LINK_NAME:String = "targetLinkName";
+  public static const TARGET_URL:String = "targetUrl";
   public static const DESCRIPTION:String = "description";
   public static const IMPORTED:String = "imported";
   public static const SITE_ID:String = "siteId";
+  public static const SOURCE_PARAMETERS:String = "sourceParameters";
+  public static const TARGET_PARAMETERS:String = "targetParameters";
 
   /**
    * List of all redirect properties, used by the grid.
@@ -56,7 +59,9 @@ public class RedirectImpl extends RemoteBeanImpl implements Redirect {
     TARGET_LINK_NAME,
     DESCRIPTION,
     IMPORTED,
-    SITE_ID
+    SITE_ID,
+    SOURCE_PARAMETERS,
+    TARGET_PARAMETERS
   ];
 
   public function RedirectImpl(path:String) {
@@ -66,14 +71,14 @@ public class RedirectImpl extends RemoteBeanImpl implements Redirect {
   public function deleteMe(callback:Function = null):void {
     var rsm:RemoteServiceMethod = new RemoteServiceMethod(this.getUriPath(), 'DELETE');
     rsm.request(
-        null,
-        function success(rsmr:RemoteServiceMethodResponse):void {
-          NotificationUtil.showInfo(ResourceManager.getInstance().getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_delete_result_text_success'));
-          callback.call(this);
-        },
-        function failure(rsmr:RemoteServiceMethodResponse):void {
-          NotificationUtil.showError(ResourceManager.getInstance().getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_delete_result_text_error_w_msg') + rsmr.getError());
-        });
+            null,
+            function success(rsmr:RemoteServiceMethodResponse):void {
+              NotificationUtil.showInfo(ResourceManager.getInstance().getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_delete_result_text_success'));
+              callback.call(this);
+            },
+            function failure(rsmr:RemoteServiceMethodResponse):void {
+              NotificationUtil.showError(ResourceManager.getInstance().getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_actions_delete_result_text_error_w_msg') + rsmr.getError());
+            });
   }
 
   public function isActive():Boolean {
@@ -90,6 +95,15 @@ public class RedirectImpl extends RemoteBeanImpl implements Redirect {
 
   public function setTargetLink(content:Content):void {
     set(TARGET_LINK, content);
+  }
+
+  public function getTargetUrl():String {
+    return get(TARGET_URL);
+  }
+
+
+  public function setTargetUrl(targetUrl:String):void {
+    set(TARGET_URL, targetUrl);
   }
 
   public function getTargetLinkName():String {
@@ -146,6 +160,24 @@ public class RedirectImpl extends RemoteBeanImpl implements Redirect {
 
   public function getSiteId():String {
     return get(SITE_ID);
+  }
+
+  public function setSourceParameters(parameters:Array):void {
+    set(SOURCE_PARAMETERS, parameters);
+  }
+
+  [ArrayElementType("com.tallence.core.redirects.studio.data.RedirectSourceParameter")]
+  public function getSourceParameters():Array {
+    return get(SOURCE_PARAMETERS);
+  }
+
+  public function setTargetParameters(parameters:Array):void {
+    set(TARGET_PARAMETERS, parameters);
+  }
+
+  [ArrayElementType("com.tallence.core.redirects.studio.data.RedirectTargetParameter")]
+  public function getTargetParameters():Array {
+    return get(TARGET_PARAMETERS);
   }
 
   override protected function propertiesUpdated(overwrittenValues:Object, newValues:Object):void {

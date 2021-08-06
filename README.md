@@ -9,14 +9,18 @@ The project is [Apache-2.0](./LICENSE) licensed, so it can be easily used and mo
 
 **Features:**
 
-- Static redirects from an absolute url or a regular expression to a content
-- Conditional redirects (redirect only, if the original page returns a 404)
+- Static redirects from an absolute url or a regular expression
+- Conditional redirects: redirect only, if:
+  - the original page returns a 404
+  - the source contains certain url parameters
+- Features can be activated for members of certain coreMedia groups.
 - Import of redirects from a CSV file
 - Optimized caching in the CAE to minimize response times
 - Configuration of redirects per site
 
-Requests can only be redirected to a CoreMedia content, but the regular `LinkFormatter` is used to create the target
-link, so for example `CMExternalLink`s can be configured to redirect to their target url.
+Per default, requests can only be redirected to a CoreMedia content. Redirects to external Urls can be done in two ways:
+* linking a document of the type `CMExternalLink`
+* using targetUrls for certain redirects, instead of linking contents. This should be used with care, because it might redirect to a non-existing page. The nice thing about linking contents is that the redirect target will exist as long as the redirect exists.
 
 
 Getting started
@@ -65,7 +69,9 @@ These options can be configured:
 1. `core.redirects.filter.keepParams` if enabled, the query params of the source url will be appended to the redirect target url.
 2. `core.redirects.path` the site-relative path where the redirect-documents are stored
 3. `core.redirects.cache.parallel.site.recompute.threads` Maximum number of threads for complete site index updates. Will be used at CAE startUp.
-4. `core.redirects.cache.parallel.item.recompute.threads` Maximum number of threads for item (single redirect) updates. Will be used for changes in a running CAE.  
+4. `core.redirects.cache.parallel.item.recompute.threads` Maximum number of threads for item (single redirect) updates. Will be used for changes in a running CAE.
+5. `core.redirects.permissions.targetUrlGroup` The group which allows members to describe a redirect target with an url instead of a document. Should be used with care. Use "*" to allow this for editor.
+6. `core.redirects.permissions.regexGroup` The group which allows members to use the sourceType "regexp". Should be used with care.
 
 That's it. Have fun ;) If you have any problems, questions, ideas, or feedback please contact us or
 [create an issue](https://github.com/tallence/core-redirects/issues). 

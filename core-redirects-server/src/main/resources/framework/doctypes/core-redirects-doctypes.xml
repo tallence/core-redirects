@@ -3,6 +3,8 @@
 <DocumentTypeModel xmlns="http://www.coremedia.com/2008/documenttypes"
                    Name="core-redirects-doctypes">
 
+  <ImportGrammar Name="coremedia-struct-2008"/>
+
   <ImportDocType Name="CMObject"/>
   <ImportDocType Name="CMLinkable"/>
 
@@ -10,9 +12,11 @@
     <StringProperty Name="sourceUrlType" Length="128"/>
     <StringProperty Name="source" Length="1024"/>
     <LinkListProperty Name="targetLink" Max="1" LinkType="CMLinkable"/>
+    <StringProperty Name="targetUrl" Length="512"/>
     <StringProperty Name="redirectType" Length="128"/>
     <StringProperty Name="description" Length="1024"/>
     <IntProperty Name="imported"/>
+    <XmlProperty Name="urlParams" Grammar="coremedia-struct-2008"/>
   </DocType>
 
 </DocumentTypeModel>

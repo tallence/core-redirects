@@ -17,11 +17,15 @@
 package com.tallence.core.redirects.studio.model;
 
 import com.coremedia.cap.content.Content;
+import com.tallence.core.redirects.model.RedirectParameter;
+import com.tallence.core.redirects.model.RedirectSourceParameter;
+import com.tallence.core.redirects.model.RedirectTargetParameter;
 import com.tallence.core.redirects.model.RedirectType;
 import com.tallence.core.redirects.model.SourceUrlType;
 import com.tallence.core.redirects.studio.repository.RedirectRepository;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Interface for redirects used by the {@link RedirectRepository} to
@@ -66,6 +70,11 @@ public interface Redirect {
   Content getTargetLink();
 
   /**
+   * Returns the target url of the redirect.
+   */
+  String getTargetUrl();
+
+  /**
    * Returns the {@link RedirectType} of the redirect.
    */
   RedirectType getRedirectType();
@@ -79,5 +88,15 @@ public interface Redirect {
    * Returns true, if the redirect was imported.
    */
   boolean isImported();
+
+  /**
+   * Returns the list of source parameters or an empty list.
+   */
+  List<RedirectSourceParameter> getSourceParameters();
+
+  /**
+   * Returns the list of target parameters or an empty list.
+   */
+  List<RedirectTargetParameter> getTargetParameters();
 
 }

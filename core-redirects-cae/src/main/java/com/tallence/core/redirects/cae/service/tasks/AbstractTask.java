@@ -25,8 +25,7 @@ import org.springframework.util.StringUtils;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.tallence.core.redirects.cae.model.Redirect.SOURCE_URL;
-import static com.tallence.core.redirects.cae.model.Redirect.TARGET_LINK;
+import static com.tallence.core.redirects.cae.model.Redirect.*;
 
 /**
  * Common methods for redirect cache update tasks.
@@ -62,9 +61,10 @@ abstract class AbstractTask implements Runnable {
     }
 
     Content targetLink = redirect.getLink(TARGET_LINK);
+    String targetUrl = redirect.getString(TARGET_URL);
 
-    if (targetLink == null) {
-      LOG.warn("redirect [{}] has no targetLink", redirect.getId());
+    if (targetLink == null && StringUtils.isEmpty(targetUrl)) {
+      LOG.warn("redirect [{}] has no targetLink or targetUrl", redirect.getId());
       return false;
     }
 

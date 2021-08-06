@@ -39,17 +39,23 @@ public class RedirectProxy extends DataProxy {
 
   private var selectedSiteVE:ValueExpression;
   private var searchFieldVE:ValueExpression;
+  private var selectedRedirect:Redirect;
+  private var exactMatch:Boolean;
 
   /**
    * Creates a RedirectsProxy
    *
    * @param selectedSiteVE ValueExpression holding the selected site id
    * @param searchFieldVE ValueExpression holding the search text
+   * @param selectedRedirect the selected redirect to be excluded in the grid if the grid is to be used in the edit window
+   * @param exactMatch true if the path of the redirect for the search should match exactly
    */
-  public function RedirectProxy(selectedSiteVE:ValueExpression, searchFieldVE:ValueExpression) {
+  public function RedirectProxy(selectedSiteVE:ValueExpression, searchFieldVE:ValueExpression, selectedRedirect:Redirect, exactMatch:Boolean) {
     super();
     this.selectedSiteVE = selectedSiteVE;
     this.searchFieldVE = searchFieldVE;
+    this.selectedRedirect = selectedRedirect;
+    this.exactMatch = exactMatch;
   }
 
   /**
@@ -79,7 +85,9 @@ public class RedirectProxy extends DataProxy {
 
     var beanRecords:Array = [];
     redirectsResponse.getRedirects().forEach(function (redirect:Redirect):void {
-      beanRecords.push(new recordType({bean: redirect}));
+      if (!selectedRedirect || selectedRedirect.getId() != redirect.getId()) {
+        beanRecords.push(new recordType({bean: redirect}));
+      }
     });
 
     var resultSet:ResultSet = new ResultSet();
@@ -97,7 +105,7 @@ public class RedirectProxy extends DataProxy {
   protected function loadRedirects(operation:ReadOperation):IPromise {
     var siteId:String = selectedSiteVE.getValue();
     var searchText:String = searchFieldVE.getValue();
-    return RedirectsUtil.getRedirects(siteId, searchText, operation);
+    return RedirectsUtil.getRedirects(siteId, searchText, operation, exactMatch);
   }
 
 }

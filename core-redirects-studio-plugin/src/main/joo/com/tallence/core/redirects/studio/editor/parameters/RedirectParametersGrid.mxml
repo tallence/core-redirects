@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<local:RedirectParamtersGridBase
+        xmlns:fx="http://ns.adobe.com/mxml/2009"
+        xmlns:exml="http://www.jangaroo.net/exml/0.8"
+        xmlns="exml:ext.config"
+        xmlns:ui="exml:com.coremedia.ui.config"
+        xmlns:local="com.tallence.core.redirects.studio.editor.parameters.*"
+        maxHeight="150"
+        minHeight="25"
+        margin="0 0 0 130"
+        width="500px"
+        height="100px">
+  <fx:Metadata>
+    [ResourceBundle('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin')]
+    [ResourceBundle('com.coremedia.icons.CoreIcons')]
+  </fx:Metadata>
+  <fx:Script><![CDATA[
+    import com.coremedia.ui.data.ValueExpression;
+    import com.tallence.core.redirects.studio.data.RedirectSourceParameter;
+    import com.tallence.core.redirects.studio.data.RedirectTargetParameter;
+
+    public static const xtype:String = "com.tallence.core.redirects.studio.editor.parameters.redirectParametersGrid";
+
+    private var config:RedirectParametersGrid;
+
+    public native function RedirectParametersGrid(config:RedirectParametersGrid = null);
+
+    [Bindable]
+    public var errorMessagesVE:ValueExpression;
+
+    [Bindable]
+    public var validateRedirectHandler:Function;
+    ]]>
+  </fx:Script>
+
+  <local:tbar>
+    <Toolbar>
+      <items>
+        <ui:IconButton iconCls="{resourceManager.getString('com.coremedia.icons.CoreIcons', 'remove')}"
+                       disabled="true"
+                       handler="{deleteRow}">
+          <ui:plugins>
+            <ui:BindPropertyPlugin componentProperty="disabled"
+                                   bindTo="{getSelectedPositionsExpression()}"
+                                   transformer="{isEmptySelection}"/>
+          </ui:plugins>
+        </ui:IconButton>
+        <TbSeparator/>
+        <ui:IconButton iconCls="{resourceManager.getString('com.coremedia.icons.CoreIcons', 'add')}"
+                       handler="{addRow}"/>
+      </items>
+    </Toolbar>
+  </local:tbar>
+
+  <local:plugins exml:mode="append">
+    <ui:BindSelectionPlugin selectedPositions="{getSelectedPositionsExpression()}"/>
+    <ui:CellEditPlugin clicksToEdit="2"/>
+    <ui:BindListPlugin bindTo="{config.bindTo}">
+      <ui:fields>
+        <ui:DataField name="{RedirectTargetParameter.NAME}"/>
+        <ui:DataField name="{RedirectTargetParameter.VALUE}"/>
+        <ui:DataField name="{RedirectSourceParameter.OPERATOR}"/>
+      </ui:fields>
+    </ui:BindListPlugin>
+  </local:plugins>
+  <local:columns>
+    <GridColumn
+            header="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_parameterName')}"
+            dataIndex="{RedirectTargetParameter.NAME}">
+      <editor>
+        <TextField allowBlank="false"/>
+      </editor>
+    </GridColumn>
+    <GridColumn
+            header="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_parameterValue')}"
+            flex="1"
+            dataIndex="{RedirectTargetParameter.VALUE}">
+      <editor>
+        <TextField allowBlank="false"/>
+      </editor>
+    </GridColumn>
+  </local:columns>
+  <local:layout>
+    <layout_Fit/>
+  </local:layout>
+  <local:selModel>
+    <selection_RowModel/>
+  </local:selModel>
+
+</local:RedirectParamtersGridBase>

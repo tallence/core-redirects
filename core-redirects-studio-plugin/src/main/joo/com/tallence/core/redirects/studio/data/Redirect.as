@@ -33,7 +33,11 @@ public interface Redirect extends RemoteBean {
 
   function getTargetLink():Content;
 
+  function getTargetUrl():String;
+
   function setTargetLink(content:Content):void;
+
+  function setTargetUrl(targetUrl: String):void;
 
   function getTargetLinkName():String;
 
@@ -62,6 +66,14 @@ public interface Redirect extends RemoteBean {
   function setSource(source:String):void;
 
   function getSiteId():String;
+
+  function setSourceParameters(parameters:Array):void;
+
+  function getSourceParameters():Array;
+
+  function setTargetParameters(parameters:Array):void;
+
+  function getTargetParameters():Array;
 
 }
 }

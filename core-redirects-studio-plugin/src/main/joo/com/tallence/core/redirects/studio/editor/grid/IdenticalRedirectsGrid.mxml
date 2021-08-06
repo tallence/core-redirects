@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<local:IdenticalRedirectsGridBase
+        xmlns:fx="http://ns.adobe.com/mxml/2009"
+        xmlns:exml="http://www.jangaroo.net/exml/0.8"
+        xmlns="exml:ext.config"
+        xmlns:local="com.tallence.core.redirects.studio.editor.grid.*"
+        xmlns:columns="com.tallence.core.redirects.studio.editor.grid.columns.*">
+  <fx:Metadata>
+    [ResourceBundle('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin')]
+    [ResourceBundle('com.coremedia.cms.editor.Editor')]
+    [ResourceBundle('com.coremedia.icons.CoreIcons')]
+  </fx:Metadata>
+  <fx:Script><![CDATA[
+    import com.tallence.core.redirects.studio.data.RedirectImpl;
+
+    public static const xtype:String = "com.tallence.core.redirects.studio.editor.grid.identicalRedirectsGrid";
+
+    public native function IdenticalRedirectsGrid(config:IdenticalRedirectsGrid = null);
+    ]]>
+  </fx:Script>
+
+
+  <local:columns>
+    <columns:RedirectStatusColumn/>
+    <columns:RedirectTargetColumn/>
+    <columns:RedirectParametersColumn
+            header="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_sourceParameters')}"
+            dataIndex="{RedirectImpl.SOURCE_PARAMETERS}"/>
+  </local:columns>
+
+</local:IdenticalRedirectsGridBase>

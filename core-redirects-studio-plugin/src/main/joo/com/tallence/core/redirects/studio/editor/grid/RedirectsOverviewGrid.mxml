@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<local:RedirectsOverviewGridBase
+    xmlns:fx="http://ns.adobe.com/mxml/2009"
+    xmlns:exml="http://www.jangaroo.net/exml/0.8"
+    xmlns="exml:ext.config"
+    xmlns:ui="exml:com.coremedia.ui.config"
+    xmlns:local="com.tallence.core.redirects.studio.editor.grid.*"
+    xmlns:columns="com.tallence.core.redirects.studio.editor.grid.columns.*">
+  <fx:Metadata>
+    [ResourceBundle('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin')]
+    [ResourceBundle('com.coremedia.cms.editor.Editor')]
+    [ResourceBundle('com.coremedia.icons.CoreIcons')]
+  </fx:Metadata>
+  <fx:Script><![CDATA[
+    import com.coremedia.ui.data.ValueExpression;
+    import com.coremedia.ui.skins.ToolbarSkin;
+    import com.tallence.core.redirects.studio.data.RedirectImpl;
+
+    public static const xtype:String = "com.tallence.core.redirects.studio.editor.grid.redirectsOverviewGrid";
+
+    private var config:RedirectsOverviewGrid;
+
+    [Bindable]
+    public var mayNotWriteVE:ValueExpression;
+
+    [Bindable]
+    public var mayNotPublishVE:ValueExpression;
+
+    [Bindable]
+    public var mayNotUseRegexVE:ValueExpression;
+
+    [Bindable]
+    public var mayNotUseTargetUrlsVE:ValueExpression;
+
+    [Bindable]
+    public var siteIsNotSelectedVE:ValueExpression;
+
+    public native function RedirectsOverviewGrid(config:RedirectsOverviewGrid = null);
+    ]]>
+  </fx:Script>
+  <local:dockedItems>
+    <Toolbar ui="{ToolbarSkin.HEADER_GRID_100.getSkin()}">
+      <items>
+        <TextField labelAlign="left"
+                   width="300"
+                   checkChangeBuffer="1000"
+                   fieldLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_grid_search_label')}"
+                   emptyText="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_grid_search_empty_text')}">
+          <plugins>
+            <ui:BindPropertyPlugin bindTo="{getSearchFieldVE(config)}" bidirectional="true"/>
+            <ui:BindPropertyPlugin componentProperty="disabled"
+                                   bindTo="{config.siteIsNotSelectedVE}"/>
+          </plugins>
+        </TextField>
+        <ui:LocalComboBox
+            width="400"
+            labelWidth="180"
+            fieldLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_grid_site_selector_label')}"
+            valueField="id"
+            displayField="name"
+            anyMatch="true"
+            valueNotFoundText="{resourceManager.getString('com.coremedia.cms.editor.Editor', 'HeaderToolbar_siteSelector_none_text')}"
+            emptyText="{resourceManager.getString('com.coremedia.cms.editor.Editor', 'HeaderToolbar_siteSelector_empty_text')}"
+            editable="false"
+            encodeItems="true">
+          <ui:plugins>
+            <ui:BindListPlugin sortField="name" bindTo="{getSitesStoreVE()}">
+              <ui:fields>
+                <ui:DataField name="id" encode="false"/>
+                <ui:DataField name="name" encode="false" sortType="asUCString"/>
+              </ui:fields>
+            </ui:BindListPlugin>
+            <ui:BindPropertyPlugin bidirectional="true"
+                                   bindTo="{getSelectedSiteVE(config)}"/>
+          </ui:plugins>
+        </ui:LocalComboBox>
+      </items>
+    </Toolbar>
+    <PagingToolbar id_="{TOOLBAR_ID}"/>
+  </local:dockedItems>
+  <local:plugins exml:mode="prepend">
+    <ui:ContextMenuPlugin>
+      <ui:contextMenu>
+        <Menu>
+          <items>
+            <MenuItem iconCls="{resourceManager.getString('com.coremedia.icons.CoreIcons', 'pencil')}"
+                      text="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_grid_redirect_edit_label')}"
+                      handler="{openEditWindow}">
+              <plugins exml:mode="append">
+                <ui:BindPropertyPlugin componentProperty="disabled"
+                                       bindTo="{config.mayNotWriteVE}"/>
+              </plugins>
+            </MenuItem>
+            <MenuItem iconCls="{resourceManager.getString('com.coremedia.icons.CoreIcons', 'trash_bin')}"
+                      text="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_grid_redirect_delete_label')}"
+                      handler="{deleteRedirect}">
+              <plugins exml:mode="append">
+                <ui:BindPropertyPlugin componentProperty="disabled"
+                                       bindTo="{config.mayNotWriteVE}"/>
+              </plugins>
+            </MenuItem>
+            <MenuSeparator/>
+            <MenuItem iconCls="{resourceManager.getString('com.coremedia.icons.CoreIcons', 'type_object')}"
+                      text="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_grid_redirect_open_label')}"
+                      handler="{openRedirectTarget}">
+            </MenuItem>
+          </items>
+        </Menu>
+      </ui:contextMenu>
+    </ui:ContextMenuPlugin>
+  </local:plugins>
+  <local:columns>
+    <columns:RedirectStatusColumn/>
+    <columns:RedirectSourceColumn/>
+    <columns:RedirectTargetColumn/>
+    <columns:RedirectCreationDateColumn/>
+    <columns:RedirectTypeColumn/>
+    <columns:RedirectParametersColumn header="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_sourceParameters')}"
+                                      dataIndex="{RedirectImpl.SOURCE_PARAMETERS}"/>
+    <columns:RedirectParametersColumn header="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_targetParameters')}"
+                                      dataIndex="{RedirectImpl.TARGET_PARAMETERS}"/>
+  </local:columns>
+
+</local:RedirectsOverviewGridBase>

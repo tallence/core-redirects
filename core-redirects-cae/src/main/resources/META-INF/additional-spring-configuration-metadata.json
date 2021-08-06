@@ -1,0 +1,31 @@
+{
+  "properties": [
+    {
+      "name": "core.redirects.filter.keepParams",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.tallence.core.redirects.cae.filter.RedirectFilter",
+      "description": "If true, the url params of redirected urls will be written to the targetUrl. They might be overwritten by targetUrlParams of the redirect."
+    },
+    {
+      "name": "core.redirects.path",
+      "type": "java.lang.String",
+      "sourceType": "com.tallence.core.redirects.cae.service.RedirectUpdateTaskScheduler",
+      "defaultValue": "Options/Settings/Redirects",
+      "description": "The path where the Redirect documents are stored relative the selected site."
+    },
+    {
+      "name": "core.redirects.cache.parallel.site.recompute.threads",
+      "type": "java.lang.Integer",
+      "sourceType": "com.tallence.core.redirects.cae.service.RedirectUpdateTaskScheduler",
+      "defaultValue": "null",
+      "description": "The number of threads to parse the redirects of new sites (used during CAE startUp). Defaults to the number of sites."
+    },
+    {
+      "name": "core.redirects.cache.parallel.item.recompute.threads",
+      "type": "java.lang.Integer",
+      "sourceType": "com.tallence.core.redirects.cae.service.RedirectUpdateTaskScheduler",
+      "defaultValue": 4,
+      "description": "The number of threads to parse changed redirects (used at CAE runtime)."
+    }
+  ]
+}

@@ -6,6 +6,8 @@
     xmlns:editor="exml:com.coremedia.cms.editor.sdk.config"
     xmlns:ui="exml:com.coremedia.ui.config"
     xmlns:rm="com.tallence.core.redirects.studio.plugins.*"
+    xmlns:grid="com.tallence.core.redirects.studio.editor.grid.*"
+    xmlns:parameters="com.tallence.core.redirects.studio.editor.parameters.*"
     xmlns:local="com.tallence.core.redirects.studio.editor.form.*">
   <fx:Metadata>
     [ResourceBundle('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin')]
@@ -14,6 +16,8 @@
   <fx:Script><![CDATA[
     import com.coremedia.ui.data.Bean;
     import com.coremedia.ui.data.ValueExpression;
+    import com.coremedia.ui.skins.DisplayFieldSkin;
+    import com.tallence.core.redirects.studio.data.Redirect;
     import com.tallence.core.redirects.studio.data.RedirectImpl;
 
     public static const xtype:String = "com.tallence.core.redirects.studio.editor.form.redirectEditPanel";
@@ -33,11 +37,29 @@
 
     [Bindable]
     public var mayNotUseRegexVE:ValueExpression;
+
+    [Bindable]
+    public var mayNotUseTargetUrlsVE:ValueExpression;
+
+    [Bindable]
+    public var selectedSiteIdVE:ValueExpression;
+
+    [Bindable]
+    public var validateRedirectHandler:Function;
+
+    [Bindable]
+    public var redirect:Redirect;
+
     ]]>
   </fx:Script>
   <local:items>
-    <editor:CollapsibleFormPanel collapsible="false">
-      <editor:items>
+    <ui:CollapsiblePanel collapsible="false">
+      <ui:defaults>
+        <FieldContainer labelAlign="left"
+                        width="100%"
+                        labelWidth="130"/>
+      </ui:defaults>
+      <ui:items>
 
         <Checkbox
             fieldLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_active')}">
@@ -78,29 +100,33 @@
 
         <editor:FormSpacerElement height="10px"/>
 
-        <FieldContainer
-            fieldLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_source')}">
-          <items>
-            <ui:StatefulTextField width="500"
-                                  checkChangeBuffer="400">
-              <ui:plugins exml:mode="append">
-                <rm:BindValidationStatePlugin bindTo="{config.errorMessagesVE}"
-                                              propertyName="{RedirectImpl.SOURCE}"/>
-                <ui:BindPropertyPlugin bidirectional="true"
-                                       bindTo="{getBindTo(config.localModel, RedirectImpl.SOURCE)}"/>
-              </ui:plugins>
-            </ui:StatefulTextField>
-            <ui:IconButton iconCls="{resourceManager.getString('com.coremedia.icons.CoreIcons', 'help')}"
-                           tooltip="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_help_tooltip')}"
-                           handler="{showInfoDialog}"/>
-          </items>
-          <layout>
-            <layout_HBox/>
-          </layout>
-        </FieldContainer>
+        <local:RedirectSourceFieldContainer errorMessagesVE="{config.errorMessagesVE}"
+                                            sourceUrlVE="{getBindTo(config.localModel, RedirectImpl.SOURCE)}"
+                                            sourceUrlParametersVE="{getBindTo(config.localModel, RedirectImpl.SOURCE_PARAMETERS)}"/>
 
         <local:ErrorFieldContainer errorMessagesVE="{config.errorMessagesVE}"
                                    propertyName="{RedirectImpl.SOURCE}"/>
+
+        <DisplayField value="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_same_source_title')}"
+                      ui="{DisplayFieldSkin.BOLD.getSkin()}"
+                      margin="10 0 0 0"/>
+
+        <grid:IdenticalRedirectsGrid selectedSiteIdVE="{config.selectedSiteIdVE}"
+                                     height="25px"
+                                     selectedRedirect="{config.redirect}"
+                                     exactMatch="true"
+                                     emptyText="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_list_nothing_found_match')}"
+                                     searchFieldVE="{getBindTo(config.localModel, RedirectImpl.SOURCE)}"/>
+
+        <DisplayField value="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_sourceParameters')}"
+                      ui="{DisplayFieldSkin.BOLD.getSkin()}"/>
+        <parameters:RedirectParametersGrid bindTo="{getBindTo(config.localModel, RedirectImpl.SOURCE_PARAMETERS)}"
+                                           validateRedirectHandler="{config.validateRedirectHandler}"/>
+
+        <local:ErrorFieldContainer errorMessagesVE="{config.errorMessagesVE}"
+                                   propertyName="{RedirectImpl.SOURCE_PARAMETERS}"/>
+
+        <editor:FormSpacerElement height="10px"/>
 
         <!--TODO both elements (spacer and comboBox) are bound to the mayNotUseRegexVE. There might is a more elegant way!-->
         <editor:FormSpacerElement height="10px">
@@ -130,7 +156,7 @@
 
         <editor:SingleLinkEditor linkContentType="CMLinkable"
                                  labelAlign="left"
-                                 width="580"
+                                 width="640"
                                  bindTo="{getBindTo(config.localModel, RedirectImpl.TARGET_LINK)}"
                                  linkListLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_targetLink')}">
           <editor:plugins exml:mode="append">
@@ -144,6 +170,33 @@
 
         <editor:FormSpacerElement height="10px"/>
 
+        <DisplayField value="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_targetParameters')}"
+                      ui="{DisplayFieldSkin.BOLD.getSkin()}"/>
+        <parameters:RedirectParametersGrid bindTo="{getBindTo(config.localModel, RedirectImpl.TARGET_PARAMETERS)}"/>
+
+        <local:ErrorFieldContainer errorMessagesVE="{config.errorMessagesVE}"
+                                   propertyName="{RedirectImpl.TARGET_PARAMETERS}"/>
+
+        <editor:FormSpacerElement height="10px">
+          <editor:plugins exml:mode="append">
+            <ui:BindPropertyPlugin componentProperty="hidden"
+                                   bindTo="{config.mayNotUseTargetUrlsVE}"/>
+          </editor:plugins>
+        </editor:FormSpacerElement>
+
+        <local:RedirectTargetUrlFieldContainer errorMessagesVE="{config.errorMessagesVE}"
+                                               targetUrlVE="{getBindTo(config.localModel, RedirectImpl.TARGET_URL)}">
+          <local:plugins exml:mode="append">
+            <ui:BindPropertyPlugin componentProperty="hidden"
+                                   bindTo="{config.mayNotUseTargetUrlsVE}"/>
+          </local:plugins>
+        </local:RedirectTargetUrlFieldContainer>
+
+        <local:ErrorFieldContainer errorMessagesVE="{config.errorMessagesVE}"
+                                   propertyName="{RedirectImpl.TARGET_URL}"/>
+
+        <editor:FormSpacerElement height="10px"/>
+
         <TextArea
             fieldLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_field_description')}">
           <plugins exml:mode="append">
@@ -152,11 +205,13 @@
           </plugins>
         </TextArea>
 
-      </editor:items>
+      </ui:items>
       <!--  hide header -->
-      <editor:header/>
-    </editor:CollapsibleFormPanel>
-
+      <ui:header/>
+    </ui:CollapsiblePanel>
   </local:items>
+  <local:layout>
+    <layout_Fit/>
+  </local:layout>
 
 </local:RedirectEditPanelBase>

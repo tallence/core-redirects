@@ -21,11 +21,13 @@ public class PermissionResponse {
   private var mayWrite:Boolean;
   private var mayPublish:Boolean;
   private var mayUseRegex:Boolean;
+  private var mayUseTargetUrls:Boolean;
 
   public function PermissionResponse(jsonResponse:Object = null) {
     this.mayWrite = jsonResponse ? jsonResponse.mayWrite : false;
     this.mayPublish = jsonResponse ? jsonResponse.mayPublish : false;
     this.mayUseRegex = jsonResponse ? jsonResponse.mayUseRegex : false;
+    this.mayUseTargetUrls = jsonResponse ? jsonResponse.mayUseTargetUrls : false;
   }
 
   public function isMayWrite():Boolean {
@@ -38,6 +40,10 @@ public class PermissionResponse {
 
   public function isMayUseRegex():Boolean {
     return mayUseRegex;
+  }
+
+  public function isMayUseTargetUrls():Boolean {
+    return mayUseTargetUrls;
   }
 }
 }

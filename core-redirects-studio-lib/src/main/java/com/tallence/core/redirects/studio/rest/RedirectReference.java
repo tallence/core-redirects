@@ -31,94 +31,49 @@ import java.util.Date;
  * redirect must be loaded asynchronously if necessary. For the grid view the name of the target is also present in the
  * json.
  */
-public class RedirectReference {
+public class RedirectReference extends RedirectRepresentation {
 
-    @JsonProperty("$Bean")
+  @JsonProperty("$Bean")
+  private String reference;
+  private String targetLinkName;
+  private Boolean imported;
+
+
+  RedirectReference(Redirect redirect) {
+    super(redirect);
+    this.reference = "redirect/" + redirect.getSiteId() + "/" + redirect.getId();
+    if (redirect.getTargetLink() != null) {
+      this.targetLinkName = redirect.getTargetLink().getName();
+    } else if (redirect.getTargetUrl() != null) {
+      this.targetLinkName = this.getTargetUrl();
+    }
+    this.imported = redirect.isImported();
+  }
+
+  public String getReference() {
+    return reference;
+  }
+
+  public String getTargetLinkName() {
+    return targetLinkName;
+  }
+
+  public Boolean getImported() {
+    return imported;
+  }
+
+  private class TargetLink {
+
+    @JsonProperty("$Ref")
     private String reference;
-    private Boolean active;
-    private Date creationDate;
-    private RedirectType redirectType;
-    private String source;
-    private SourceUrlType sourceUrlType;
-    private String targetLinkName;
-    private TargetLink targetLink;
-    private String description;
-    private Boolean imported;
-    private String siteId;
 
-
-    RedirectReference(Redirect redirect) {
-        this.reference = "redirect/" + redirect.getSiteId() + "/" + redirect.getId();
-        this.active = redirect.isActive();
-        this.creationDate = redirect.getCreationDate();
-        this.redirectType = redirect.getRedirectType();
-        this.source = redirect.getSource();
-        this.sourceUrlType = redirect.getSourceUrlType();
-        if (redirect.getTargetLink() != null) {
-            this.targetLinkName = redirect.getTargetLink().getName();
-            this.targetLink = new TargetLink(redirect.getTargetLink());
-        }
-        this.description = redirect.getDescription();
-        this.imported = redirect.isImported();
-        this.siteId = redirect.getSiteId();
+    TargetLink(Content target) {
+      this.reference = "content/" + IdHelper.parseContentId(target.getId());
     }
 
     public String getReference() {
-        return reference;
+      return reference;
     }
-
-    public Boolean getActive() {
-        return active;
-    }
-
-    public Date getCreationDate() {
-        return creationDate;
-    }
-
-    public RedirectType getRedirectType() {
-        return redirectType;
-    }
-
-    public String getSource() {
-        return source;
-    }
-
-    public SourceUrlType getSourceUrlType() {
-        return sourceUrlType;
-    }
-
-    public String getTargetLinkName() {
-        return targetLinkName;
-    }
-
-    public TargetLink getTargetLink() {
-        return targetLink;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public Boolean getImported() {
-        return imported;
-    }
-
-    public String getSiteId() {
-        return siteId;
-    }
-
-    private class TargetLink {
-
-        @JsonProperty("$Ref")
-        private String reference;
-
-        TargetLink(Content target) {
-            this.reference = "content/" + IdHelper.parseContentId(target.getId());
-        }
-
-        public String getReference() {
-            return reference;
-        }
-    }
+  }
 
 }

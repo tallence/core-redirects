@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <local:RedirectsGridBase
-    xmlns:fx="http://ns.adobe.com/mxml/2009"
-    xmlns:exml="http://www.jangaroo.net/exml/0.8"
-    xmlns="exml:ext.config"
-    xmlns:ui="exml:com.coremedia.ui.config"
-    xmlns:local="com.tallence.core.redirects.studio.editor.grid.*"
-    xmlns:columns="com.tallence.core.redirects.studio.editor.grid.columns.*"
-    enableColumnHide="false"
-    enableColumnMove="false"
-    margin="10 10 10 10"
-    height="10"
-    store="{getRedirectsStore(config)}"
-    forceFit="true"
-    draggable="false">
+        xmlns:fx="http://ns.adobe.com/mxml/2009"
+        xmlns:exml="http://www.jangaroo.net/exml/0.8"
+        xmlns="exml:ext.config"
+        xmlns:local="com.tallence.core.redirects.studio.editor.grid.*"
+        enableColumnHide="false"
+        enableColumnMove="false"
+        margin="10 10 10 10"
+        height="10"
+        store="{getRedirectsStore(config)}"
+        forceFit="true"
+        draggable="false">
   <fx:Metadata>
     [ResourceBundle('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin')]
     [ResourceBundle('com.coremedia.cms.editor.Editor')]
@@ -20,7 +18,7 @@
   </fx:Metadata>
   <fx:Script><![CDATA[
     import com.coremedia.ui.data.ValueExpression;
-    import com.coremedia.ui.skins.ToolbarSkin;
+    import com.tallence.core.redirects.studio.data.Redirect;
 
     public static const xtype:String = "com.tallence.core.redirects.studio.editor.grid.redirectsGrid";
 
@@ -30,106 +28,34 @@
     public var selectedSiteIdVE:ValueExpression;
 
     [Bindable]
-    public var mayNotWriteVE:ValueExpression;
+    public var searchFieldVE:ValueExpression;
 
     [Bindable]
-    public var mayNotPublishVE:ValueExpression;
+    public var selectedRedirect:Redirect;
 
     [Bindable]
-    public var mayNotUseRegexVE:ValueExpression;
+    public var exactMatch:Boolean;
 
-    [Bindable]
-    public var siteIsNotSelectedVE:ValueExpression;
 
+    /**
+     * The base class for the grid used in two different places. The {@link RedirectsOverviewGrid} is used in the
+     * overview and shows all redirects. The redirects are filtered by two filters (site and search). These two values
+     * can be passed as variables.
+     *
+     * The {@link IdenticalRedirectsGrid} grid is used within the edit panel and shows redirects to the same source url.
+     * Here the value expression for the site and the search is passed directly and can not be edited by the user.
+     */
     public native function RedirectsGrid(config:RedirectsGrid = null);
     ]]>
   </fx:Script>
-  <local:dockedItems>
-    <Toolbar ui="{ToolbarSkin.HEADER_GRID_100.getSkin()}">
-      <items>
-        <TextField labelAlign="left"
-                   width="300"
-                   checkChangeBuffer="1000"
-                   fieldLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_grid_search_label')}"
-                   emptyText="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_grid_search_empty_text')}">
-          <plugins>
-            <ui:BindPropertyPlugin bindTo="{getSearchFieldVE()}" bidirectional="true"/>
-            <ui:BindPropertyPlugin componentProperty="disabled"
-                                   bindTo="{config.siteIsNotSelectedVE}"/>
-          </plugins>
-        </TextField>
-        <ui:LocalComboBox
-            width="400"
-            labelWidth="180"
-            fieldLabel="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_grid_site_selector_label')}"
-            valueField="id"
-            displayField="name"
-            anyMatch="true"
-            valueNotFoundText="{resourceManager.getString('com.coremedia.cms.editor.Editor', 'HeaderToolbar_siteSelector_none_text')}"
-            emptyText="{resourceManager.getString('com.coremedia.cms.editor.Editor', 'HeaderToolbar_siteSelector_empty_text')}"
-            editable="false"
-            encodeItems="true">
-          <ui:plugins>
-            <ui:BindListPlugin sortField="name" bindTo="{getSitesStoreVE()}">
-              <ui:fields>
-                <ui:DataField name="id" encode="false"/>
-                <ui:DataField name="name" encode="false" sortType="asUCString"/>
-              </ui:fields>
-            </ui:BindListPlugin>
-            <ui:BindPropertyPlugin bidirectional="true"
-                                   bindTo="{getSelectedSiteVE(config)}"/>
-          </ui:plugins>
-        </ui:LocalComboBox>
-      </items>
-    </Toolbar>
-    <PagingToolbar id_="{TOOLBAR_ID}"/>
-  </local:dockedItems>
-  <local:plugins exml:mode="prepend">
-    <ui:ContextMenuPlugin>
-      <ui:contextMenu>
-        <Menu>
-          <items>
-            <MenuItem iconCls="{resourceManager.getString('com.coremedia.icons.CoreIcons', 'pencil')}"
-                      text="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_grid_redirect_edit_label')}"
-                      handler="{openEditWindow}">
-              <plugins exml:mode="append">
-                <ui:BindPropertyPlugin componentProperty="disabled"
-                                       bindTo="{config.mayNotWriteVE}"/>
-              </plugins>
-            </MenuItem>
-            <MenuItem iconCls="{resourceManager.getString('com.coremedia.icons.CoreIcons', 'trash_bin')}"
-                      text="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_grid_redirect_delete_label')}"
-                      handler="{deleteRedirect}">
-              <plugins exml:mode="append">
-                <ui:BindPropertyPlugin componentProperty="disabled"
-                                       bindTo="{config.mayNotWriteVE}"/>
-              </plugins>
-            </MenuItem>
-            <MenuSeparator/>
-            <MenuItem iconCls="{resourceManager.getString('com.coremedia.icons.CoreIcons', 'type_object')}"
-                      text="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_grid_redirect_open_label')}"
-                      handler="{openRedirectTarget}">
-            </MenuItem>
-          </items>
-        </Menu>
-      </ui:contextMenu>
-    </ui:ContextMenuPlugin>
-  </local:plugins>
-  <local:columns>
-    <columns:RedirectStatusColumn/>
-    <columns:RedirectSourceColumn/>
-    <columns:RedirectTargetColumn/>
-    <columns:RedirectCreationDateColumn/>
-    <columns:RedirectTypeColumn/>
-  </local:columns>
   <local:view>
     <GridView stripeRows="true"
               trackOver="true"
               loadMask="true"
               deferEmptyText="false"
-              minHeight="60"
+              minHeight="25"
               loadingText="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_list_loading')}"
-              emptyText="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_list_nothing_found')}"/>
+              emptyText="{config.emptyText ? config.emptyText : resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_list_nothing_found')}"/>
   </local:view>
 
 </local:RedirectsGridBase>

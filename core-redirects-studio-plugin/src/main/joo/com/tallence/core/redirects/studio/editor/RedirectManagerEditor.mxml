@@ -40,12 +40,13 @@
                 title="{resourceManager.getString('com.tallence.core.redirects.studio.bundles.RedirectManagerStudioPlugin', 'redirectmanager_editor_list_text')}"
                 collapsible="false">
               <editor:items>
-                <grid:RedirectsGrid height="100%"
-                                    selectedSiteIdVE="{getSelectedSiteVE()}"
-                                    mayNotWriteVE="{getMayNotWriteVE()}"
-                                    mayNotPublishVE="{getMayNotPublishVE()}"
-                                    mayNotUseRegexVE="{getMayNotUseRegexVE()}"
-                                    siteIsNotSelectedVE="{getSiteIsNotSelectedVE()}"/>
+                <grid:RedirectsOverviewGrid height="100%"
+                                            selectedSiteIdVE="{getSelectedSiteVE()}"
+                                            mayNotWriteVE="{getMayNotWriteVE()}"
+                                            mayNotPublishVE="{getMayNotPublishVE()}"
+                                            mayNotUseRegexVE="{getMayNotUseRegexVE()}"
+                                            mayNotUseTargetUrlsVE="{getMayNotUseTargetUrlsVE()}"
+                                            siteIsNotSelectedVE="{getSiteIsNotSelectedVE()}"/>
               </editor:items>
             </editor:CollapsibleFormPanel>
           </items>
