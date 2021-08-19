@@ -18,6 +18,14 @@
   <description>Plugin for generating redirects in CoreMedia Studio</description>
 
   <dependencies>
+    <!-- project dependencies -->
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>blueprint-forms</artifactId>
+      <version>${project.version}</version>
+      <type>swc</type>
+    </dependency>
+
     <!-- CoreMedia dependencies -->
     <dependency>
       <groupId>com.coremedia.ui.toolkit</groupId>
@@ -40,9 +48,43 @@
       <type>swc</type>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>blueprint-forms</artifactId>
-      <version>${project.version}</version>
+      <groupId>com.coremedia.cms</groupId>
+      <artifactId>studio-client.cap-base-models</artifactId>
+      <type>swc</type>
+    </dependency>
+    <dependency>
+      <groupId>com.coremedia.ui.toolkit</groupId>
+      <artifactId>client-core</artifactId>
+      <type>swc</type>
+    </dependency>
+    <dependency>
+      <groupId>com.coremedia.cms</groupId>
+      <artifactId>studio-client.multi-site-models</artifactId>
+      <type>swc</type>
+    </dependency>
+    <dependency>
+      <groupId>com.coremedia.ui.sdk</groupId>
+      <artifactId>cap-rest-client</artifactId>
+      <type>swc</type>
+    </dependency>
+    <dependency>
+      <groupId>com.coremedia.ui.toolkit</groupId>
+      <artifactId>core-icons</artifactId>
+      <type>swc</type>
+    </dependency>
+    <dependency>
+      <groupId>com.coremedia.ui.toolkit</groupId>
+      <artifactId>client-core-impl</artifactId>
+      <type>swc</type>
+    </dependency>
+    <dependency>
+      <groupId>com.coremedia.cms</groupId>
+      <artifactId>studio-client.base-components</artifactId>
+      <type>swc</type>
+    </dependency>
+    <dependency>
+      <groupId>net.jangaroo</groupId>
+      <artifactId>jooflash-core</artifactId>
       <type>swc</type>
     </dependency>
 
@@ -64,6 +106,7 @@
         <version>${jangaroo.version}</version> <!-- explicit version for IDEA! -->
         <extensions>true</extensions>
         <configuration>
+          <extNamespace>com.tallence.core.redirects.studio</extNamespace>
           <namespaces>
             <namespace>
               <uri>exml:com.tallence.core.redirects.studio.config</uri>

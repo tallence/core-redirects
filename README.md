@@ -26,7 +26,7 @@ Per default, requests can only be redirected to a CoreMedia content. Redirects t
 Getting started
 ===============
 
-The extension is always kept compatible with the newest CoreMedia version (currently cmcc-10-2104.3). The redirect 
+The extension is always kept compatible with the newest CoreMedia version (currently cmcc-10-2107.1). The redirect 
 manager is also known to work with cms-9-1904, cms-9-1901 and cms-9-1810 (https://github.com/tallence/core-redirects/tree/cm9-1904).
 
 There is a [simple user guide](docs/userguide.md) available.
