@@ -104,7 +104,8 @@ public class RedirectUpdatePropertiesTest {
   @Test
   public void testUpdateValidationWhitespacesSource() {
     Map<String, Object> properties = new HashMap<>();
-    properties.put(SOURCE, "/url-with-whitespaces  ");
+    // leading and ending whitespaces will be ignored (String#trim())
+    properties.put(SOURCE, "/url-with- whitespaces  ");
 
     RedirectUpdateProperties updateProperties = new RedirectUpdateProperties(properties, repository, null, "123");
 

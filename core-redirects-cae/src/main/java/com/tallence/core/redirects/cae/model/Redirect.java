@@ -22,11 +22,11 @@ import com.tallence.core.redirects.model.RedirectTargetParameter;
 import com.tallence.core.redirects.model.RedirectType;
 import com.tallence.core.redirects.model.SourceUrlType;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Objects;
 
-import static software.amazon.awssdk.utils.StringUtils.isBlank;
 
 /**
  * Model for a Redirect (used instead of a ContentBean in order to keep the overhead low).
@@ -67,7 +67,7 @@ public class Redirect {
    * @return true, if the redirect has no targetLink or targetUrl
    */
   public boolean hasNoTarget() {
-    return getTarget() == null && isBlank(getTargetUrl());
+    return getTarget() == null && StringUtils.isEmpty(getTargetUrl());
   }
 
   /**
