@@ -154,8 +154,8 @@ public class RedirectUpdateTaskScheduler {
     // possible. A SynchronousQueue wil try to pass the tasks to the pool, which can take as many threads as the number
     // of all sites.
     if (parallelSiteThreads == null) {
-      int numberOfSites = sitesService.getSites().size();
-      return new ControllingThreadPoolExecutorService(1, numberOfSites, 1L,
+      int maximumPoolSize = sitesService.getSites().isEmpty() ? 1 : sitesService.getSites().size();
+      return new ControllingThreadPoolExecutorService(1, maximumPoolSize, 1L,
               TimeUnit.SECONDS, new SynchronousQueue<>(),
               namedThreadFactory, pausableThreadPoolExecutorService);
     } else {
