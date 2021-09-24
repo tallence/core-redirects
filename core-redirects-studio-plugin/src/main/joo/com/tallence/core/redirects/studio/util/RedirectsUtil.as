@@ -174,7 +174,7 @@ public class RedirectsUtil {
     var upldr:Uploader = new Uploader(Uploader({
       maxFileSize: DEFAULT_UPLOAD_SIZE,
       timeout: 20000,
-      url: RemoteService.calculateRequestURI("/rest/api/redirects/" + siteId + "/upload"),
+      url: RemoteService.calculateRequestURI("redirects/" + siteId + "/upload"),
       method: 'POST'
     }));
 
