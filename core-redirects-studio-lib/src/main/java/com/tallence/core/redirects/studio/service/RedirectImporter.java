@@ -36,6 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,20 +78,30 @@ public class RedirectImporter {
           .withFirstRecordAsHeader()
           .parse(new InputStreamReader(inputStream));
 
+      LOG.info("Csv file loaded. Starting to parse redirect csv entries.");
       Map<String, RedirectUpdateProperties> imports = new HashMap<>();
       for (CSVRecord record : records) {
         String csvEntry = getCsvEntry(record);
         if (record.size() < 7) {
-          redirectImportResponse.addErrorMessage(csvEntry, INVALID_CSV_ENTRY);
+          addErrorMessage(redirectImportResponse, csvEntry, INVALID_CSV_ENTRY);
         } else {
           addIfNoDuplicate(siteId, redirectImportResponse, imports, record, csvEntry);
-
         }
       }
+      LOG.info("Parsed {} redirects. Starting to import redirects.", imports.keySet().size());
 
-      imports.forEach((csvEntry, properties) -> createRedirect(siteId, csvEntry, properties, redirectImportResponse));
+      List<String> entries = new ArrayList<>(imports.keySet());
+      for (int i = 0; i < entries.size(); i++) {
+        if (i % 100 == 0) {
+          LOG.info("Processed {} redirects. {} entries left to be imported.", i, imports.size() - i);
+        }
+        String entry = entries.get(i);
+        createRedirect(siteId, entry, imports.get(entry), redirectImportResponse);
+      }
+
+      LOG.info("Finished redirect import. Imported {} redirects. Failed: {}.", redirectImportResponse.getCreated().size(), redirectImportResponse.getErrorMessages().size());
     } catch (IOException | IllegalArgumentException e) {
-      redirectImportResponse.addErrorMessage("", CREATION_FAILURE);
+      addErrorMessage(redirectImportResponse, "", CREATION_FAILURE);
       LOG.error("Error while processing uploaded file", e);
     }
 
@@ -104,11 +115,11 @@ public class RedirectImporter {
       if (imports.values().stream().noneMatch(p -> sourcesMatch(properties, p))) {
         imports.put(csvEntry, properties);
       } else {
-        redirectImportResponse.addErrorMessage(csvEntry, DUPLICATE_SOURCE);
+        addErrorMessage(redirectImportResponse, csvEntry, DUPLICATE_SOURCE);
       }
     } catch (JsonProcessingException e) {
       // could not parse source or target paramters
-      redirectImportResponse.addErrorMessage(csvEntry, PARSING_FAILURE);
+      addErrorMessage(redirectImportResponse, csvEntry, PARSING_FAILURE);
     }
 
 
@@ -185,10 +196,10 @@ public class RedirectImporter {
         Redirect redirect = redirectRepository.createRedirect(siteId, properties);
         response.addCreated(redirect);
       } catch (Exception e) {
-        response.addErrorMessage(csvEntry, CREATION_FAILURE);
+        addErrorMessage(response, csvEntry, PARSING_FAILURE);
       }
     } else {
-      errors.values().forEach(e -> response.addErrorMessage(csvEntry, e));
+      errors.values().forEach(e -> addErrorMessage(response, csvEntry, PARSING_FAILURE));
     }
   }
 
@@ -226,5 +237,10 @@ public class RedirectImporter {
       entry.append(column);
     }
     return entry.toString();
+  }
+
+  private void addErrorMessage(RedirectImportResponse response, String csvEntry, String errorCode) {
+    LOG.warn("Could not import redirect for csv entry: {}, error code: {}.", csvEntry, errorCode);
+    response.addErrorMessage(csvEntry, errorCode);
   }
 }
