@@ -124,7 +124,7 @@ public class RedirectMatchingServiceImpl implements RedirectMatchingService {
       return Result.none();
     }
 
-    var pathInfo = request.getPathInfo();
+    var pathInfo = request.getPathInfo().toLowerCase();
     if (pathInfo.endsWith("/")) {
       pathInfo = pathInfo.substring(0, pathInfo.length() - 1);
     }
