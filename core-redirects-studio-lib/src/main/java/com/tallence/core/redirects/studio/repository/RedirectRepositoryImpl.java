@@ -245,7 +245,7 @@ public class RedirectRepositoryImpl implements RedirectRepository {
     if (StringUtils.isEmpty(source)) {
       return false;
     }
-    List<String> filterQueries = Arrays.asList("isdeleted:false", "source:" + ClientUtils.escapeQueryChars(source), "-numericid:" + redirectId);
+    List<String> filterQueries = Arrays.asList("isdeleted:false", "source:" + ClientUtils.escapeQueryChars(source.toLowerCase()), "-numericid:" + redirectId);
     return redirectAlreadyExists(siteId, filterQueries, sourceParameters);
   }
 
@@ -253,7 +253,7 @@ public class RedirectRepositoryImpl implements RedirectRepository {
     if (StringUtils.isEmpty(source)) {
       return false;
     }
-    List<String> filterQueries = Arrays.asList("isdeleted:false", "source:" + ClientUtils.escapeQueryChars(source));
+    List<String> filterQueries = Arrays.asList("isdeleted:false", "source:" + ClientUtils.escapeQueryChars(source.toLowerCase()));
     return redirectAlreadyExists(siteId, filterQueries, sourceParameters);
   }
 
