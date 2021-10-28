@@ -199,7 +199,7 @@ public class RedirectImporter {
         addErrorMessage(response, csvEntry, PARSING_FAILURE);
       }
     } else {
-      errors.values().forEach(e -> addErrorMessage(response, csvEntry, PARSING_FAILURE));
+      errors.values().forEach(errorCode -> addErrorMessage(response, csvEntry, errorCode));
     }
   }
 
