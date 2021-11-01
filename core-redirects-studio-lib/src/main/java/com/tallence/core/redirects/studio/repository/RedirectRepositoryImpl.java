@@ -427,7 +427,7 @@ public class RedirectRepositoryImpl implements RedirectRepository {
   }
 
   private String getSourceQuery(String search, boolean exactMatch) {
-    String escaped = ClientUtils.escapeQueryChars(StringUtils.trim(search));
+    String escaped = ClientUtils.escapeQueryChars(search.toLowerCase().trim());
     return exactMatch ? "source:" + escaped : "source:*" + escaped + "*";
   }
 
