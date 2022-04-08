@@ -13,7 +13,6 @@
     <module>core-redirects-cae</module>
     <module>core-redirects-contentfeeder</module>
     <module>core-redirects-studio-lib</module>
-    <module>core-redirects-studio-plugin</module>
   </modules>
 
 </project>

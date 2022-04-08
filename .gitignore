@@ -43,3 +43,9 @@ buildNumber.properties
 Network Trash Folder
 Temporary Items
 .apdisk
+
+/**/node_modules/
+
+# Jangaroo Build
+dist/
+build/
