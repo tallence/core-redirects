@@ -45,3 +45,7 @@ Temporary Items
 .apdisk
 
 /**/node_modules/
+
+# Jangaroo Build
+dist/
+build/
