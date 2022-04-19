@@ -92,6 +92,14 @@ class RedirectHttpServletResponseWrapper extends HttpServletResponseWrapper {
     return writer.toString();
   }
 
+
+  @Override
+  public void flushBuffer() {
+    //Do nothing. This will be called for HEAD requests from the
+    //javax.servlet.http.HttpServlet.NoBodyResponse
+    //But it commits the response, which we do not want in the wrapper
+  }
+
   /**
    * Writes the stored request on the wire (by writing the data on the super instance,
    * which writes it to the original request to be sent).
