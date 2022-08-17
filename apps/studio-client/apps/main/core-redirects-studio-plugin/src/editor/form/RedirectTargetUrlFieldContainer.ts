@@ -38,7 +38,7 @@ interface RedirectTargetUrlFieldContainerConfig extends Config<FieldContainer>, 
 class RedirectTargetUrlFieldContainer extends FieldContainer {
   declare Config: RedirectTargetUrlFieldContainerConfig;
 
-  static override readonly xtype: string = "com.tallence.core.redirects.studio.editor.form.redirectSourceFieldContainer";
+  static override readonly xtype: string = "com.tallence.core.redirects.studio.editor.form.redirectTargetFieldContainer";
 
   #targetUrlVE: ValueExpression = null;
 
