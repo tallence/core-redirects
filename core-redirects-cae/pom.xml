@@ -42,10 +42,6 @@
     </dependency>
     <dependency>
       <groupId>com.coremedia.cms</groupId>
-      <artifactId>coremedia-spring</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.coremedia.cms</groupId>
       <artifactId>cap-multisite</artifactId>
     </dependency>
     <dependency>
@@ -144,6 +140,11 @@
     <dependency>
       <groupId>com.coremedia.cms</groupId>
       <artifactId>cae-configuration</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.coremedia.cms</groupId>
+      <artifactId>coremedia-spring</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

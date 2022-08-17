@@ -26,10 +26,8 @@ Per default, requests can only be redirected to a CoreMedia content. Redirects t
 Getting started
 ===============
 
-The extension runs with CoreMedia 11 (v2201.2). And also runs with:
-- v2110.1. See the release [cmcc-11-2110.1](https://github.com/tallence/core-redirects/releases/tag/cmcc-11-2110.1).
-- v2107.1. See the release [cmcc-10-2107.1](https://github.com/tallence/core-redirects/releases/tag/cmcc-10-2107.1).
-- v2007.2. See the release [cmcc-10-2007.2](https://github.com/tallence/core-redirects/releases/tag/cmcc-10-2007.2).
+See the [releases](https://github.com/tallence/core-redirects/releases) for tested compatibilities.
+For earlier versions, have a look into these branches:
 - CoreMedia 9 (v18.10). See the branch: [1904.2-compatible](https://github.com/tallence/core-redirects/tree/cm9-1904).
 
 There is a [simple user guide](docs/userguide.md) available.
