@@ -23,7 +23,7 @@ module.exports = jangarooConfig({
           cmCategory: "Content",
           name: "Redirect manager",
           url: "",
-          cmAdministrative: true,
+          cmAdministrative: false,
           cmService: {
             name: "launchSubAppService",
             method: "launchSubApp",
