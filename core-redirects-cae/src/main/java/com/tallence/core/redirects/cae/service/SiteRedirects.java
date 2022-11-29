@@ -46,6 +46,9 @@ public class SiteRedirects {
   private final ConcurrentHashMap<Pattern, List<Redirect>> patternRedirects = new ConcurrentHashMap<>();
   private final Object patternRedirectsMonitor = new Object();
 
+  private final Map<SourceUrlType, Object> monitors = Map.of(SourceUrlType.PLAIN, plainRedirectsMonitor, SourceUrlType.REGEX, patternRedirectsMonitor);
+  private final Map<SourceUrlType, Map<?, List<Redirect>>> maps = Map.of(SourceUrlType.PLAIN, plainRedirects, SourceUrlType.REGEX, patternRedirects);
+
   public SiteRedirects() {
   }
 
@@ -76,31 +79,35 @@ public class SiteRedirects {
    */
   public void addRedirect(Redirect redirect) {
     if (redirect.getSourceUrlType() == SourceUrlType.PLAIN) {
-      synchronized (plainRedirectsMonitor) {
 
-        plainRedirects.values().forEach(redirects -> redirects.remove(redirect));
-
-        final String key = URLDecoder.decode(redirect.getSource(), UTF_8);
-        plainRedirects.putIfAbsent(key, new ArrayList<>());
-        plainRedirects.get(key).add(redirect);
-      }
+      final String key = URLDecoder.decode(redirect.getSource(), UTF_8);
+      updateMaps(SourceUrlType.PLAIN, key, redirect);
 
     } else if (redirect.getSourceUrlType() == SourceUrlType.REGEX) {
       try {
-        synchronized (patternRedirectsMonitor) {
-
-          patternRedirects.values().forEach(redirects -> redirects.remove(redirect));
-
-          final Pattern key = Pattern.compile(redirect.getSource());
-          patternRedirects.putIfAbsent(key, new ArrayList<>());
-          patternRedirects.get(key).add(redirect);
-        }
+        final Pattern key = Pattern.compile(redirect.getSource());
+        updateMaps(SourceUrlType.REGEX, key, redirect);
       } catch (PatternSyntaxException e) {
         LOG.error("Unable to compile pattern on redirect {}, ignoring redirect", redirect);
+        //The invalid pattern should already be handled by the validator. In case something went wrong: Make sure,
+        //the old redirect is removed
+        removeRedirect(redirect.getContentId());
       }
 
     } else {
       LOG.error("Illegal source type {} on redirect {}, ignoring redirect", redirect.getSourceUrlType(), redirect);
+    }
+  }
+
+  private <T> void updateMaps(SourceUrlType sourceUrlType, T key, Redirect redirect) {
+
+    //Remove it from all maps, the type might have been changed in the latest version of the redirect
+    removeRedirect(redirect.getContentId());
+
+    synchronized (monitors.get(sourceUrlType)) {
+      final Map<T, List<Redirect>> redirects = getRedirects(sourceUrlType);
+      redirects.putIfAbsent(key, new ArrayList<>());
+      redirects.get(key).add(redirect);
     }
   }
 
@@ -110,20 +117,8 @@ public class SiteRedirects {
   public void removeRedirect(Redirect redirect) {
 
     // Removes the whole map entry afterwards, if the list is empty as a result of the operation.
-    if (redirect.getSourceUrlType() == SourceUrlType.PLAIN) {
-      synchronized (plainRedirectsMonitor) {
-        plainRedirects.entrySet().stream()
-                .filter(e -> e.getValue().remove(redirect))
-                .filter(e -> e.getValue().isEmpty())
-                .forEach(e -> plainRedirects.remove(e.getKey()));
-      }
-    } else if (redirect.getSourceUrlType() == SourceUrlType.REGEX) {
-      synchronized (patternRedirectsMonitor) {
-        patternRedirects.entrySet().stream()
-                .filter(e -> e.getValue().remove(redirect))
-                .filter(e -> e.getValue().isEmpty())
-                .forEach(e -> patternRedirects.remove(e.getKey()));
-      }
+    synchronized (monitors.get(redirect.getSourceUrlType())) {
+      maps.get(redirect.getSourceUrlType()).entrySet().removeIf(entry -> entry.getValue().remove(redirect) && entry.getValue().isEmpty());
     }
   }
 
@@ -133,18 +128,10 @@ public class SiteRedirects {
    */
   public void removeRedirect(String id) {
 
-    synchronized (plainRedirectsMonitor) {
-      plainRedirects.entrySet().stream()
-          .filter(e -> e.getValue().removeIf(r -> id.equals(r.getContentId())))
-          .filter(e -> e.getValue().isEmpty())
-          .forEach(e -> plainRedirects.remove(e.getKey()));
-    }
-
-    synchronized (patternRedirectsMonitor) {
-      patternRedirects.entrySet().stream()
-              .filter(e -> e.getValue().removeIf(r -> id.equals(r.getContentId())))
-              .filter(e -> e.getValue().isEmpty())
-              .forEach(e -> patternRedirects.remove(e.getKey()));
+    for (Map.Entry<SourceUrlType, Object> entry : monitors.entrySet()) {
+      synchronized (entry.getValue()) {
+        maps.get(entry.getKey()).entrySet().removeIf(e -> e.getValue().removeIf(r -> id.equals(r.getContentId())) && e.getValue().isEmpty());
+      }
     }
   }
 
@@ -169,5 +156,10 @@ public class SiteRedirects {
             ", plainRedirects.size=" + plainRedirects.size() +
             ", patternRedirects.size=" + patternRedirects.size() +
             '}';
+  }
+
+  @SuppressWarnings("unchecked")
+  private <T> Map<T, List<Redirect>> getRedirects(SourceUrlType sourceUrlType) {
+    return (Map<T, List<Redirect>>) maps.get(sourceUrlType);
   }
 }
