@@ -62,11 +62,15 @@ public class UpdateSiteTask extends AbstractTask {
     } else {
       LOG.debug("Reading redirects from folder {}", redirectsFolder.getPath());
     }
+    long time = System.currentTimeMillis();
+
     // Fetch the redirect content from
     Collection<Content> redirectContents = fetchRedirectDocumentsFromFolder(redirectsFolder);
 
-    //Prefetch to get data with just one server call. Using chunks which will work more stable for large sets.
-    contentRepository.withPrefetch(redirectContents, 2000);
+    // Prefetch to get data with just one server call. Using chunks which will work more stable for large sets.
+    //TODO why only prefetch sourceUrl and targetLink?
+    String prefetchHint = Redirect.SOURCE_URL + "," + Redirect.TARGET_LINK;
+    contentRepository.withPrefetch(redirectContents, prefetchHint, 2048);
 
     // In order to create dependencies on the redirects found, the conversion needs to happen after re-enabling the tracking.
     List<Redirect> redirectEntries = mapToRedirects(redirectContents, site);
@@ -75,8 +79,9 @@ public class UpdateSiteTask extends AbstractTask {
     final SiteRedirects result = new SiteRedirects(site.getId());
     redirectEntries.forEach(result::addRedirect);
 
-    LOG.debug("Finished loading [{}] static and [{}] dynamic redirects for folder [{}]",
-            result.getPlainRedirects().size(), result.getPatternRedirects().size(), redirectsFolder.getPath());
+    LOG.info("Finished loading [{}] static and [{}] dynamic redirects for folder [{}]. took {}ms",
+        result.getPlainRedirects().size(), result.getPatternRedirects().size(), redirectsFolder.getPath(),
+        System.currentTimeMillis() - time);
 
     redirectsMap.put(site, result);
 

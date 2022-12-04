@@ -15,12 +15,17 @@
  */
 package com.tallence.core.redirects.cae.service;
 
+import com.coremedia.cap.content.ContentRepository;
 import com.tallence.core.redirects.cae.filter.RedirectFilter;
 import com.tallence.core.redirects.cae.model.Redirect;
 import com.tallence.core.redirects.model.SourceUrlType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
+import java.util.Collection;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,24 +41,38 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * Holder class for the redirects of a specific site.
  * Keeps maps of the paths or patterns to their redirects.
  */
-public class SiteRedirects {
+public final class SiteRedirects implements Serializable {
+
+  /**
+   *
+   */
+  private static final long serialVersionUID = 2944678574499366309L;
 
   private static final Logger LOG = LoggerFactory.getLogger(SiteRedirects.class);
 
   private String siteId;
   private final ConcurrentHashMap<String, List<Redirect>> plainRedirects = new ConcurrentHashMap<>();
-  private final Object plainRedirectsMonitor = new Object();
   private final ConcurrentHashMap<Pattern, List<Redirect>> patternRedirects = new ConcurrentHashMap<>();
-  private final Object patternRedirectsMonitor = new Object();
 
-  private final Map<SourceUrlType, Object> monitors = Map.of(SourceUrlType.PLAIN, plainRedirectsMonitor, SourceUrlType.REGEX, patternRedirectsMonitor);
-  private final Map<SourceUrlType, Map<?, List<Redirect>>> maps = Map.of(SourceUrlType.PLAIN, plainRedirects, SourceUrlType.REGEX, patternRedirects);
+  private final transient Map<SourceUrlType, Object> monitors;
+  private final transient Map<SourceUrlType, Map<?, List<Redirect>>> maps;
 
   public SiteRedirects() {
+    monitors = initMonitors();
+    maps = initMaps();
   }
 
   public SiteRedirects(String siteId) {
+    this();
     this.siteId = siteId;
+  }
+
+  private Map<SourceUrlType, Object> initMonitors() {
+    return Map.of(SourceUrlType.PLAIN, new Object(), SourceUrlType.REGEX, new Object());
+  }
+
+  private Map<SourceUrlType, Map<?, List<Redirect>>> initMaps() {
+    return Map.of(SourceUrlType.PLAIN, plainRedirects, SourceUrlType.REGEX, patternRedirects);
   }
 
   /**
@@ -161,5 +180,24 @@ public class SiteRedirects {
   @SuppressWarnings("unchecked")
   private <T> Map<T, List<Redirect>> getRedirects(SourceUrlType sourceUrlType) {
     return (Map<T, List<Redirect>>) maps.get(sourceUrlType);
+  }
+
+  private void readObject(ObjectInputStream aInputStream) throws ClassNotFoundException, IOException {
+    aInputStream.defaultReadObject();
+    //TODO need to call the initMaps and initMonitors method here?
+  }
+
+  void init(ContentRepository contentRepository) {
+    // init with repo for lazy load
+    maps.values().stream()
+            .flatMap(l -> l.values().stream())
+            .flatMap(Collection::stream)
+            .forEach(r -> r.init(contentRepository));
+  }
+
+  public boolean isEmpty() {
+    return maps.values().stream()
+            .flatMap(m -> m.values().stream())
+            .allMatch(List::isEmpty);
   }
 }

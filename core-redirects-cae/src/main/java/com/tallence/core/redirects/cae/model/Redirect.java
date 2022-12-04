@@ -15,7 +15,9 @@
  */
 package com.tallence.core.redirects.cae.model;
 
+import com.coremedia.cap.common.IdHelper;
 import com.coremedia.cap.content.Content;
+import com.coremedia.cap.content.ContentRepository;
 import com.tallence.core.redirects.helper.RedirectHelper;
 import com.tallence.core.redirects.model.RedirectSourceParameter;
 import com.tallence.core.redirects.model.RedirectTargetParameter;
@@ -24,6 +26,7 @@ import com.tallence.core.redirects.model.SourceUrlType;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import org.springframework.util.StringUtils;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
@@ -32,7 +35,12 @@ import java.util.Objects;
  * Model for a Redirect (used instead of a ContentBean in order to keep the overhead low).
  * Keeps only the properties required by the CAE.
  */
-public class Redirect {
+public final class Redirect implements Serializable {
+
+  /**
+   *
+   */
+  private static final long serialVersionUID = 8331176763380489195L;
 
   public static final String NAME = "Redirect";
   public static final String TARGET_LINK = "targetLink";
@@ -46,7 +54,10 @@ public class Redirect {
   private final SourceUrlType sourceUrlType;
   private final String source;
   private final RedirectType redirectType;
-  private final Content target;
+  private final int targetId;
+
+  private transient Content target;
+  private transient ContentRepository contentRepository;
   private final String targetUrl;
   private final List<RedirectSourceParameter> sourceParameters;
   private final List<RedirectTargetParameter> targetParameters;
@@ -57,10 +68,15 @@ public class Redirect {
     source = rootSegment + redirect.getString(SOURCE_URL);
     redirectType = RedirectType.asRedirectType(redirect.getString(REDIRECT_TYPE));
     target = redirect.getLink(TARGET_LINK);
+    targetId = target == null ? -1 : IdHelper.parseContentId(target.getId());
     targetUrl = redirect.getString(TARGET_URL);
 
     sourceParameters = RedirectHelper.getSourceParameters(redirect);
     targetParameters = RedirectHelper.getTargetParameters(redirect);
+  }
+
+  public void init(ContentRepository repository) {
+    contentRepository = repository;
   }
 
   /**
@@ -96,6 +112,9 @@ public class Redirect {
    */
   @Nullable
   public Content getTarget() {
+    if (target == null && targetId != -1) {
+      target = contentRepository.getContent(IdHelper.formatContentId(targetId));
+    }
     return target;
   }
 
@@ -124,8 +143,12 @@ public class Redirect {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
     Redirect redirect = (Redirect) o;
     return contentId.equals(redirect.contentId);
   }
@@ -138,7 +161,7 @@ public class Redirect {
   @Override
   public String toString() {
     return "Redirect{" +
-            "contentId='" + contentId + '\'' +
-            '}';
+        "contentId='" + contentId + '\'' +
+        '}';
   }
 }

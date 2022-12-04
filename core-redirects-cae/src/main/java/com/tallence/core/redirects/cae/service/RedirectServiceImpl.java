@@ -18,15 +18,28 @@ package com.tallence.core.redirects.cae.service;
 import com.coremedia.cap.content.ContentRepository;
 import com.coremedia.cap.multisite.Site;
 import com.coremedia.cap.multisite.SitesService;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
+
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.ObjectStreamException;
 import java.util.concurrent.ConcurrentMap;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 
 /**
  * Service for handling redirects.
@@ -41,10 +54,15 @@ public class RedirectServiceImpl implements RedirectService {
   private final RedirectUpdateTaskScheduler redirectUpdateTaskScheduler;
   private final SitesService sitesService;
 
+  @Value("${core.redirects.cache-dir:.}") // defaults to pwd
+  private String redirectsCacheDir;
+
+  private RedirectContentListener repoListener;
+
   @Autowired
   public RedirectServiceImpl(ContentRepository contentRepository, ConcurrentMap<Site, SiteRedirects> redirectsCache,
-                             RedirectUpdateTaskScheduler redirectUpdateTaskScheduler,
-                             SitesService sitesService) {
+      RedirectUpdateTaskScheduler redirectUpdateTaskScheduler,
+      SitesService sitesService) {
     this.contentRepository = contentRepository;
     this.redirectsCache = redirectsCache;
     this.redirectUpdateTaskScheduler = redirectUpdateTaskScheduler;
@@ -57,11 +75,22 @@ public class RedirectServiceImpl implements RedirectService {
     sitesService.getSites().stream().filter(Site::isReadable).forEach(this::initiateRedirects);
 
     // Attach the content listener
-    contentRepository.addContentRepositoryListener(new RedirectContentListener(redirectUpdateTaskScheduler));
+    repoListener = new RedirectContentListener(redirectUpdateTaskScheduler);
+
+    // TODO the listener needs to be registered with the latest (successfully processed) timeStamp from the deserialized file
+    contentRepository.addContentRepositoryListener(repoListener);
+  }
+
+  @PreDestroy
+  public void destroy() {
+    contentRepository.removeContentRepositoryListener(repoListener);
+
+    sitesService.getSites().stream().filter(Site::isReadable).forEach(this::saveRedirects);
   }
 
   /**
    * Get all redirects for the given site.
+   *
    * @see RedirectService
    */
   @NonNull
@@ -81,18 +110,68 @@ public class RedirectServiceImpl implements RedirectService {
     } else {
       return redirects;
     }
+  }
 
+  //TODO the latest (successfully processed) timeStamp from the ContentListener needs to be serialized
+  private void saveRedirects(Site site) {
+    try {
+      File file = diskFile(site);
+      SiteRedirects siteRedirects = getRedirectsForSite(site);
+      if (!siteRedirects.isEmpty()) {
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file))) {
+
+          out.writeObject(siteRedirects);
+        } catch (Exception e) {
+          LOG.error("could not save state to disk {}", file);
+        }
+      }
+    } catch (Exception e) {
+      LOG.error("could not init from disk snapshot for site with {}, error:" + e, site);
+    }
   }
 
   private void initiateRedirects(Site site) {
     try {
       // Calc site (or fetch from drive)
-      LOG.debug("Missing site {} in cache, queueing fetch", site);
+      SiteRedirects siteRedirects = loadFromDisk(site);
+      if (siteRedirects != null) {
+        redirectsCache.put(site, siteRedirects);
+      } // we trigger site update either to make sure we have a consistent state "fresh from CMS"
+      LOG.debug("Trigger update for site {}", site);
       redirectUpdateTaskScheduler.runUpdate(site);
-      // FIXME Possible add fetch from disk here (or another speed-fix)
     } catch (Exception e) {
       LOG.error("Error during fetching redirects for site [{}]", site.getId(), e);
     }
   }
 
+  private SiteRedirects loadFromDisk(Site site) {
+    try {
+      File file = diskFile(site);
+      if (file.exists() && file.canRead()) {
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
+
+          SiteRedirects siteRedirects = (SiteRedirects) in.readObject();
+
+          siteRedirects.init(contentRepository);
+
+          return siteRedirects;
+        } catch (ObjectStreamException e) {
+          LOG.error("input from file {} not readable. error:" + e, file);
+        } catch (Exception e) {
+          LOG.error("could not init from disk snapshot with {}, error:" + e, file);
+        }
+      }
+    } catch (Exception e) {
+      LOG.error("could not init from disk snapshot for site with {}, error:" + e, site);
+    }
+    return null;
+  }
+
+  private File diskFile(Site site) throws IOException {
+    File dir = new File(redirectsCacheDir);
+    if (!dir.exists()) {
+      FileUtils.forceMkdir(dir);
+    }
+    return new File(dir, "SiteRedirects_" + site.getId() + ".ser");
+  }
 }
