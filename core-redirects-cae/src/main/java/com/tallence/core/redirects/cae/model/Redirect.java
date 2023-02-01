@@ -54,7 +54,12 @@ public class Redirect {
   public Redirect(Content redirect, String rootSegment) {
     contentId = redirect.getId();
     sourceUrlType = SourceUrlType.asSourceUrlType(redirect.getString(SOURCE_URL_TYPE));
-    source = rootSegment + redirect.getString(SOURCE_URL);
+    String sourcePath = redirect.getString(SOURCE_URL);
+    if (sourcePath.startsWith(rootSegment)) {
+      source = sourcePath;
+    } else {
+      source = rootSegment + sourcePath;
+    }
     redirectType = RedirectType.asRedirectType(redirect.getString(REDIRECT_TYPE));
     target = redirect.getLink(TARGET_LINK);
     targetUrl = redirect.getString(TARGET_URL);
