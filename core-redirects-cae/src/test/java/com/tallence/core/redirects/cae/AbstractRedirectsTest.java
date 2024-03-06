@@ -31,7 +31,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-import static com.coremedia.cap.test.xmlrepo.XmlRepoResources.*;
 import static com.tallence.core.redirects.cae.AbstractRedirectsTest.LocalConfig.PROFILE;
 import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_SINGLETON;
 
@@ -49,11 +48,11 @@ public abstract class AbstractRedirectsTest {
   @PropertySource("classpath:/test.properties")
   @ImportResource(
           value = {
-                  CACHE,
-                  CONTENT_BEAN_FACTORY,
-                  DATA_VIEW_FACTORY,
-                  ID_PROVIDER,
-                  LINK_FORMATTER,
+                  "classpath:/com/coremedia/cache/cache-services.xml",
+                  "classpath:/com/coremedia/cae/contentbean-services.xml",
+                  "classpath:/com/coremedia/cae/dataview-services.xml",
+                  "classpath:/com/coremedia/id/id-services.xml",
+                  "classpath:/com/coremedia/cae/link-services.xml",
                   "classpath*:/META-INF/coremedia/component-core-redirects-cae.xml",
                   "classpath:/framework/spring/blueprint-handlers.xml",
                   "classpath*:/com/coremedia/blueprint/base/multisite/bpbase-multisite-cae-services.xml"

@@ -17,7 +17,7 @@ package com.tallence.core.redirects.cae.filter;
 
 import com.tallence.core.redirects.cae.model.Redirect;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Strategy to resolve a redirect for the given request.
