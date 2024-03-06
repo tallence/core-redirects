@@ -11,6 +11,7 @@
 
   <modelVersion>4.0.0</modelVersion>
   <artifactId>core-redirects-common</artifactId>
+  <name>Tallence Redirects Manager Commons</name>
 
   <dependencies>
 
