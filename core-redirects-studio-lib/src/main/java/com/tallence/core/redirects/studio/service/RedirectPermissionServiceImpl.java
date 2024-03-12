@@ -16,12 +16,12 @@
 
 package com.tallence.core.redirects.studio.service;
 
+import com.coremedia.cap.common.CapConnection;
 import com.coremedia.cap.content.Content;
 import com.coremedia.cap.content.ContentRepository;
 import com.coremedia.cap.content.ContentType;
 import com.coremedia.cap.content.authorization.AccessControl;
 import com.coremedia.cap.content.authorization.Right;
-import com.coremedia.cap.springframework.security.impl.CapUserDetails;
 import com.coremedia.cap.user.Group;
 import com.coremedia.cap.user.User;
 import com.coremedia.cap.user.UserRepository;
@@ -32,7 +32,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.annotation.PostConstruct;
 
@@ -50,6 +49,7 @@ public class RedirectPermissionServiceImpl implements RedirectPermissionService 
 
   private final ContentRepository contentRepository;
   private final UserRepository userRepository;
+  private final CapConnection capConnection;
   private final String regexGroupName;
   private final String targetUrlGroupName;
   private Group regexGroup;
@@ -58,10 +58,12 @@ public class RedirectPermissionServiceImpl implements RedirectPermissionService 
 
   @Autowired
   public RedirectPermissionServiceImpl(ContentRepository contentRepository, UserRepository userRepository,
+                                       CapConnection capConnection,
                                        @Value("${core.redirects.permissions.targetUrlGroup:}") String targetUrlGroupName,
                                        @Value("${core.redirects.permissions.regexGroup:}") String regexGroupName) {
     this.contentRepository = contentRepository;
     this.userRepository = userRepository;
+    this.capConnection = capConnection;
     this.redirectContentType = contentRepository.getContentType("Redirect");
     this.regexGroupName = regexGroupName;
     this.targetUrlGroupName = targetUrlGroupName;
@@ -146,7 +148,7 @@ public class RedirectPermissionServiceImpl implements RedirectPermissionService 
   }
 
   private boolean isUserAllowedForRegex() {
-    User user = userRepository.getUser(getUserId());
+    User user = getUser();
     if (user == null) {
       throw new IllegalStateException("No user could be found");
     }
@@ -159,7 +161,7 @@ public class RedirectPermissionServiceImpl implements RedirectPermissionService 
   }
 
   private boolean isUserAllowedForTargetUrlUsage() {
-    User user = userRepository.getUser(getUserId());
+    User user = getUser();
     if (user == null) {
       throw new IllegalStateException("No user could be found");
     }
@@ -171,13 +173,8 @@ public class RedirectPermissionServiceImpl implements RedirectPermissionService 
     }
   }
 
-  private String getUserId() {
-    Object user = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    if (user instanceof CapUserDetails) {
-      return ((CapUserDetails) user).getUserId();
-    } else {
-      throw new IllegalStateException("Could not get userId from authenticated user.");
-    }
+  private User getUser() {
+    return capConnection.getSession().getUser();
   }
 
   @PostConstruct
