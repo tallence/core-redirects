@@ -17,6 +17,7 @@ package com.tallence.core.redirects.cae;
 
 import com.coremedia.cap.multisite.Site;
 import com.coremedia.cap.multisite.SitesService;
+import com.coremedia.objectserver.web.links.CaeLinkServicesConfiguration;
 import com.tallence.core.redirects.cae.filter.RedirectFilter;
 import com.tallence.core.redirects.cae.service.SiteRedirects;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,11 +28,13 @@ import org.springframework.context.annotation.Configuration;
 import jakarta.servlet.Filter;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import org.springframework.context.annotation.Import;
 
 /**
  * Spring configuration for the redirects.
  */
 @Configuration
+@Import({CaeLinkServicesConfiguration.class})
 public class CoreRedirectsCaeConfiguration {
 
   private static final String FILTER_NAME = "core-redirects";

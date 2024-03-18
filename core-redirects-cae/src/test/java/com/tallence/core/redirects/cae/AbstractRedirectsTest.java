@@ -15,12 +15,14 @@
  */
 package com.tallence.core.redirects.cae;
 
+import com.coremedia.blueprint.cae.config.BlueprintHandlersCaeBaseLibConfiguration;
 import com.coremedia.blueprint.testing.ContentTestConfiguration;
 import com.coremedia.blueprint.testing.ContentTestHelper;
 import com.coremedia.cap.test.xmlrepo.XmlRepoConfiguration;
 import com.coremedia.cap.test.xmlrepo.XmlUapiConfig;
 import com.coremedia.cms.delivery.configuration.DeliveryConfigurationProperties;
 import com.coremedia.objectserver.configuration.CaeConfigurationProperties;
+import com.coremedia.objectserver.web.links.CaeLinkServicesConfiguration;
 import com.coremedia.springframework.xml.ResourceAwareXmlBeanDefinitionReader;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,9 +54,7 @@ public abstract class AbstractRedirectsTest {
                   "classpath:/com/coremedia/cae/contentbean-services.xml",
                   "classpath:/com/coremedia/cae/dataview-services.xml",
                   "classpath:/com/coremedia/id/id-services.xml",
-                  "classpath:/com/coremedia/cae/link-services.xml",
                   "classpath*:/META-INF/coremedia/component-core-redirects-cae.xml",
-                  "classpath:/framework/spring/blueprint-handlers.xml",
                   "classpath*:/com/coremedia/blueprint/base/multisite/bpbase-multisite-cae-services.xml"
           },
           reader = ResourceAwareXmlBeanDefinitionReader.class
@@ -63,7 +63,7 @@ public abstract class AbstractRedirectsTest {
           DeliveryConfigurationProperties.class,
           CaeConfigurationProperties.class
   })
-  @Import({XmlRepoConfiguration.class, ContentTestConfiguration.class})
+  @Import({XmlRepoConfiguration.class, ContentTestConfiguration.class, CaeLinkServicesConfiguration.class, BlueprintHandlersCaeBaseLibConfiguration.class})
   @Profile(PROFILE)
   public static class LocalConfig {
     public static final String PROFILE = "RedirectContentBeanTestBase";
