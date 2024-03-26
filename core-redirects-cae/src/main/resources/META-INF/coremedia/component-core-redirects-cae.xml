@@ -9,8 +9,6 @@
 
   <import resource="classpath:/com/coremedia/blueprint/base/multisite/bpbase-multisite-services.xml"/>
   <import resource="classpath:/com/coremedia/cae/contentbean-services.xml"/>
-  <import resource="classpath:/com/coremedia/cae/link-services.xml"/>
-  <import resource="classpath:/com/coremedia/cae/uapi-services.xml"/>
 
   <context:component-scan base-package="com.tallence.core.redirects.cae"/>
 

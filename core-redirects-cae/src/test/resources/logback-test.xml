@@ -8,8 +8,8 @@
             resource="default-logback-test.properties"/>
 
   <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
-    <encoder>
-      <pattern>${config.log.pattern}</pattern>
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+      <pattern>%-5level %logger{35}.%msg%n</pattern>
     </encoder>
   </appender>
 

@@ -10,6 +10,7 @@
 
   <modelVersion>4.0.0</modelVersion>
   <artifactId>core-redirects-studio-lib</artifactId>
+  <name>Tallence Redirects Manager Studio Lib</name>
 
   <properties>
     <coremedia.project.extension.for>studio-lib</coremedia.project.extension.for>
@@ -98,7 +99,7 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-csv</artifactId>
-      <version>1.9.0</version>
+      <version>1.10.0</version>
     </dependency>
 
     <dependency>

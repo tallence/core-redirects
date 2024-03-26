@@ -11,6 +11,7 @@
 
   <modelVersion>4.0.0</modelVersion>
   <artifactId>core-redirects-cae</artifactId>
+  <name>Tallence Redirects Manager CAE</name>
 
   <properties>
     <coremedia.project.extension.for>cae</coremedia.project.extension.for>
