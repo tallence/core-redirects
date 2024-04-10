@@ -45,11 +45,6 @@
       <artifactId>cap-unified-api</artifactId>
     </dependency>
 
-    <dependency>
-      <groupId>com.coremedia.cms</groupId>
-      <artifactId>cap-spring-security</artifactId>
-    </dependency>
-
     <!-- Other dependencies -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
@@ -74,11 +69,6 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-web</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.springframework.security</groupId>
-      <artifactId>spring-security-core</artifactId>
     </dependency>
 
     <dependency>
