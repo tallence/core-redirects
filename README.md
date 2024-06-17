@@ -23,7 +23,7 @@ Per default, requests can only be redirected to a CoreMedia content. Redirects t
 ## Feedback
 
 If you have any problems, questions, ideas, or feedback, please contact us or
-[create an issue](https://github.com/tallence/core-redirects/issues). 
+[create an issue](https://github.com/tallence/core-redirects/issues).
 
 
 ## Compatibility
@@ -41,13 +41,33 @@ There is a [simple user guide](docs/userguide.md) available.
 
 ## Integration
 
-Integrate the Code in your CoreMedia Blueprint Workspace:
+Integrate the Code in your CoreMedia Blueprint Workspace either as a submodule
+or subtree with GIT. If you would rather like to copy and customize the code,
+use subtree and forget that you did.
 
 ### GIT submodules
 
 ```
 git submodule add https://github.com/tallence/core-redirects.git modules/extensions/core-redirects
 ```
+
+Subsequently, please follow the standard GIT procedures for the handling of
+submodules.
+
+### GIT subtree
+
+If additional repositories are no option for you, you can integrate a copy of
+the extension via the subtree command of GIT.
+
+```
+git subtree add --prefix modules/extensions/core-redirects git@github.com:tallence/core-redirects.git master
+```
+
+This way, you automatically get a separate branch of the remote repository
+within your workspace which you can customize to you needs.
+
+
+## Activation
 
 Activate the extension using the respective CoreMedia Content Cloud activation
 scheme for the version in use, like e.g. the management tool for the latest
@@ -56,15 +76,6 @@ releases:
 ```
 mvn extensions:sync -Denable=core-redirects -f workspace-configuration/extensions/pom.xml
 ```
- 
-
-### Alternative way
-
-Of course, it would also be possible to download the repo and copy the files
-into your Blueprint-Workspace global Extensions-Folder `modules/extensions`.
-While you do not have to bother with submodules, you also lose the direct
-connection to the original repository and the option to easily contribute or
-merge new things.
 
 
 ## Setup
