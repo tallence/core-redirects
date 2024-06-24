@@ -132,7 +132,12 @@ public class RedirectFilter implements Filter {
     LOG.debug("Redirecting to {}", target);
 
     // Reset content and headers
-    response.reset();
+    try {
+      response.reset();
+    } catch (Exception e) {
+      LOG.error("Unable to reset response on redirect {}, aborting redirection", target);
+      return;
+    }
 
     response.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
     response.setHeader(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate");
